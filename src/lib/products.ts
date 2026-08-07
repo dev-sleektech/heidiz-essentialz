@@ -23,6 +23,9 @@ type ProductRow = {
   badge: string | null;
   icon: string;
   image: string | null;
+  images: string[];
+  sizes: string[];
+  colors: string[];
   description: string;
   benefits: string[];
   directions: string;
@@ -44,6 +47,9 @@ function toProduct(row: ProductRow): Product {
     badge: (row.badge as ProductBadge | null) ?? undefined,
     icon: row.icon as IconKey,
     image: row.image ?? undefined,
+    images: row.images ?? [],
+    sizes: row.sizes ?? [],
+    colors: row.colors ?? [],
     description: row.description,
     benefits: row.benefits,
     directions: row.directions,

@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Loader2, CheckCircle2, AlertCircle, Upload } from "lucide-react";
+import { Loader2, CheckCircle2, AlertCircle, Upload, X } from "lucide-react";
 import { categories } from "@/lib/placeholder-data";
 import type { Product } from "@/lib/product-types";
 
@@ -50,6 +50,14 @@ export function ProductEditForm({ product }: { product?: Product }) {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Gallery: extra photos beyond the primary "Product Photo" above, up to
+  // 10 total, shown as a thumbnail strip on the product detail page (see
+  // ProductGallery). The primary photo stays the cover used in cards.
+  const [images, setImages] = useState<string[]>(product?.images ?? []);
+  const [galleryUploading, setGalleryUploading] = useState(false);
+  const [galleryError, setGalleryError] = useState<string | null>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+
   async function handleFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -75,6 +83,40 @@ export function ProductEditForm({ product }: { product?: Product }) {
     }
   }
 
+  async function handleGalleryFilesSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) return;
+    setGalleryUploading(true);
+    setGalleryError(null);
+
+    try {
+      for (const file of files) {
+        if (images.length >= 10) {
+          setGalleryError("Up to 10 gallery photos allowed.");
+          break;
+        }
+        const uploadForm = new FormData();
+        uploadForm.append("file", file);
+        const res = await fetch("/api/admin/upload", { method: "POST", body: uploadForm });
+        const json = await res.json();
+        if (json.uploaded) {
+          setImages((prev) => [...prev, json.url]);
+        } else {
+          setGalleryError(json.message ?? "Upload failed.");
+        }
+      }
+    } catch {
+      setGalleryError("Upload failed.");
+    } finally {
+      setGalleryUploading(false);
+      if (galleryInputRef.current) galleryInputRef.current.value = "";
+    }
+  }
+
+  function removeGalleryImage(index: number) {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setSaving(true);
@@ -98,6 +140,7 @@ export function ProductEditForm({ product }: { product?: Product }) {
       compareAtPrice: data.get("compareAtPrice") ? Number(data.get("compareAtPrice")) : null,
       badge: String(data.get("badge")) || null,
       image: image || null,
+      images,
       description: String(data.get("description")),
       benefits: linesToArray(String(data.get("benefits"))),
       directions: String(data.get("directions")),
@@ -109,6 +152,8 @@ export function ProductEditForm({ product }: { product?: Product }) {
             base: linesToArray(String(data.get("notesBase"))),
           }
         : null,
+      sizes: linesToArray(String(data.get("sizes"))),
+      colors: linesToArray(String(data.get("colors"))),
       rating: Number(data.get("rating")),
       reviewCount: Number(data.get("reviewCount")),
       inStock: data.get("inStock") === "on",
@@ -219,6 +264,44 @@ export function ProductEditForm({ product }: { product?: Product }) {
             </div>
           </div>
         </div>
+
+        <div className="flex flex-col gap-1.5 sm:col-span-2">
+          <span className={labelClass}>Gallery Photos (up to 10, shown on the product page)</span>
+          <div className="flex flex-wrap gap-2">
+            {images.map((src, i) => (
+              <div key={src + i} className="relative h-16 w-16 shrink-0 overflow-hidden rounded-[4px] border border-brand-black/10 bg-ivory">
+                <Image src={src} alt="" fill sizes="64px" className="object-cover" />
+                <button
+                  type="button"
+                  aria-label="Remove photo"
+                  onClick={() => removeGalleryImage(i)}
+                  className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-brand-black/70 text-white hover:bg-burnt-orange"
+                >
+                  <X className="h-2.5 w-2.5" strokeWidth={2} />
+                </button>
+              </div>
+            ))}
+            {images.length < 10 && (
+              <label className="flex h-16 w-16 shrink-0 cursor-pointer items-center justify-center rounded-[4px] border border-dashed border-brand-black/20 text-charcoal/40 hover:border-burnt-orange hover:text-burnt-orange">
+                {galleryUploading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.5} />
+                ) : (
+                  <Upload className="h-4 w-4" strokeWidth={1.5} />
+                )}
+                <input
+                  ref={galleryInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleGalleryFilesSelected}
+                  disabled={galleryUploading}
+                  className="hidden"
+                />
+              </label>
+            )}
+          </div>
+          {galleryError && <span className="text-xs text-red-600">{galleryError}</span>}
+        </div>
       </section>
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -273,7 +356,7 @@ export function ProductEditForm({ product }: { product?: Product }) {
       </section>
 
       <section className="flex flex-col gap-4">
-        <span className={labelClass}>Fragrance Notes (perfumes only, one per line — leave all blank to omit)</span>
+        <span className={labelClass}>Fragrance Notes (perfumes only, one per line, leave all blank to omit)</span>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <label className="flex flex-col gap-1.5">
             <span className="text-xs text-charcoal/50">Top</span>
@@ -288,6 +371,38 @@ export function ProductEditForm({ product }: { product?: Product }) {
             <textarea name="notesBase" rows={3} defaultValue={product?.fragranceNotes?.base.join("\n") ?? ""} className={inputClass} />
           </label>
         </div>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <span className={labelClass}>
+          Sizes &amp; Colors (optional, one per line, e.g. shoes; leave blank if not applicable)
+        </span>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <label className="flex flex-col gap-1.5">
+            <span className="text-xs text-charcoal/50">Sizes</span>
+            <textarea
+              name="sizes"
+              rows={3}
+              defaultValue={product?.sizes.join("\n") ?? ""}
+              className={inputClass}
+              placeholder={"40\n41\n42"}
+            />
+          </label>
+          <label className="flex flex-col gap-1.5">
+            <span className="text-xs text-charcoal/50">Colors</span>
+            <textarea
+              name="colors"
+              rows={3}
+              defaultValue={product?.colors.join("\n") ?? ""}
+              className={inputClass}
+              placeholder={"Black\nBrown\nTan"}
+            />
+          </label>
+        </div>
+        <p className="text-xs text-charcoal/50">
+          Shown as selectable options on the product page. Customers must pick one of each before
+          adding to cart if any are listed.
+        </p>
       </section>
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">

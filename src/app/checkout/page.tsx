@@ -81,7 +81,12 @@ export default function CheckoutPage() {
       state: String(data.get("state") ?? ""),
       notes: String(data.get("notes") ?? "") || undefined,
       paymentMethodLabel: methodLabel,
-      lines: resolvedLines.map(({ product, line }) => ({ product, quantity: line.quantity })),
+      lines: resolvedLines.map(({ product, line }) => ({
+        product,
+        quantity: line.quantity,
+        size: line.size,
+        color: line.color,
+      })),
       subtotal,
       delivery,
       total,

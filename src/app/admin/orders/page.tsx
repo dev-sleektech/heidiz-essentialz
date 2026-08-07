@@ -99,7 +99,12 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
                   <span className="text-xs text-charcoal/40">{order.phone}</span>
                 </td>
                 <td className="px-5 py-3 text-charcoal/70">
-                  {order.items.map((i) => `${i.productName} x${i.quantity}`).join(", ")}
+                  {order.items
+                    .map((i) => {
+                      const options = [i.size && `Size ${i.size}`, i.color].filter(Boolean).join(", ");
+                      return `${i.productName}${options ? ` (${options})` : ""} x${i.quantity}`;
+                    })
+                    .join(", ")}
                 </td>
                 <td className="px-5 py-3 text-charcoal/70">{formatNaira(order.total)}</td>
                 <td className="px-5 py-3 text-charcoal/70">{order.paymentMethodLabel}</td>

@@ -100,7 +100,12 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
       </Container>
 
       <Container className="grid grid-cols-1 gap-10 pb-16 lg:grid-cols-2 lg:gap-16">
-        <ProductGallery icon={product.icon} src={product.image} name={product.name} />
+        <ProductGallery
+          icon={product.icon}
+          src={product.image}
+          images={product.images}
+          name={product.name}
+        />
 
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
@@ -150,7 +155,12 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
             {product.inStock ? "In stock, ready to ship from Abuja" : "Currently out of stock"}
           </span>
 
-          <ProductActions slug={product.slug} inStock={product.inStock} />
+          <ProductActions
+            slug={product.slug}
+            inStock={product.inStock}
+            sizes={product.sizes}
+            colors={product.colors}
+          />
 
           <Accordion items={accordionItems} className="mt-4" />
         </div>

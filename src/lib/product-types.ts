@@ -35,6 +35,13 @@ export type Product = {
   badge?: ProductBadge;
   icon: IconKey;
   image?: string;
+  /** Full gallery, up to 10 photos, for the product detail page. Empty when
+   *  only a single `image` has been set (older/simpler products). */
+  images: string[];
+  /** Informational option tags (e.g. ["40","41","42"]) — not per-size stock
+   *  tracking, just a picker whose selection rides along on the cart line. */
+  sizes: string[];
+  colors: string[];
   description: string;
   benefits: string[];
   directions: string;

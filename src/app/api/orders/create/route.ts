@@ -50,11 +50,13 @@ export async function POST(request: Request) {
         total: order.total,
         status: isCardPayment(order.paymentMethodLabel) ? "PAYMENT_CONFIRMED" : "PLACED",
         items: {
-          create: order.lines.map(({ product, quantity }) => ({
+          create: order.lines.map(({ product, quantity, size, color }) => ({
             productSlug: product.slug,
             productName: product.name,
             unitPrice: product.price,
             quantity,
+            size: size ?? null,
+            color: color ?? null,
           })),
         },
       },

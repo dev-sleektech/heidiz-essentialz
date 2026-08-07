@@ -7,8 +7,19 @@ import { useCart } from "@/lib/cart-context";
 import type { Product } from "@/lib/product-types";
 import { formatNaira } from "@/lib/format";
 
-export function CartLineItem({ product, quantity }: { product: Product; quantity: number }) {
+export function CartLineItem({
+  product,
+  quantity,
+  size,
+  color,
+}: {
+  product: Product;
+  quantity: number;
+  size?: string;
+  color?: string;
+}) {
   const { setQuantity, removeItem } = useCart();
+  const options = { size, color };
 
   return (
     <div className="flex gap-4 border-b border-brand-black/10 py-6 first:pt-0">
@@ -23,11 +34,16 @@ export function CartLineItem({ product, quantity }: { product: Product; quantity
             <Link href={`/product/${product.slug}`}>
               <h3 className="font-display text-base text-brand-black sm:text-lg">{product.name}</h3>
             </Link>
+            {(size || color) && (
+              <span className="text-xs text-charcoal/50">
+                {[size && `Size ${size}`, color].filter(Boolean).join(" · ")}
+              </span>
+            )}
           </div>
           <button
             type="button"
             aria-label="Remove from cart"
-            onClick={() => removeItem(product.slug)}
+            onClick={() => removeItem(product.slug, options)}
             className="shrink-0 text-charcoal/40 hover:text-burnt-orange"
           >
             <X className="h-4 w-4" strokeWidth={1.5} />
@@ -39,7 +55,7 @@ export function CartLineItem({ product, quantity }: { product: Product; quantity
             <button
               type="button"
               aria-label="Decrease quantity"
-              onClick={() => setQuantity(product.slug, quantity - 1)}
+              onClick={() => setQuantity(product.slug, quantity - 1, options)}
               className="flex h-8 w-8 items-center justify-center text-charcoal hover:text-burnt-orange"
             >
               <Minus className="h-3 w-3" strokeWidth={1.5} />
@@ -48,7 +64,7 @@ export function CartLineItem({ product, quantity }: { product: Product; quantity
             <button
               type="button"
               aria-label="Increase quantity"
-              onClick={() => setQuantity(product.slug, Math.min(10, quantity + 1))}
+              onClick={() => setQuantity(product.slug, Math.min(10, quantity + 1), options)}
               className="flex h-8 w-8 items-center justify-center text-charcoal hover:text-burnt-orange"
             >
               <Plus className="h-3 w-3" strokeWidth={1.5} />

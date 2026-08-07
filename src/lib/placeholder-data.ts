@@ -135,7 +135,7 @@ export const categories: Category[] = [
     name: "Shoes",
     tagline: "Corporate, sneakers & slippers",
     description:
-      "Footwear for every register — boardroom loafers, everyday sneakers, and easy slides — for men and women alike.",
+      "Footwear for every register: boardroom loafers, everyday sneakers, and easy slides, for men and women alike.",
     icon: "shoes",
     image: "/products/shoes/premium-leather-loafers.jpg",
   },
@@ -168,7 +168,11 @@ export function getCategory(slug: string): Category | undefined {
 // product (flagged "approx" below) — swap in the client's real cost/margin
 // whenever they have it. Fragrance notes are from Fragrantica/brand listings for
 // the named release, not lab-verified for this specific bottle.
-export const products: Product[] = [
+// Not consumed by any page anymore (products come from the DB via
+// src/lib/products.ts) — kept as the original source record for the real
+// inventory it documents. Typed without images/sizes/colors since those
+// fields didn't exist when this was written and nothing here needs them.
+export const products: Omit<Product, "images" | "sizes" | "colors">[] = [
   {
     slug: "amouroud-dark-orchid",
     name: "Amouroud Dark Orchid",

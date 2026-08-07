@@ -62,7 +62,10 @@ export default async function OrderDetailPage(props: PageProps<"/account/orders/
               <div key={item.id} className="flex items-center justify-between gap-4 p-4">
                 <div className="flex flex-col">
                   <span className="text-sm font-medium text-brand-black">{item.productName}</span>
-                  <span className="text-xs text-charcoal/50">Qty {item.quantity}</span>
+                  <span className="text-xs text-charcoal/50">
+                    {[item.size && `Size ${item.size}`, item.color].filter(Boolean).join(" · ")}
+                    {(item.size || item.color) ? " · " : ""}Qty {item.quantity}
+                  </span>
                 </div>
                 <span className="text-sm text-charcoal/70">{formatNaira(item.unitPrice * item.quantity)}</span>
               </div>

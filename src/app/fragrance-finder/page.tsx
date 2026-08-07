@@ -118,7 +118,7 @@ export default async function FragranceFinderPage(props: PageProps<"/fragrance-f
 
             {matches.length === 0 && (
               <p className="text-sm text-charcoal/60">
-                We couldn&apos;t find a close match for that combination — try widening your budget, or{" "}
+                We couldn&apos;t find a close match for that combination. Try widening your budget, or{" "}
                 <Link href="/category/perfumes" className="text-burnt-orange hover:underline">
                   browse the full perfume collection
                 </Link>

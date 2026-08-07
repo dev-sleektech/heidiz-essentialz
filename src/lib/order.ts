@@ -3,7 +3,7 @@ import type { Product } from "@/lib/product-types";
 // Shared order shape used by both the WhatsApp handoff (src/lib/whatsapp.ts)
 // and the email receipt (src/lib/email.ts) built from the same checkout
 // submission.
-export type OrderLine = { product: Product; quantity: number };
+export type OrderLine = { product: Product; quantity: number; size?: string; color?: string };
 
 export type OrderDetails = {
   orderNumber: string;

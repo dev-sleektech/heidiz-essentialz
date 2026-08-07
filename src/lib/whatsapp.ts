@@ -13,7 +13,10 @@ export const STORE_WHATSAPP_NUMBER = "2347053220268";
 // one tap from the confirmation screen.
 export function buildOrderWhatsAppLink(order: OrderDetails): string {
   const itemLines = order.lines
-    .map(({ product, quantity }) => `- ${product.name} x${quantity} (${formatNaira(product.price * quantity)})`)
+    .map(({ product, quantity, size, color }) => {
+      const options = [size && `Size ${size}`, color].filter(Boolean).join(", ");
+      return `- ${product.name}${options ? ` (${options})` : ""} x${quantity} (${formatNaira(product.price * quantity)})`;
+    })
     .join("\n");
 
   const message = [

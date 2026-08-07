@@ -90,7 +90,7 @@ export default async function OrderTrackingPage(props: PageProps<"/order-trackin
           <div className="mt-10 flex flex-col items-center gap-2 text-center text-charcoal/50">
             <PackageSearch className="h-10 w-10 text-burnt-orange/60" strokeWidth={1.5} />
             <p className="max-w-sm text-sm">
-              Your order number was sent to you when you checked out — it looks like{" "}
+              Your order number was sent to you when you checked out. It looks like{" "}
               <span className="font-medium text-charcoal">HE-12345678</span>.
             </p>
           </div>
@@ -121,7 +121,10 @@ export default async function OrderTrackingPage(props: PageProps<"/order-trackin
                   <div key={item.id} className="flex items-center justify-between gap-4 py-3">
                     <div className="flex flex-col">
                       <span className="text-sm font-medium text-brand-black">{item.productName}</span>
-                      <span className="text-xs text-charcoal/50">Qty {item.quantity}</span>
+                      <span className="text-xs text-charcoal/50">
+                        {[item.size && `Size ${item.size}`, item.color].filter(Boolean).join(" · ")}
+                        {(item.size || item.color) ? " · " : ""}Qty {item.quantity}
+                      </span>
                     </div>
                     <span className="text-sm text-charcoal/70">
                       {formatNaira(item.unitPrice * item.quantity)}

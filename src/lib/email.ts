@@ -21,16 +21,19 @@ const CHARCOAL = "#2D2D2D";
 function buildReceiptEmailHtml(order: OrderDetails): string {
   const itemRows = order.lines
     .map(
-      ({ product, quantity }) => `
+      ({ product, quantity, size, color }) => {
+        const options = [size && `Size ${size}`, color].filter(Boolean).join(", ");
+        return `
         <tr>
           <td style="padding:12px 0;border-bottom:1px solid #eee;font-family:Arial,sans-serif;font-size:14px;color:${CHARCOAL};">
             ${product.name}<br/>
-            <span style="color:#999;font-size:12px;">Qty ${quantity}</span>
+            <span style="color:#999;font-size:12px;">${options ? `${options} &middot; ` : ""}Qty ${quantity}</span>
           </td>
           <td align="right" style="padding:12px 0;border-bottom:1px solid #eee;font-family:Arial,sans-serif;font-size:14px;color:${CHARCOAL};white-space:nowrap;">
             ${formatNaira(product.price * quantity)}
           </td>
-        </tr>`
+        </tr>`;
+      }
     )
     .join("");
 

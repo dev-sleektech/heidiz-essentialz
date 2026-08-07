@@ -57,7 +57,9 @@ export function ProductCard({ product }: { product: Product }) {
           onClick={() => toggle(product.slug)}
           className={cn(
             "absolute top-3 left-3 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-brand-black backdrop-blur transition-opacity duration-300",
-            wishlisted ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+            wishlisted
+              ? "pointer-events-auto opacity-100"
+              : "pointer-events-none opacity-0 group-hover:pointer-events-auto group-hover:opacity-100"
           )}
         >
           <Heart
@@ -67,7 +69,13 @@ export function ProductCard({ product }: { product: Product }) {
           />
         </button>
 
-        <div className="absolute inset-x-3 bottom-3 z-20 translate-y-2 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+        {/* pointer-events-none until hovered: without this, the invisible
+            button here still sits above the full-cover Link (z-20 > z-10)
+            and silently intercepts taps meant for "view product" — hover
+            never fires on touch devices, so this was hijacking every tap
+            in this region on mobile into an add-to-cart instead of a
+            navigation. */}
+        <div className="pointer-events-none absolute inset-x-3 bottom-3 z-20 translate-y-2 opacity-0 transition-all duration-300 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100">
           <button
             type="button"
             onClick={handleAddToCart}

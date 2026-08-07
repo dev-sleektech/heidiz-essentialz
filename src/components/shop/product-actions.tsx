@@ -8,27 +8,101 @@ import { useCart } from "@/lib/cart-context";
 import { useWishlist } from "@/lib/wishlist-context";
 import { cn } from "@/lib/utils";
 
-export function ProductActions({ slug, inStock }: { slug: string; inStock: boolean }) {
+export function ProductActions({
+  slug,
+  inStock,
+  sizes = [],
+  colors = [],
+}: {
+  slug: string;
+  inStock: boolean;
+  sizes?: string[];
+  colors?: string[];
+}) {
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
+  const [size, setSize] = useState<string | undefined>(sizes[0]);
+  const [color, setColor] = useState<string | undefined>(colors[0]);
+  const [optionError, setOptionError] = useState(false);
   const { addItem } = useCart();
   const { toggle, has } = useWishlist();
   const router = useRouter();
   const wishlisted = has(slug);
 
+  function validated() {
+    if ((sizes.length > 0 && !size) || (colors.length > 0 && !color)) {
+      setOptionError(true);
+      return false;
+    }
+    setOptionError(false);
+    return true;
+  }
+
   function handleAddToCart() {
-    addItem(slug, quantity);
+    if (!validated()) return;
+    addItem(slug, quantity, { size, color });
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 1500);
   }
 
   function handleBuyNow() {
-    addItem(slug, quantity);
+    if (!validated()) return;
+    addItem(slug, quantity, { size, color });
     router.push("/checkout");
   }
 
   return (
     <div className="flex flex-col gap-4">
+      {sizes.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <span className="text-xs uppercase tracking-wide text-charcoal/60">Size</span>
+          <div className="flex flex-wrap gap-2">
+            {sizes.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setSize(s)}
+                className={cn(
+                  "rounded-button border px-4 py-2 text-sm transition-colors",
+                  size === s
+                    ? "border-burnt-orange bg-champagne/20 text-brand-black"
+                    : "border-brand-black/15 text-charcoal/70 hover:border-burnt-orange"
+                )}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {colors.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <span className="text-xs uppercase tracking-wide text-charcoal/60">Color</span>
+          <div className="flex flex-wrap gap-2">
+            {colors.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setColor(c)}
+                className={cn(
+                  "rounded-button border px-4 py-2 text-sm transition-colors",
+                  color === c
+                    ? "border-burnt-orange bg-champagne/20 text-brand-black"
+                    : "border-brand-black/15 text-charcoal/70 hover:border-burnt-orange"
+                )}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {optionError && (
+        <p className="text-xs text-red-600">Please select a {!size ? "size" : "color"} before continuing.</p>
+      )}
+
       <div className="flex items-center gap-4">
         <div className="flex items-center rounded-button border border-brand-black/15">
           <button

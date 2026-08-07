@@ -14,11 +14,14 @@ type CreateBody = {
   compareAtPrice: number | null;
   badge: string | null;
   image: string | null;
+  images: string[];
   description: string;
   benefits: string[];
   directions: string;
   ingredients: string | null;
   fragranceNotes: { top: string[]; heart: string[]; base: string[] } | null;
+  sizes: string[];
+  colors: string[];
   rating: number;
   reviewCount: number;
   inStock: boolean;
@@ -66,11 +69,14 @@ export async function POST(request: Request) {
         // already follows.
         icon: getCategory(body.categorySlug)?.icon ?? "perfume",
         image: body.image,
+        images: body.images ?? [],
         description: body.description,
         benefits: body.benefits,
         directions: body.directions,
         ingredients: body.ingredients,
         fragranceNotes: body.fragranceNotes ?? undefined,
+        sizes: body.sizes ?? [],
+        colors: body.colors ?? [],
         rating: body.rating,
         reviewCount: body.reviewCount,
         inStock: body.inStock,

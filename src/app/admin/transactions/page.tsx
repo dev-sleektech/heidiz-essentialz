@@ -66,7 +66,7 @@ export default async function AdminTransactionsPage(props: PageProps<"/admin/tra
     <div className="p-8 md:p-10">
       <h1 className="font-display text-2xl text-brand-black">Transactions</h1>
       <p className="mt-1 text-sm text-charcoal/50">
-        Sales income by payment method — a running cash book pulled straight from real orders.
+        Sales income by payment method, a running cash book pulled straight from real orders.
       </p>
 
       <form method="GET" className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-end">

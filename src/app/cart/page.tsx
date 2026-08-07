@@ -67,7 +67,13 @@ export default function CartPage() {
         <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-[1fr_360px]">
           <div className="flex flex-col">
             {resolvedLines.map(({ line, product }) => (
-              <CartLineItem key={line.slug} product={product} quantity={line.quantity} />
+              <CartLineItem
+                key={`${line.slug}-${line.size ?? ""}-${line.color ?? ""}`}
+                product={product}
+                quantity={line.quantity}
+                size={line.size}
+                color={line.color}
+              />
             ))}
           </div>
 

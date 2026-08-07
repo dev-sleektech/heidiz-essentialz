@@ -103,7 +103,7 @@ export default function ContactPage() {
           <div className="flex flex-col gap-2">
             <div className="aspect-video w-full overflow-hidden rounded-[4px] border border-brand-black/10">
               <iframe
-                title="HEIDIZ Essentialz store location — Mabushi Ultra Modern Market, Jahi, FCT-Abuja"
+                title="HEIDIZ Essentialz store location: Mabushi Ultra Modern Market, Jahi, FCT-Abuja"
                 src="https://www.google.com/maps?q=Jahi+District,+Abuja,+Nigeria&output=embed"
                 width="100%"
                 height="100%"

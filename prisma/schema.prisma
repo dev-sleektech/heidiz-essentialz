@@ -43,13 +43,18 @@ model Order {
 }
 
 model OrderItem {
-  id          String @id @default(cuid())
-  order       Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  id          String  @id @default(cuid())
+  order       Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderId     String
   productSlug String
   productName String
   unitPrice   Int
   quantity    Int
+  // Informational size/color picked on the product page (see Product.sizes
+  // / Product.colors) — carried through from the cart line so staff can see
+  // what was actually ordered.
+  size        String?
+  color       String?
 
   @@index([orderId])
 }
@@ -70,12 +75,22 @@ model Product {
   compareAtPrice Int?
   badge          String?
   icon           String
-  image          String?
+  image          String? // primary/cover photo — used everywhere a single thumbnail is needed (cards, admin list)
+  images         String[] @default([]) // full gallery for the product detail page, up to 10; image is included as the first entry when present
   description    String
   benefits       String[]
   directions     String
   ingredients    String?
   fragranceNotes Json?
+  // Informational option tags (e.g. sizes: ["40","41","42"], colors:
+  // ["Black","Brown"]) — customer picks one of each on the product page,
+  // it's carried through cart/checkout as a note on the line item. Not a
+  // real per-variant inventory/pricing system (each combination doesn't
+  // have its own stock count or price) — that's a bigger feature; this is
+  // the lightweight version for products where the option matters but
+  // fine-grained stock-per-size isn't being tracked yet.
+  sizes          String[] @default([])
+  colors         String[] @default([])
   rating         Float
   reviewCount    Int
   inStock        Boolean  @default(true)
