@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum OrderStatus {
+  PLACED
+  PAYMENT_CONFIRMED
+  PROCESSING
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+model Order {
+  id                 String      @id @default(cuid())
+  orderNumber        String      @unique
+  // Clerk user id (string, e.g. "user_xxx"). Null for guest checkout.
+  userId             String?
+  customerName       String
+  email              String?
+  phone              String
+  address            String
+  city               String
+  state              String
+  notes              String?
+  paymentMethodLabel String
+  paymentReference   String?
+  subtotal           Int
+  delivery           Int
+  total              Int
+  status             OrderStatus @default(PLACED)
+  items              OrderItem[]
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+model OrderItem {
+  id          String @id @default(cuid())
+  order       Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId     String
+  productSlug String
+  productName String
+  unitPrice   Int
+  quantity    Int
+
+  @@index([orderId])
+}
+
+// Full product catalog, migrated 2026-08-07 from the static
+// src/lib/placeholder-data.ts array so admin can edit price/stock/promo
+// state live. categorySlug references the still-static category list in
+// placeholder-data.ts (categories aren't part of this migration — just
+// products). fragranceNotes is a nested {top,heart,base} object, relevant
+// to perfumes only, stored as Json since it's a small fixed shape.
+model Product {
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  name           String
+  category       String
+  categorySlug   String
+  price          Int
+  compareAtPrice Int?
+  badge          String?
+  icon           String
+  image          String?
+  description    String
+  benefits       String[]
+  directions     String
+  ingredients    String?
+  fragranceNotes Json?
+  rating         Float
+  reviewCount    Int
+  inStock        Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([categorySlug])
+}

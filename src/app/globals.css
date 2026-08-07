@@ -1,0 +1,152 @@
+@import "tailwindcss";
+
+:root {
+  /* HEIDIZ Essentialz brand palette */
+  --color-burnt-orange: #b5531e;
+  --color-burnt-orange-dark: #8f4117;
+  --color-burnt-orange-light: #c96a35;
+  --color-brand-black: #000000;
+  --color-ivory: #f8f6f2;
+  --color-card: #ffffff;
+  --color-champagne: #e8c9a0;
+  --color-charcoal: #2d2d2d;
+
+  --background: var(--color-ivory);
+  --foreground: var(--color-charcoal);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-burnt-orange: var(--color-burnt-orange);
+  --color-burnt-orange-dark: var(--color-burnt-orange-dark);
+  --color-burnt-orange-light: var(--color-burnt-orange-light);
+  --color-brand-black: var(--color-brand-black);
+  --color-ivory: var(--color-ivory);
+  --color-card: var(--color-card);
+  --color-champagne: var(--color-champagne);
+  --color-charcoal: var(--color-charcoal);
+
+  --font-display: var(--font-playfair);
+  --font-serif-alt: var(--font-cormorant);
+  --font-sans: var(--font-inter);
+  --font-body-alt: var(--font-manrope);
+
+  --radius-button: 14px;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+/* Editorial letter-spacing helper for luxury eyebrow labels */
+.tracking-luxury {
+  letter-spacing: 0.28em;
+}
+
+/* Fine hairline rule used across editorial sections */
+.hairline {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--color-champagne),
+    transparent
+  );
+}
+
+/* Reusable soft radial glow behind hero/CTA content */
+.glow-burnt {
+  background: radial-gradient(
+    60% 60% at 50% 40%,
+    rgba(181, 83, 30, 0.25) 0%,
+    rgba(181, 83, 30, 0) 70%
+  );
+}
+
+/* Brand background/foreground are fixed by design (warm ivory + charcoal)
+   regardless of OS theme, so the HEIDIZ identity stays consistent;
+   individual dark sections (e.g. footer) opt in explicitly instead. */
+
+/* Slow horizontal drift for the hero's Abuja skyline layers. Each track is
+   two identical SVG tiles side by side inside a 200%-wide flex row, panning
+   from 0 to -50% so the loop point is invisible. */
+@keyframes skyline-pan {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-skyline-slow {
+  animation: skyline-pan 70s linear infinite;
+}
+
+.animate-skyline-fast {
+  animation: skyline-pan 40s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-skyline-slow,
+  .animate-skyline-fast {
+    animation: none;
+  }
+}
+
+/* Delivery scooter (Out for Delivery status — see
+   src/components/shop/delivery-scooter.tsx). Whole scooter bobs gently on
+   its suspension while the two wheel groups spin continuously. */
+@keyframes scooter-bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes scooter-wheel-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes scooter-ride {
+  0% {
+    transform: translateX(-6%);
+  }
+  50% {
+    transform: translateX(6%);
+  }
+  100% {
+    transform: translateX(-6%);
+  }
+}
+
+.animate-scooter-bounce {
+  animation: scooter-bounce 1.6s ease-in-out infinite;
+}
+
+.animate-scooter-wheel {
+  animation: scooter-wheel-spin 1.2s linear infinite;
+}
+
+.animate-scooter-ride {
+  animation: scooter-ride 3.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-scooter-bounce,
+  .animate-scooter-wheel,
+  .animate-scooter-ride {
+    animation: none;
+  }
+}
