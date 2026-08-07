@@ -48,3 +48,6 @@ next-env.d.ts
 # actually served by the site live in public/products/, this is just the
 # unprocessed source material, not needed to build or run the app
 /Images
+
+.vercel
+.env*
