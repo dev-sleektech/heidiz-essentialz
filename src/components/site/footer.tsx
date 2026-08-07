@@ -127,7 +127,9 @@ export function Footer() {
       <div className="hairline opacity-20" />
 
       <Container className="flex flex-col items-center justify-between gap-4 py-6 text-xs text-white/50 md:flex-row">
-        <span>© {new Date().getFullYear()} HEIDIZ Essentialz. All rights reserved.</span>
+        <span>
+          © {new Date().getFullYear()} HEIDIZ Essentialz. All rights reserved. RC: 9039036
+        </span>
         <div className="flex items-center gap-6">
           <Link href="/privacy" className="hover:text-white">Privacy Policy</Link>
           <Link href="/terms" className="hover:text-white">Terms of Service</Link>
