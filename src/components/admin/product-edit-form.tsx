@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import Image from "next/image";
+import { Loader2, CheckCircle2, AlertCircle, Upload } from "lucide-react";
 import { categories } from "@/lib/placeholder-data";
 import type { Product } from "@/lib/product-types";
 
@@ -44,6 +45,35 @@ export function ProductEditForm({ product }: { product?: Product }) {
   const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null);
   const [slug, setSlug] = useState(product?.slug ?? "");
   const [slugTouched, setSlugTouched] = useState(false);
+  const [image, setImage] = useState(product?.image ?? "");
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setUploadError(null);
+
+    const uploadForm = new FormData();
+    uploadForm.append("file", file);
+
+    try {
+      const res = await fetch("/api/admin/upload", { method: "POST", body: uploadForm });
+      const json = await res.json();
+      if (json.uploaded) {
+        setImage(json.url);
+      } else {
+        setUploadError(json.message ?? "Upload failed.");
+      }
+    } catch {
+      setUploadError("Upload failed.");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -67,7 +97,7 @@ export function ProductEditForm({ product }: { product?: Product }) {
       price: Number(data.get("price")),
       compareAtPrice: data.get("compareAtPrice") ? Number(data.get("compareAtPrice")) : null,
       badge: String(data.get("badge")) || null,
-      image: String(data.get("image")) || null,
+      image: image || null,
       description: String(data.get("description")),
       benefits: linesToArray(String(data.get("benefits"))),
       directions: String(data.get("directions")),
@@ -157,10 +187,38 @@ export function ProductEditForm({ product }: { product?: Product }) {
           </select>
         </label>
 
-        <label className="flex flex-col gap-1.5">
-          <span className={labelClass}>Image Path</span>
-          <input name="image" defaultValue={product?.image ?? ""} className={inputClass} placeholder="/products/..." />
-        </label>
+        <div className="flex flex-col gap-1.5">
+          <span className={labelClass}>Product Photo</span>
+          <div className="flex items-center gap-3">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-[4px] border border-brand-black/10 bg-ivory">
+              {image ? (
+                <Image src={image} alt="" width={64} height={64} className="h-full w-full object-cover" />
+              ) : (
+                <Upload className="h-5 w-5 text-charcoal/30" strokeWidth={1.5} />
+              )}
+            </div>
+            <div className="flex flex-1 flex-col gap-1.5">
+              <div className="flex items-center gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileSelected}
+                  disabled={uploading}
+                  className="text-xs text-charcoal/60 file:mr-3 file:rounded-button file:border-0 file:bg-brand-black file:px-3 file:py-1.5 file:text-xs file:text-white file:hover:bg-burnt-orange"
+                />
+                {uploading && <Loader2 className="h-4 w-4 shrink-0 animate-spin text-burnt-orange" strokeWidth={1.5} />}
+              </div>
+              <input
+                value={image}
+                onChange={(e) => setImage(e.target.value)}
+                className={inputClass}
+                placeholder="Or paste an image URL / path directly"
+              />
+              {uploadError && <span className="text-xs text-red-600">{uploadError}</span>}
+            </div>
+          </div>
+        </div>
       </section>
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">

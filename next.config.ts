@@ -12,6 +12,14 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        // Real product photos uploaded via /admin (see
+        // src/app/api/admin/upload) land here.
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
 };

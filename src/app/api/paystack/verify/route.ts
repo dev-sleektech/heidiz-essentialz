@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
+import { isPaystackServerConfigured, verifyPaystackReference } from "@/lib/paystack-server";
 
 // Verifies a Paystack transaction server-side, using the secret key (never
 // exposed to the browser). The client-side inline popup only tells us a
 // charge *appeared* to succeed; this confirms it with Paystack directly
 // before we treat the order as paid. See src/lib/paystack.ts for the
-// client-side trigger.
+// client-side trigger, and src/app/api/webhooks/paystack for the redundant
+// webhook-driven confirmation path.
 export async function POST(request: Request) {
-  const secretKey = process.env.PAYSTACK_SECRET_KEY;
-
-  if (!secretKey || secretKey.includes("replace_me")) {
+  if (!isPaystackServerConfigured()) {
     return NextResponse.json(
       { status: false, message: "Paystack secret key is not configured on the server." },
       { status: 500 }
@@ -28,26 +28,8 @@ export async function POST(request: Request) {
   }
 
   try {
-    const res = await fetch(
-      `https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`,
-      { headers: { Authorization: `Bearer ${secretKey}` } }
-    );
-    const data = await res.json();
-
-    if (!res.ok || !data?.status) {
-      return NextResponse.json(
-        { status: false, message: data?.message ?? "Verification failed." },
-        { status: 502 }
-      );
-    }
-
-    const paid = data.data?.status === "success";
-    return NextResponse.json({
-      status: paid,
-      message: paid ? "Payment verified." : "Payment was not successful.",
-      amount: data.data?.amount,
-      currency: data.data?.currency,
-    });
+    const result = await verifyPaystackReference(reference);
+    return NextResponse.json({ status: result.paid, message: result.message, amount: result.amount, currency: result.currency });
   } catch {
     return NextResponse.json(
       { status: false, message: "Could not reach Paystack to verify the transaction." },
