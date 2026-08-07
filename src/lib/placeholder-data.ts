@@ -39,6 +39,12 @@ export const stockImages: Record<IconKey, string> = {
   // photo-1511499767150-a48a237f0083 — gold-framed sunglasses
   sunglasses:
     "https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=800&q=80",
+  // photo-1616406432452-07bc5938759d — leather loafers
+  shoes:
+    "https://images.unsplash.com/photo-1616406432452-07bc5938759d?auto=format&fit=crop&w=800&q=80",
+  // photo-1643122966676-29e8597257f7 — amber jar candles
+  candle:
+    "https://images.unsplash.com/photo-1643122966676-29e8597257f7?auto=format&fit=crop&w=800&q=80",
 };
 
 export type Category = {
@@ -123,6 +129,24 @@ export const categories: Category[] = [
       "Statement frames with UV-rated lenses, cut for a silhouette that holds up outdoors and on camera.",
     icon: "sunglasses",
     image: "/products/sunglasses/rayban-aviator-classic.jpg",
+  },
+  {
+    slug: "shoes",
+    name: "Shoes",
+    tagline: "Corporate, sneakers & slippers",
+    description:
+      "Footwear for every register — boardroom loafers, everyday sneakers, and easy slides — for men and women alike.",
+    icon: "shoes",
+    image: "/products/shoes/premium-leather-loafers.jpg",
+  },
+  {
+    slug: "home-fragrance",
+    name: "Diffusers & Candles",
+    tagline: "Scent your space",
+    description:
+      "Reed diffusers and hand-poured candles that carry the same signature-scent philosophy from the bottle to the home.",
+    icon: "candle",
+    image: "/products/home-fragrance/heidiz-signature-candle-trio.jpg",
   },
 ];
 

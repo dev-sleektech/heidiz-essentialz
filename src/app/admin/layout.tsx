@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { currentUser } from "@clerk/nextjs/server";
 import { SignOutButton } from "@clerk/nextjs";
-import { LayoutDashboard, Package, ShoppingBag, LogOut } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingBag, Wallet, LogOut } from "lucide-react";
 import { Logo } from "@/components/site/logo";
 import { isStaffEmail } from "@/lib/staff-auth";
 
@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/orders", label: "Orders", icon: Package },
   { href: "/admin/products", label: "Products", icon: ShoppingBag },
+  { href: "/admin/transactions", label: "Transactions", icon: Wallet },
 ];
 
 // Single gate for the whole /admin tree — every page under here inherits

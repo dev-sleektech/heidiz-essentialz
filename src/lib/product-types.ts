@@ -13,7 +13,9 @@ export type IconKey =
   | "watch"
   | "bag"
   | "jewelry"
-  | "sunglasses";
+  | "sunglasses"
+  | "shoes"
+  | "candle";
 
 export type FragranceNotes = {
   top: string[];
