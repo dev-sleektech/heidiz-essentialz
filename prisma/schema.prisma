@@ -84,3 +84,25 @@ model Product {
 
   @@index([categorySlug])
 }
+
+// Abandoned-cart email tracking (2026-08-07): a lightweight snapshot taken
+// when a customer enters their email on the checkout form, before they've
+// necessarily completed payment. If no matching Order shows up within an
+// hour, the cron job at /api/cron/abandoned-cart sends one reminder.
+// Genuinely "cart" tracking (pre-checkout) isn't possible since the cart
+// itself is client-side-only localStorage with no email attached — this is
+// the earliest point in the funnel where we have both.
+model AbandonedCheckout {
+  id           String   @id @default(cuid())
+  email        String
+  customerName String?
+  items        Json // snapshot: [{ slug, name, price, quantity }]
+  subtotal     Int
+  reminded     Boolean  @default(false)
+  converted    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([email])
+  @@index([reminded, converted])
+}

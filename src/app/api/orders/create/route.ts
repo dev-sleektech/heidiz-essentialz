@@ -3,6 +3,15 @@ import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import type { OrderDetails } from "@/lib/order";
 
+// An order paid via either card gateway arrives here already verified
+// (see completeOrder()'s sendEmailReceipt=true branch in checkout/page.tsx,
+// which only fires after Paystack/Monnify confirm the charge) — so both
+// should land as PAYMENT_CONFIRMED, not just Paystack. Bank transfer / pay
+// on delivery start at PLACED, confirmed manually by staff later.
+function isCardPayment(label: string) {
+  return label.includes("Paystack") || label.includes("Monnify");
+}
+
 // Saves every order (Paystack, bank transfer, pay on delivery alike) to the
 // database, linked to the signed-in Clerk user when there is one — guest
 // checkout still works, userId is just null. Called from checkout right
@@ -35,11 +44,11 @@ export async function POST(request: Request) {
         state: order.state,
         notes: order.notes,
         paymentMethodLabel: order.paymentMethodLabel,
-        paymentReference: order.paymentMethodLabel.includes("Paystack") ? order.orderNumber : null,
+        paymentReference: isCardPayment(order.paymentMethodLabel) ? order.orderNumber : null,
         subtotal: order.subtotal,
         delivery: order.delivery,
         total: order.total,
-        status: order.paymentMethodLabel.includes("Paystack") ? "PAYMENT_CONFIRMED" : "PLACED",
+        status: isCardPayment(order.paymentMethodLabel) ? "PAYMENT_CONFIRMED" : "PLACED",
         items: {
           create: order.lines.map(({ product, quantity }) => ({
             productSlug: product.slug,
@@ -50,6 +59,14 @@ export async function POST(request: Request) {
         },
       },
     });
+
+    // Fire-and-forget — this order completing means any pending abandoned-
+    // checkout reminder for the same email is no longer relevant.
+    if (order.email) {
+      prisma.abandonedCheckout
+        .updateMany({ where: { email: order.email, converted: false }, data: { converted: true } })
+        .catch(() => {});
+    }
 
     return NextResponse.json({ saved: true, orderId: created.id });
   } catch (err) {

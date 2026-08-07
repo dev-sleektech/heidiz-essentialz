@@ -299,6 +299,29 @@ export default function CheckoutPage() {
                   required={isCardPayment}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onBlur={(e) => {
+                    // Fire-and-forget abandoned-checkout snapshot — the
+                    // earliest point in the funnel with both an email and
+                    // cart contents. Never blocks the UI; see
+                    // src/app/api/checkout/track for what happens with it.
+                    if (!/^\S+@\S+\.\S+$/.test(e.target.value) || resolvedLines.length === 0) return;
+                    const fullName = e.target.form?.elements.namedItem("fullName");
+                    fetch("/api/checkout/track", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        email: e.target.value,
+                        customerName: fullName instanceof HTMLInputElement ? fullName.value || undefined : undefined,
+                        items: resolvedLines.map(({ product, line }) => ({
+                          slug: product.slug,
+                          name: product.name,
+                          price: product.price,
+                          quantity: line.quantity,
+                        })),
+                        subtotal,
+                      }),
+                    }).catch(() => {});
+                  }}
                   className={inputClass}
                   placeholder="you@email.com"
                 />

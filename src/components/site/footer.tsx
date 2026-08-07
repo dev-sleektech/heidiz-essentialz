@@ -8,6 +8,7 @@ import { categories } from "@/lib/placeholder-data";
 const shopLinks = categories.slice(0, 6);
 
 const helpLinks = [
+  { label: "Fragrance Finder", href: "/fragrance-finder" },
   { label: "Contact Us", href: "/contact" },
   { label: "FAQ", href: "/faq" },
   { label: "Shipping & Returns", href: "/shipping-returns" },
