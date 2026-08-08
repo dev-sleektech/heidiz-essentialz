@@ -6,7 +6,7 @@
 // instead (src/lib/product-catalog-context.tsx), which calls /api/products.
 
 import { prisma } from "@/lib/prisma";
-import { accessoryCategorySlugs } from "@/lib/placeholder-data";
+import { accessoryCategorySlugs, beautyCategorySlugs } from "@/lib/placeholder-data";
 import type { Product, FragranceNotes, IconKey, ProductBadge } from "@/lib/product-types";
 
 // Raw shape as stored/returned by Prisma — badge/icon are plain strings in
@@ -78,7 +78,9 @@ export async function getProductsByCategory(categorySlug: string): Promise<Produ
     where:
       categorySlug === "accessories"
         ? { categorySlug: { in: accessoryCategorySlugs } }
-        : { categorySlug },
+        : categorySlug === "beauty-skincare"
+          ? { categorySlug: { in: beautyCategorySlugs } }
+          : { categorySlug },
     orderBy: { name: "asc" },
   });
   return rows.map(toProduct);

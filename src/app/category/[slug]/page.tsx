@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { CollectionHeader } from "@/components/shop/collection-header";
 import { Container } from "@/components/ui/container";
 import { ProductGrid } from "@/components/shop/product-grid";
-import { categories, getCategory, accessoryCategorySlugs } from "@/lib/placeholder-data";
+import { categories, getCategory, accessoryCategorySlugs, beautyCategorySlugs } from "@/lib/placeholder-data";
 import { getProductsByCategory } from "@/lib/products";
 
 const ACCESSORIES = {
@@ -40,6 +40,7 @@ export default async function CategoryPage(props: PageProps<"/category/[slug]">)
 
   const products = await getProductsByCategory(slug);
   const noteAccessories = slug === "accessories";
+  const noteBeauty = slug === "beauty-skincare";
 
   return (
     <>
@@ -55,6 +56,12 @@ export default async function CategoryPage(props: PageProps<"/category/[slug]">)
           <p className="mt-10 text-center text-xs text-charcoal/40">
             Browsing {accessoryCategorySlugs.length} combined collections. Prefer one at a time?
             Use the Accessories menu above.
+          </p>
+        )}
+        {noteBeauty && (
+          <p className="mt-10 text-center text-xs text-charcoal/40">
+            Browsing {beautyCategorySlugs.length} combined collections, including Makeup and Hair
+            Care.
           </p>
         )}
       </Container>

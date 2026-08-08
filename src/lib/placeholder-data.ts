@@ -70,9 +70,9 @@ export const categories: Category[] = [
   {
     slug: "beauty-skincare",
     name: "Beauty & Skincare",
-    tagline: "Rituals for radiant skin",
+    tagline: "Skincare, makeup & hair care",
     description:
-      "Face and body formulations built around proven actives, made for skin that has to handle Abuja heat and harmattan dust in the same week.",
+      "Face and body formulations built around proven actives, made for skin that has to handle Abuja heat and harmattan dust in the same week, alongside color cosmetics and hair care.",
     icon: "skincare",
     image: "/products/skincare/cerave-moisturizing-cream.jpg",
   },
@@ -154,6 +154,11 @@ export const categories: Category[] = [
 // umbrella for the header's "Accessories" link, since those four each also
 // have their own dedicated category page.
 export const accessoryCategorySlugs = ["watches", "handbags", "jewelry", "sunglasses"];
+
+// Same idea, folded into "Beauty & Skincare" for the header nav: Makeup and
+// Hair Care keep their own dedicated category pages, they just don't get
+// their own top-level nav link anymore.
+export const beautyCategorySlugs = ["beauty-skincare", "makeup", "hair-care"];
 
 export function getCategory(slug: string): Category | undefined {
   return categories.find((c) => c.slug === slug);
