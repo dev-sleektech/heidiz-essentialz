@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { ProductVisual } from "@/components/ui/product-visual";
 import { InstagramIcon } from "@/components/ui/social-icons";
@@ -13,12 +12,14 @@ export function InstagramGallery() {
           <h2 className="font-display text-3xl text-brand-black md:text-4xl">
             Follow the Journey
           </h2>
-          <Link
-            href="https://instagram.com"
+          <a
+            href="https://www.instagram.com/heidizessentialz/"
+            target="_blank"
+            rel="noopener noreferrer"
             className="text-sm text-burnt-orange hover:underline"
           >
             {instagramHandle}
-          </Link>
+          </a>
         </div>
 
         <div className="mt-10 grid grid-cols-3 gap-3 md:grid-cols-6">

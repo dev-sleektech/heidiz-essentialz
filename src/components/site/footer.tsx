@@ -35,13 +35,15 @@ export function Footer() {
             appreciate timeless sophistication.
           </p>
           <div className="flex items-center gap-4 pt-2">
-            <Link
-              href="https://instagram.com/heidizessentialz"
+            <a
+              href="https://www.instagram.com/heidizessentialz/"
+              target="_blank"
+              rel="noopener noreferrer"
               aria-label="Instagram"
               className="hover:text-burnt-orange"
             >
               <InstagramIcon className="h-5 w-5" />
-            </Link>
+            </a>
             <Link
               href="https://facebook.com/HeidizEssentialz"
               aria-label="Facebook"
