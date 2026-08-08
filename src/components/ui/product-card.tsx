@@ -9,6 +9,7 @@ import { useWishlist } from "@/lib/wishlist-context";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/lib/placeholder-data";
 import { formatNaira } from "@/lib/format";
+import { SaleBadge, computeDiscountPercent } from "@/components/ui/sale-badge";
 
 export function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart();
@@ -40,15 +41,17 @@ export function ProductCard({ product }: { product: Product }) {
           className="aspect-[4/5] w-full"
         />
 
-        {product.badge && (
-          <span
-            className={cn(
-              "absolute top-3 right-3 rounded-full px-3 py-1 text-[0.65rem] tracking-wide text-white",
-              product.badge === "Sale" ? "bg-burnt-orange" : "bg-brand-black/85"
-            )}
-          >
-            {product.badge}
-          </span>
+        {product.badge === "Sale" ? (
+          <SaleBadge
+            discountPercent={computeDiscountPercent(product.price, product.compareAtPrice)}
+            className="absolute top-3 right-0 z-10"
+          />
+        ) : (
+          product.badge && (
+            <span className="absolute top-3 right-3 rounded-full bg-brand-black/85 px-3 py-1 text-[0.65rem] tracking-wide text-white">
+              {product.badge}
+            </span>
+          )
         )}
 
         <button
