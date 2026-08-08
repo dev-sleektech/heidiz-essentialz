@@ -13,6 +13,7 @@ import { useWishlist } from "@/lib/wishlist-context";
 const navLinks = [
   { label: "New Arrivals", href: "/new-arrivals" },
   { label: "Perfumes", href: "/category/perfumes" },
+  { label: "Oil Perfumes", href: "/oil-perfumes" },
   { label: "Beauty & Skincare", href: "/category/beauty-skincare" },
   { label: "Shoes", href: "/category/shoes" },
   { label: "Home Fragrance", href: "/category/home-fragrance" },

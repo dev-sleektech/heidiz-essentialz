@@ -114,3 +114,8 @@ export async function getGiftSets(): Promise<Product[]> {
   const rows = await prisma.product.findMany({ where: { category: "Gift Sets" }, orderBy: { name: "asc" } });
   return rows.map(toProduct);
 }
+
+export async function getOilPerfumes(): Promise<Product[]> {
+  const rows = await prisma.product.findMany({ where: { category: "Oil Perfumes" }, orderBy: { name: "asc" } });
+  return rows.map(toProduct);
+}
