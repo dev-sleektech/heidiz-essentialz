@@ -26,6 +26,27 @@ function linesToArray(text: string): string[] {
   return text.split("\n").map((l) => l.trim()).filter(Boolean);
 }
 
+// Standard US-to-EU shoe size conversion (industry-standard mapping, same
+// as used by major retailers e.g. Nike/Zappos) — offered as a one-click
+// fill for the Sizes field below since typing the full men's + women's
+// range by hand for every shoe product would be tedious. Products that
+// aren't shoes, or that only come in one gender, can still just type
+// whatever's relevant directly.
+const MENS_US_TO_EU: [string, string][] = [
+  ["6", "38.5"], ["6.5", "39"], ["7", "40"], ["7.5", "40.5"], ["8", "41"],
+  ["8.5", "42"], ["9", "42.5"], ["9.5", "43"], ["10", "44"], ["10.5", "44.5"],
+  ["11", "45"], ["11.5", "45.5"], ["12", "46"], ["13", "47"],
+];
+const WOMENS_US_TO_EU: [string, string][] = [
+  ["5", "35"], ["5.5", "35.5"], ["6", "36"], ["6.5", "37"], ["7", "37.5"],
+  ["7.5", "38"], ["8", "38.5"], ["8.5", "39"], ["9", "39.5"], ["9.5", "40"],
+  ["10", "40.5"], ["10.5", "41"], ["11", "42"], ["11.5", "42.5"], ["12", "43"],
+];
+const FULL_SHOE_SIZE_RANGE = [
+  ...MENS_US_TO_EU.map(([us, eu]) => `EU ${eu} / US ${us} (Men)`),
+  ...WOMENS_US_TO_EU.map(([us, eu]) => `EU ${eu} / US ${us} (Women)`),
+].join("\n");
+
 function slugify(text: string): string {
   return text
     .toLowerCase()
@@ -57,6 +78,7 @@ export function ProductEditForm({ product }: { product?: Product }) {
   const [galleryUploading, setGalleryUploading] = useState(false);
   const [galleryError, setGalleryError] = useState<string | null>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+  const sizesInputRef = useRef<HTMLTextAreaElement>(null);
 
   async function handleFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -379,13 +401,25 @@ export function ProductEditForm({ product }: { product?: Product }) {
         </span>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <label className="flex flex-col gap-1.5">
-            <span className="text-xs text-charcoal/50">Sizes</span>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs text-charcoal/50">Sizes</span>
+              <button
+                type="button"
+                onClick={() => {
+                  if (sizesInputRef.current) sizesInputRef.current.value = FULL_SHOE_SIZE_RANGE;
+                }}
+                className="text-xs text-burnt-orange underline-offset-2 hover:underline"
+              >
+                Fill full Men&apos;s + Women&apos;s range (EU &amp; US)
+              </button>
+            </div>
             <textarea
+              ref={sizesInputRef}
               name="sizes"
-              rows={3}
+              rows={6}
               defaultValue={product?.sizes.join("\n") ?? ""}
               className={inputClass}
-              placeholder={"40\n41\n42"}
+              placeholder={"EU 42 / US 9 (Men)\nEU 40 / US 9 (Women)"}
             />
           </label>
           <label className="flex flex-col gap-1.5">
@@ -400,8 +434,10 @@ export function ProductEditForm({ product }: { product?: Product }) {
           </label>
         </div>
         <p className="text-xs text-charcoal/50">
-          Shown as selectable options on the product page. Customers must pick one of each before
-          adding to cart if any are listed.
+          Shown as a dropdown/selectable options on the product page. Customers must pick one of
+          each before adding to cart if any are listed. For shoes, use the fill button above for
+          the standard EU/US Men&apos;s + Women&apos;s range, then delete any lines that don&apos;t
+          apply to this specific product.
         </p>
       </section>
 

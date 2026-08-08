@@ -21,7 +21,10 @@ export function ProductActions({
 }) {
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
-  const [size, setSize] = useState<string | undefined>(sizes[0]);
+  // Size starts unselected (unlike color) since the list mixes men's and
+  // women's sizes — defaulting to the first entry would silently pick a
+  // gendered size for the customer instead of making them choose.
+  const [size, setSize] = useState<string | undefined>(undefined);
   const [color, setColor] = useState<string | undefined>(colors[0]);
   const [optionError, setOptionError] = useState(false);
   const { addItem } = useCart();
@@ -54,26 +57,26 @@ export function ProductActions({
   return (
     <div className="flex flex-col gap-4">
       {sizes.length > 0 && (
-        <div className="flex flex-col gap-2">
+        <label className="flex flex-col gap-2">
           <span className="text-xs uppercase tracking-wide text-charcoal/60">Size</span>
-          <div className="flex flex-wrap gap-2">
+          <select
+            value={size ?? ""}
+            onChange={(e) => setSize(e.target.value || undefined)}
+            className={cn(
+              "rounded-button border bg-white px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-burnt-orange",
+              size ? "border-brand-black/15 text-brand-black" : "border-brand-black/15 text-charcoal/50"
+            )}
+          >
+            <option value="" disabled>
+              Select a size
+            </option>
             {sizes.map((s) => (
-              <button
-                key={s}
-                type="button"
-                onClick={() => setSize(s)}
-                className={cn(
-                  "rounded-button border px-4 py-2 text-sm transition-colors",
-                  size === s
-                    ? "border-burnt-orange bg-champagne/20 text-brand-black"
-                    : "border-brand-black/15 text-charcoal/70 hover:border-burnt-orange"
-                )}
-              >
+              <option key={s} value={s}>
                 {s}
-              </button>
+              </option>
             ))}
-          </div>
-        </div>
+          </select>
+        </label>
       )}
 
       {colors.length > 0 && (
