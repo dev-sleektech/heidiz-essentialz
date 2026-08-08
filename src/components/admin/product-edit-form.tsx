@@ -13,6 +13,9 @@ const BADGE_OPTIONS: { value: string; label: string }[] = [
   { value: "Best Seller", label: "Best Seller" },
   { value: "Limited", label: "Limited" },
   { value: "Sale", label: "Sale (promo indicator)" },
+  { value: "Black Friday", label: "Black Friday (promo indicator)" },
+  { value: "Valentine's Day", label: "Valentine's Day (promo indicator)" },
+  { value: "Christmas", label: "Christmas (promo indicator)" },
 ];
 
 const inputClass =

@@ -23,7 +23,14 @@ export type FragranceNotes = {
   base: string[];
 };
 
-export type ProductBadge = "New" | "Best Seller" | "Limited" | "Sale";
+export type ProductBadge =
+  | "New"
+  | "Best Seller"
+  | "Limited"
+  | "Sale"
+  | "Black Friday"
+  | "Valentine's Day"
+  | "Christmas";
 
 export type Product = {
   slug: string;

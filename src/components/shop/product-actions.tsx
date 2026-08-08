@@ -8,7 +8,7 @@ import { useCart } from "@/lib/cart-context";
 import { useWishlist } from "@/lib/wishlist-context";
 import { formatNaira } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { SaleBadge, computeDiscountPercent } from "@/components/ui/sale-badge";
+import { PromoBadge, computeDiscountPercent, isPromoBadge } from "@/components/ui/promo-badge";
 
 export function ProductActions({
   slug,
@@ -83,8 +83,8 @@ export function ProductActions({
         {compareAtPrice && (
           <span className="text-base text-charcoal/40 line-through">{formatNaira(compareAtPrice)}</span>
         )}
-        {badge === "Sale" ? (
-          <SaleBadge discountPercent={computeDiscountPercent(effectivePrice, compareAtPrice)} />
+        {badge && isPromoBadge(badge) ? (
+          <PromoBadge badge={badge} discountPercent={computeDiscountPercent(effectivePrice, compareAtPrice)} />
         ) : (
           badge && (
             <span className="rounded-full bg-brand-black px-3 py-1 text-[0.65rem] tracking-wide text-white">
