@@ -10,8 +10,6 @@ import { Accordion, type AccordionItem } from "@/components/ui/accordion";
 import { StarRating } from "@/components/ui/star-rating";
 import { getCategory } from "@/lib/placeholder-data";
 import { getAllProducts, getProduct, getRelatedProducts } from "@/lib/products";
-import { formatNaira } from "@/lib/format";
-import { cn } from "@/lib/utils";
 
 export const revalidate = 60;
 
@@ -122,27 +120,6 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <span className="font-display text-2xl text-burnt-orange">
-              {formatNaira(product.price)}
-            </span>
-            {product.compareAtPrice && (
-              <span className="text-base text-charcoal/40 line-through">
-                {formatNaira(product.compareAtPrice)}
-              </span>
-            )}
-            {product.badge && (
-              <span
-                className={cn(
-                  "rounded-full px-3 py-1 text-[0.65rem] tracking-wide text-white",
-                  product.badge === "Sale" ? "bg-burnt-orange" : "bg-brand-black"
-                )}
-              >
-                {product.badge}
-              </span>
-            )}
-          </div>
-
           <p className="text-sm leading-relaxed text-charcoal/70">{product.description}</p>
 
           <span
@@ -157,9 +134,13 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
 
           <ProductActions
             slug={product.slug}
+            price={product.price}
+            compareAtPrice={product.compareAtPrice}
+            badge={product.badge}
             inStock={product.inStock}
             sizes={product.sizes}
             colors={product.colors}
+            sizePricing={product.sizePricing}
           />
 
           <Accordion items={accordionItems} className="mt-4" />

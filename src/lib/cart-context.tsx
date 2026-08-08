@@ -21,7 +21,11 @@ const STORAGE_KEY = "heidiz-cart-v1";
 // not a full variant-inventory system, just carried along on the line so
 // it survives into checkout/orders instead of silently vanishing. Two
 // lines for the same product with different size/color are kept separate.
-export type CartLine = { slug: string; quantity: number; size?: string; color?: string };
+// unitPrice is snapshotted at add-to-cart time (the selected size's price,
+// or the base product price) — optional only so old carts already sitting
+// in a customer's localStorage from before this field existed don't break;
+// every read falls back to the live product price when it's missing.
+export type CartLine = { slug: string; quantity: number; size?: string; color?: string; unitPrice?: number };
 type LineOptions = { size?: string; color?: string };
 
 function sameLine(line: CartLine, slug: string, options?: LineOptions) {
@@ -62,6 +66,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [lines, hydrated]);
 
   const addItem = useCallback((slug: string, quantity = 1, options?: LineOptions) => {
+    const product = getProduct(slug);
+    const unitPrice =
+      (options?.size ? product?.sizePricing?.[options.size] : undefined) ?? product?.price ?? 0;
+
     setLines((prev) => {
       const existing = prev.find((l) => sameLine(l, slug, options));
       if (existing) {
@@ -69,9 +77,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           sameLine(l, slug, options) ? { ...l, quantity: l.quantity + quantity } : l
         );
       }
-      return [...prev, { slug, quantity, size: options?.size, color: options?.color }];
+      return [...prev, { slug, quantity, size: options?.size, color: options?.color, unitPrice }];
     });
-  }, []);
+  }, [getProduct]);
 
   const removeItem = useCallback((slug: string, options?: LineOptions) => {
     setLines((prev) => prev.filter((l) => !sameLine(l, slug, options)));
@@ -93,7 +101,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const product = getProduct(line.slug);
       if (!product) continue;
       count += line.quantity;
-      sum += product.price * line.quantity;
+      sum += (line.unitPrice ?? product.price) * line.quantity;
     }
     return { totalItems: count, subtotal: sum };
   }, [lines, getProduct]);

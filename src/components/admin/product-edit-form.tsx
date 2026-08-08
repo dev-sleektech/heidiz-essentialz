@@ -26,6 +26,31 @@ function linesToArray(text: string): string[] {
   return text.split("\n").map((l) => l.trim()).filter(Boolean);
 }
 
+// "25ml = 45000" per line -> { "25ml": 45000 }. Sizes with no line here (or
+// an unparseable one) just fall back to the base Price field on the
+// product page — this is meant for products where size actually changes
+// the price (perfumes), not a required field for every sized product
+// (shoes/colors don't need it at all).
+function linesToSizePricing(text: string): Record<string, number> | null {
+  const entries: [string, number][] = [];
+  for (const line of text.split("\n")) {
+    const [rawSize, rawPrice] = line.split("=");
+    if (!rawSize || !rawPrice) continue;
+    const size = rawSize.trim();
+    const price = Number(rawPrice.trim());
+    if (!size || !Number.isFinite(price) || price <= 0) continue;
+    entries.push([size, price]);
+  }
+  return entries.length > 0 ? Object.fromEntries(entries) : null;
+}
+
+function sizePricingToLines(sizePricing: Record<string, number> | undefined): string {
+  if (!sizePricing) return "";
+  return Object.entries(sizePricing)
+    .map(([size, price]) => `${size} = ${price}`)
+    .join("\n");
+}
+
 // Standard US-to-EU shoe size conversion (industry-standard mapping, same
 // as used by major retailers e.g. Nike/Zappos) — offered as a one-click
 // fill for the Sizes field below since typing the full men's + women's
@@ -176,6 +201,7 @@ export function ProductEditForm({ product }: { product?: Product }) {
         : null,
       sizes: linesToArray(String(data.get("sizes"))),
       colors: linesToArray(String(data.get("colors"))),
+      sizePricing: linesToSizePricing(String(data.get("sizePricing"))),
       rating: Number(data.get("rating")),
       reviewCount: Number(data.get("reviewCount")),
       inStock: data.get("inStock") === "on",
@@ -438,6 +464,24 @@ export function ProductEditForm({ product }: { product?: Product }) {
           each before adding to cart if any are listed. For shoes, use the fill button above for
           the standard EU/US Men&apos;s + Women&apos;s range, then delete any lines that don&apos;t
           apply to this specific product.
+        </p>
+
+        <label className="flex flex-col gap-1.5">
+          <span className="text-xs text-charcoal/50">
+            Size Prices (optional, one per line: size = price in ₦)
+          </span>
+          <textarea
+            name="sizePricing"
+            rows={5}
+            defaultValue={sizePricingToLines(product?.sizePricing)}
+            className={inputClass}
+            placeholder={"25ml = 45000\n50ml = 65000\n75ml = 85000\n100ml = 105000"}
+          />
+        </label>
+        <p className="text-xs text-charcoal/50">
+          Only needed when different sizes should have different prices, like perfume ml options.
+          Any size left out here just uses the base Price above, so this can stay empty for
+          products like shoes where size doesn&apos;t change the price.
         </p>
       </section>
 

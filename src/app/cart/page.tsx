@@ -73,6 +73,7 @@ export default function CartPage() {
                 quantity={line.quantity}
                 size={line.size}
                 color={line.color}
+                unitPrice={line.unitPrice}
               />
             ))}
           </div>

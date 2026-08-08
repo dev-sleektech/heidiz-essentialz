@@ -26,6 +26,7 @@ type ProductRow = {
   images: string[];
   sizes: string[];
   colors: string[];
+  sizePricing: unknown;
   description: string;
   benefits: string[];
   directions: string;
@@ -50,6 +51,7 @@ function toProduct(row: ProductRow): Product {
     images: row.images ?? [],
     sizes: row.sizes ?? [],
     colors: row.colors ?? [],
+    sizePricing: (row.sizePricing as Record<string, number> | null) ?? undefined,
     description: row.description,
     benefits: row.benefits,
     directions: row.directions,

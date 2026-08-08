@@ -86,11 +86,17 @@ model Product {
   // ["Black","Brown"]) — customer picks one of each on the product page,
   // it's carried through cart/checkout as a note on the line item. Not a
   // real per-variant inventory/pricing system (each combination doesn't
-  // have its own stock count or price) — that's a bigger feature; this is
-  // the lightweight version for products where the option matters but
-  // fine-grained stock-per-size isn't being tracked yet.
+  // have its own stock count) — this is the lightweight version for
+  // products where the option matters but fine-grained stock-per-size
+  // isn't being tracked yet.
   sizes          String[] @default([])
   colors         String[] @default([])
+  // Optional per-size price override, e.g. {"25ml": 45000, "100ml": 120000}
+  // — keyed by the exact strings in `sizes`. A size with no entry here (or
+  // when this whole field is null) falls back to the base `price` above,
+  // so this stays backward compatible with products where size doesn't
+  // change price (shoes, etc).
+  sizePricing    Json?
   rating         Float
   reviewCount    Int
   inStock        Boolean  @default(true)

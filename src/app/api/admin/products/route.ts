@@ -22,6 +22,7 @@ type CreateBody = {
   fragranceNotes: { top: string[]; heart: string[]; base: string[] } | null;
   sizes: string[];
   colors: string[];
+  sizePricing: Record<string, number> | null;
   rating: number;
   reviewCount: number;
   inStock: boolean;
@@ -77,6 +78,7 @@ export async function POST(request: Request) {
         fragranceNotes: body.fragranceNotes ?? undefined,
         sizes: body.sizes ?? [],
         colors: body.colors ?? [],
+        sizePricing: body.sizePricing ?? undefined,
         rating: body.rating,
         reviewCount: body.reviewCount,
         inStock: body.inStock,

@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { currentUser } from "@clerk/nextjs/server";
 import { isStaffEmail } from "@/lib/staff-auth";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@/generated/prisma/client";
 
 type UpdateBody = {
   name: string;
@@ -20,6 +21,7 @@ type UpdateBody = {
   fragranceNotes: { top: string[]; heart: string[]; base: string[] } | null;
   sizes: string[];
   colors: string[];
+  sizePricing: Record<string, number> | null;
   rating: number;
   reviewCount: number;
   inStock: boolean;
@@ -63,6 +65,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ sl
         fragranceNotes: body.fragranceNotes ?? undefined,
         sizes: body.sizes ?? [],
         colors: body.colors ?? [],
+        sizePricing: body.sizePricing ?? Prisma.JsonNull,
         rating: body.rating,
         reviewCount: body.reviewCount,
         inStock: body.inStock,

@@ -1,23 +1,32 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Minus, Plus, Heart, Repeat, Share2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/lib/cart-context";
 import { useWishlist } from "@/lib/wishlist-context";
+import { formatNaira } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export function ProductActions({
   slug,
+  price,
+  compareAtPrice,
+  badge,
   inStock,
   sizes = [],
   colors = [],
+  sizePricing,
 }: {
   slug: string;
+  price: number;
+  compareAtPrice?: number;
+  badge?: string;
   inStock: boolean;
   sizes?: string[];
   colors?: string[];
+  sizePricing?: Record<string, number>;
 }) {
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
@@ -31,6 +40,16 @@ export function ProductActions({
   const { toggle, has } = useWishlist();
   const router = useRouter();
   const wishlisted = has(slug);
+
+  // Price lives here (not in the parent server page) specifically so it can
+  // react to the size the customer has picked — a 100ml perfume shouldn't
+  // show the same price as the 25ml, once size-specific pricing is set from
+  // admin. Falls back to the base price when the selected size has no
+  // override, or when nothing's selected yet.
+  const effectivePrice = useMemo(() => {
+    if (size && sizePricing?.[size] !== undefined) return sizePricing[size];
+    return price;
+  }, [size, sizePricing, price]);
 
   function validated() {
     if ((sizes.length > 0 && !size) || (colors.length > 0 && !color)) {
@@ -54,8 +73,30 @@ export function ProductActions({
     router.push("/checkout");
   }
 
+  const hasSizePricing = sizes.some((s) => sizePricing?.[s] !== undefined);
+
   return (
     <div className="flex flex-col gap-4">
+      <div className="flex items-center gap-3">
+        <span className="font-display text-2xl text-burnt-orange">{formatNaira(effectivePrice)}</span>
+        {compareAtPrice && (
+          <span className="text-base text-charcoal/40 line-through">{formatNaira(compareAtPrice)}</span>
+        )}
+        {badge && (
+          <span
+            className={cn(
+              "rounded-full px-3 py-1 text-[0.65rem] tracking-wide text-white",
+              badge === "Sale" ? "bg-burnt-orange" : "bg-brand-black"
+            )}
+          >
+            {badge}
+          </span>
+        )}
+      </div>
+      {hasSizePricing && !size && (
+        <p className="-mt-2 text-xs text-charcoal/50">Price varies by size, select one below.</p>
+      )}
+
       {sizes.length > 0 && (
         <label className="flex flex-col gap-2">
           <span className="text-xs uppercase tracking-wide text-charcoal/60">Size</span>

@@ -86,6 +86,7 @@ export default function CheckoutPage() {
         quantity: line.quantity,
         size: line.size,
         color: line.color,
+        unitPrice: line.unitPrice ?? product.price,
       })),
       subtotal,
       delivery,

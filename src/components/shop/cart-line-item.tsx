@@ -12,11 +12,13 @@ export function CartLineItem({
   quantity,
   size,
   color,
+  unitPrice,
 }: {
   product: Product;
   quantity: number;
   size?: string;
   color?: string;
+  unitPrice?: number;
 }) {
   const { setQuantity, removeItem } = useCart();
   const options = { size, color };
@@ -72,7 +74,7 @@ export function CartLineItem({
           </div>
 
           <span className="text-sm font-medium text-burnt-orange">
-            {formatNaira(product.price * quantity)}
+            {formatNaira((unitPrice ?? product.price) * quantity)}
           </span>
         </div>
       </div>

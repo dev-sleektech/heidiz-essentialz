@@ -42,6 +42,10 @@ export type Product = {
    *  tracking, just a picker whose selection rides along on the cart line. */
   sizes: string[];
   colors: string[];
+  /** Optional per-size price override, keyed by the exact strings in
+   *  `sizes` (e.g. { "25ml": 45000, "100ml": 120000 }). A size with no
+   *  entry here falls back to the base `price` above. */
+  sizePricing?: Record<string, number>;
   description: string;
   benefits: string[];
   directions: string;
