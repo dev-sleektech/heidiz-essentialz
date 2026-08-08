@@ -60,9 +60,9 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-4 text-brand-black">
-          <button aria-label="Search" className="hidden sm:inline-flex hover:text-burnt-orange">
+          <Link href="/search" aria-label="Search" className="hidden sm:inline-flex hover:text-burnt-orange">
             <Search className="h-5 w-5" strokeWidth={1.5} />
-          </button>
+          </Link>
           <Link
             href="/account"
             aria-label="Account"
@@ -97,6 +97,38 @@ export function Header() {
       {menuOpen && (
         <div className="border-t border-brand-black/10 bg-ivory lg:hidden">
           <Container className="flex flex-col gap-4 py-6">
+            {/* Search/Account/Wishlist have their own icons in the header
+                on screens ≥sm, but disappear below that with nothing else
+                to reach them from — this is the small-screen fallback so
+                they're never fully inaccessible on a phone. */}
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-3 pb-2 sm:hidden">
+              <Link
+                href="/search"
+                className="flex items-center gap-2 text-sm text-charcoal/80 hover:text-burnt-orange"
+                onClick={() => setMenuOpen(false)}
+              >
+                <Search className="h-4 w-4" strokeWidth={1.5} />
+                Search
+              </Link>
+              <Link
+                href="/account"
+                className="flex items-center gap-2 text-sm text-charcoal/80 hover:text-burnt-orange"
+                onClick={() => setMenuOpen(false)}
+              >
+                <User className="h-4 w-4" strokeWidth={1.5} />
+                Account
+              </Link>
+              <Link
+                href="/wishlist"
+                className="flex items-center gap-2 text-sm text-charcoal/80 hover:text-burnt-orange"
+                onClick={() => setMenuOpen(false)}
+              >
+                <Heart className="h-4 w-4" strokeWidth={1.5} />
+                Wishlist{wishlistSlugs.length > 0 ? ` (${wishlistSlugs.length})` : ""}
+              </Link>
+            </div>
+            <div className="hairline mb-2 sm:hidden" />
+
             {navLinks.map((link) => (
               <Link
                 key={link.href}

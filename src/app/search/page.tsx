@@ -1,0 +1,69 @@
+import type { Metadata } from "next";
+import { Search as SearchIcon } from "lucide-react";
+import { Container } from "@/components/ui/container";
+import { CollectionHeader } from "@/components/shop/collection-header";
+import { ProductGrid } from "@/components/shop/product-grid";
+import { searchProducts } from "@/lib/products";
+
+export const metadata: Metadata = {
+  title: "Search | HEIDIZ Essentialz",
+  description: "Search the HEIDIZ Essentialz catalog.",
+};
+
+const inputClass =
+  "w-full rounded-button border border-brand-black/15 bg-white px-4 py-3 text-sm text-charcoal placeholder:text-charcoal/40 focus:outline-none focus:ring-2 focus:ring-burnt-orange";
+
+export default async function SearchPage(props: PageProps<"/search">) {
+  const searchParams = await props.searchParams;
+  const query = typeof searchParams.q === "string" ? searchParams.q.trim() : "";
+  const results = query ? await searchProducts(query) : [];
+
+  return (
+    <>
+      <CollectionHeader
+        eyebrow="Search"
+        title={query ? `Results for "${query}"` : "Search"}
+        description={query ? undefined : "Find products by name, category, or description."}
+        crumbs={[{ label: "Search" }]}
+      />
+      <Container className="py-12 md:py-16">
+        <form method="GET" className="mx-auto flex max-w-xl items-center gap-2">
+          <input
+            type="text"
+            name="q"
+            defaultValue={query}
+            autoFocus
+            className={inputClass}
+            placeholder="Search perfumes, skincare, shoes..."
+          />
+          <button
+            type="submit"
+            aria-label="Search"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-button bg-brand-black text-white hover:bg-burnt-orange"
+          >
+            <SearchIcon className="h-4 w-4" strokeWidth={1.5} />
+          </button>
+        </form>
+
+        {query && (
+          <p className="mt-6 text-center text-xs text-charcoal/50">
+            {results.length} {results.length === 1 ? "result" : "results"}
+          </p>
+        )}
+
+        {query && results.length === 0 && (
+          <p className="mt-16 text-center text-sm text-charcoal/60">
+            No products matched &quot;{query}&quot;. Try a different word, or browse the shop
+            instead.
+          </p>
+        )}
+
+        {results.length > 0 && (
+          <div className="mt-10">
+            <ProductGrid products={results} />
+          </div>
+        )}
+      </Container>
+    </>
+  );
+}

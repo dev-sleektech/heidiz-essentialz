@@ -119,3 +119,22 @@ export async function getOilPerfumes(): Promise<Product[]> {
   const rows = await prisma.product.findMany({ where: { category: "Oil Perfumes" }, orderBy: { name: "asc" } });
   return rows.map(toProduct);
 }
+
+// Powers the header's search icon (see /search) — matches on name,
+// category label, or description, case-insensitive. Simple substring
+// search is enough for a catalog this size; no separate search index.
+export async function searchProducts(query: string): Promise<Product[]> {
+  const q = query.trim();
+  if (!q) return [];
+  const rows = await prisma.product.findMany({
+    where: {
+      OR: [
+        { name: { contains: q, mode: "insensitive" } },
+        { category: { contains: q, mode: "insensitive" } },
+        { description: { contains: q, mode: "insensitive" } },
+      ],
+    },
+    orderBy: { name: "asc" },
+  });
+  return rows.map(toProduct);
+}
