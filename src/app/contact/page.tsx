@@ -5,7 +5,7 @@ import { CollectionHeader } from "@/components/shop/collection-header";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
-  title: "Contact Us | HEIDIZ Essentialz",
+  title: "Contact Us",
   description: "Get in touch with HEIDIZ Essentialz. Visit our Abuja store, call, WhatsApp, or email us.",
 };
 

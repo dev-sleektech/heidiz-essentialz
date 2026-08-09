@@ -12,7 +12,7 @@ export async function generateMetadata(
   props: PageProps<"/account/orders/[orderNumber]">
 ): Promise<Metadata> {
   const { orderNumber } = await props.params;
-  return { title: `Order ${orderNumber} | HEIDIZ Essentialz` };
+  return { title: `Order ${orderNumber}` };
 }
 
 export default async function OrderDetailPage(props: PageProps<"/account/orders/[orderNumber]">) {

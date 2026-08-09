@@ -6,7 +6,7 @@ import { CollectionHeader } from "@/components/shop/collection-header";
 // in until the client has this reviewed by a lawyer, same treatment as
 // other legal/policy pages on the site.
 export const metadata: Metadata = {
-  title: "Terms of Service | HEIDIZ Essentialz",
+  title: "Terms of Service",
   description: "The terms that govern your use of the HEIDIZ Essentialz website and purchases.",
 };
 

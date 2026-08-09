@@ -4,7 +4,7 @@ import { CollectionHeader } from "@/components/shop/collection-header";
 import { Accordion, type AccordionItem } from "@/components/ui/accordion";
 
 export const metadata: Metadata = {
-  title: "FAQ | HEIDIZ Essentialz",
+  title: "FAQ",
   description: "Answers to common questions about ordering, delivery, returns, and authenticity at HEIDIZ Essentialz.",
 };
 

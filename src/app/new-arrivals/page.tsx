@@ -5,7 +5,7 @@ import { ProductGrid } from "@/components/shop/product-grid";
 import { getNewArrivals } from "@/lib/products";
 
 export const metadata: Metadata = {
-  title: "New Arrivals | HEIDIZ Essentialz",
+  title: "New Arrivals",
   description: "Fresh from the atelier: the latest additions to the HEIDIZ Essentialz collection.",
 };
 

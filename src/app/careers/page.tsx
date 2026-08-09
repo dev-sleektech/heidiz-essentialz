@@ -4,7 +4,7 @@ import { Container } from "@/components/ui/container";
 import { CollectionHeader } from "@/components/shop/collection-header";
 
 export const metadata: Metadata = {
-  title: "Careers | HEIDIZ Essentialz",
+  title: "Careers",
   description: "Join the HEIDIZ Essentialz team in FCT-Abuja.",
 };
 

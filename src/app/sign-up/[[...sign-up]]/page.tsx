@@ -4,8 +4,9 @@ import { Container } from "@/components/ui/container";
 import { CollectionHeader } from "@/components/shop/collection-header";
 
 export const metadata: Metadata = {
-  title: "Create Account | HEIDIZ Essentialz",
+  title: "Create Account",
   description: "Create a HEIDIZ Essentialz account.",
+  robots: { index: false, follow: false },
 };
 
 export default function SignUpPage() {

@@ -7,7 +7,7 @@ import { getOilPerfumes } from "@/lib/products";
 const OIL_PERFUME_SIZES = ["10ml", "20ml", "30ml", "50ml", "100ml"];
 
 export const metadata: Metadata = {
-  title: "Oil Perfumes | HEIDIZ Essentialz",
+  title: "Oil Perfumes",
   description: "Alcohol-free oil perfumes and attars from HEIDIZ Essentialz, available in 10ml, 20ml, 30ml, 50ml, and 100ml.",
 };
 

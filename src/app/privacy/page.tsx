@@ -6,7 +6,7 @@ import { CollectionHeader } from "@/components/shop/collection-header";
 // Placeholder copy standing in until the client has this reviewed by a
 // lawyer, same treatment as other legal/policy pages on the site.
 export const metadata: Metadata = {
-  title: "Privacy Policy | HEIDIZ Essentialz",
+  title: "Privacy Policy",
   description: "How HEIDIZ Essentialz collects, uses, and protects your information.",
 };
 

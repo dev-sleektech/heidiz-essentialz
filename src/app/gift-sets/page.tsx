@@ -5,7 +5,7 @@ import { ProductGrid } from "@/components/shop/product-grid";
 import { getGiftSets } from "@/lib/products";
 
 export const metadata: Metadata = {
-  title: "Gift Sets | HEIDIZ Essentialz",
+  title: "Gift Sets",
   description: "Curated gift sets from HEIDIZ Essentialz, ready to give.",
 };
 

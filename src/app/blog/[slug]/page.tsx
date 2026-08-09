@@ -16,7 +16,7 @@ export async function generateMetadata(
   const { slug } = await props.params;
   const post = getBlogPost(slug);
   if (!post) return {};
-  return { title: `${post.title} | HEIDIZ Essentialz`, description: post.excerpt };
+  return { title: post.title, description: post.excerpt };
 }
 
 export default async function BlogPostPage(props: PageProps<"/blog/[slug]">) {

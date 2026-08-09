@@ -7,7 +7,7 @@ import { formatNaira } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
-  title: "Order Tracking | HEIDIZ Essentialz",
+  title: "Order Tracking",
   description: "Track the status of your HEIDIZ Essentialz order using your order number and phone number.",
 };
 

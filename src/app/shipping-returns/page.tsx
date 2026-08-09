@@ -4,7 +4,7 @@ import { Container } from "@/components/ui/container";
 import { CollectionHeader } from "@/components/shop/collection-header";
 
 export const metadata: Metadata = {
-  title: "Shipping & Returns | HEIDIZ Essentialz",
+  title: "Shipping & Returns",
   description: "Delivery timelines, fees, and our return policy at HEIDIZ Essentialz.",
 };
 

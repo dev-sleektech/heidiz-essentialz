@@ -7,7 +7,7 @@ import { CollectionHeader } from "@/components/shop/collection-header";
 import { ButtonLink } from "@/components/ui/button";
 
 export const metadata: Metadata = {
-  title: "Account | HEIDIZ Essentialz",
+  title: "Account",
   description: "Sign in or manage your HEIDIZ Essentialz account.",
 };
 

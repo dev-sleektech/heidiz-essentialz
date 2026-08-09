@@ -4,7 +4,7 @@ import { Container } from "@/components/ui/container";
 import { CollectionHeader } from "@/components/shop/collection-header";
 
 export const metadata: Metadata = {
-  title: "Sustainability | HEIDIZ Essentialz",
+  title: "Sustainability",
   description: "How HEIDIZ Essentialz sources responsibly and supports the FCT-Abuja community.",
 };
 

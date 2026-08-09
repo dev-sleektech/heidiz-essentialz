@@ -9,7 +9,7 @@ import { formatNaira } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
-  title: "Order History | HEIDIZ Essentialz",
+  title: "Order History",
   description: "Your HEIDIZ Essentialz order history.",
 };
 

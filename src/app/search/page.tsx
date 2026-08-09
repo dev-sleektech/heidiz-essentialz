@@ -6,8 +6,11 @@ import { ProductGrid } from "@/components/shop/product-grid";
 import { searchProducts } from "@/lib/products";
 
 export const metadata: Metadata = {
-  title: "Search | HEIDIZ Essentialz",
+  title: "Search",
   description: "Search the HEIDIZ Essentialz catalog.",
+  // Query-driven results pages are thin/duplicate content by nature — real
+  // product/category pages are what should rank, not search result lists.
+  robots: { index: false, follow: true },
 };
 
 const inputClass =

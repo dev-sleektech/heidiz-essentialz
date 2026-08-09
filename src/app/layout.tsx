@@ -50,10 +50,72 @@ const manrope = Manrope({
   display: "swap",
 });
 
+// Falls back to the live production URL if the env var is somehow unset —
+// metadataBase must always resolve to a real absolute URL (Next throws
+// without one whenever a page's metadata uses a relative image/OG path).
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://heidiz-essentialz.vercel.app";
+
+const siteDescription =
+  "HEIDIZ Essentialz is a global luxury destination for perfumes, beauty, skincare, cosmetics, hair care, and fashion accessories, curated in FCT-Abuja, Nigeria. Shop luxury and niche perfumes, oil perfumes, skincare, makeup, shoes, and home fragrance with nationwide delivery.";
+
 export const metadata: Metadata = {
-  title: "HEIDIZ Essentialz | Luxury Beauty & Lifestyle",
-  description:
-    "HEIDIZ Essentialz is a global luxury brand for perfumes, beauty, skincare, cosmetics, hair care, and fashion accessories. Luxury, elegance & beauty in every detail.",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "HEIDIZ Essentialz | Luxury Beauty & Lifestyle",
+    template: "%s | HEIDIZ Essentialz",
+  },
+  description: siteDescription,
+  keywords: [
+    "luxury perfumes Nigeria",
+    "perfume shop Abuja",
+    "oil perfumes",
+    "niche perfumes Nigeria",
+    "luxury skincare Nigeria",
+    "beauty store Abuja",
+    "HEIDIZ Essentialz",
+  ],
+  authors: [{ name: "HEIDIZ Essentialz" }],
+  openGraph: {
+    type: "website",
+    siteName: "HEIDIZ Essentialz",
+    title: "HEIDIZ Essentialz | Luxury Beauty & Lifestyle",
+    description: siteDescription,
+    url: "/",
+    locale: "en_NG",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "HEIDIZ Essentialz | Luxury Beauty & Lifestyle",
+    description: siteDescription,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
+};
+
+// Organization schema — helps Google understand the business identity
+// (name, logo, contact, social profiles) independent of any one page,
+// e.g. for a knowledge panel. Real contact info matches the footer.
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "HEIDIZ Essentialz",
+  url: siteUrl,
+  logo: `${siteUrl}/brand/logo-mark.png`,
+  image: `${siteUrl}/brand/logo-mark.png`,
+  description: siteDescription,
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "Shop GF-31, Block C, Mabushi Ultra Modern Market, Jahi",
+    addressLocality: "Abuja",
+    addressRegion: "FCT",
+    addressCountry: "NG",
+  },
+  telephone: "+2348158851166",
+  email: "info@heidizstores.com",
+  sameAs: ["https://www.instagram.com/heidizessentialz/", "https://facebook.com/HeidizEssentialz"],
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -63,6 +125,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${playfair.variable} ${cormorant.variable} ${inter.variable} ${manrope.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-ivory text-charcoal font-sans">
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
         <ClerkProvider appearance={clerkAppearance}>
           <ProductCatalogProvider>
             <CartProvider>

@@ -7,7 +7,10 @@ import { LayoutDashboard, Package, ShoppingBag, Wallet, LogOut } from "lucide-re
 import { Logo } from "@/components/site/logo";
 import { isStaffEmail } from "@/lib/staff-auth";
 
-export const metadata: Metadata = { title: "Admin | HEIDIZ Essentialz" };
+export const metadata: Metadata = {
+  title: "Admin",
+  robots: { index: false, follow: false },
+};
 
 const NAV_ITEMS = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },

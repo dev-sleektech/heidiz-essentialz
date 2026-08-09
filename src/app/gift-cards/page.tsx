@@ -5,7 +5,7 @@ import { CollectionHeader } from "@/components/shop/collection-header";
 import { ButtonLink } from "@/components/ui/button";
 
 export const metadata: Metadata = {
-  title: "Gift Cards | HEIDIZ Essentialz",
+  title: "Gift Cards",
   description: "HEIDIZ Essentialz gift cards are coming soon.",
 };
 

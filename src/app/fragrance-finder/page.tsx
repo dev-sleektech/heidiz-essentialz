@@ -17,7 +17,7 @@ import {
 } from "@/lib/fragrance-finder";
 
 export const metadata: Metadata = {
-  title: "Fragrance Finder | HEIDIZ Essentialz",
+  title: "Fragrance Finder",
   description: "Answer a few questions and find your next signature scent from our real perfume collection.",
 };
 

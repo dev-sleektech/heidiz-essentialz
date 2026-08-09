@@ -5,7 +5,7 @@ import { ProductGrid } from "@/components/shop/product-grid";
 import { getBestSellers } from "@/lib/products";
 
 export const metadata: Metadata = {
-  title: "Best Sellers | HEIDIZ Essentialz",
+  title: "Best Sellers",
   description: "The signature pieces our clients return for again and again.",
 };
 

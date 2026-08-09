@@ -11,6 +11,8 @@ import { StarRating } from "@/components/ui/star-rating";
 import { getCategory } from "@/lib/placeholder-data";
 import { getAllProducts, getProduct, getRelatedProducts } from "@/lib/products";
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://heidiz-essentialz.vercel.app";
+
 export const revalidate = 60;
 
 export async function generateStaticParams() {
@@ -24,9 +26,24 @@ export async function generateMetadata(
   const { slug } = await props.params;
   const product = await getProduct(slug);
   if (!product) return {};
+  const image = product.image ?? product.images[0];
   return {
-    title: `${product.name} | HEIDIZ Essentialz`,
+    title: product.name,
     description: product.description,
+    alternates: { canonical: `/product/${product.slug}` },
+    openGraph: {
+      title: product.name,
+      description: product.description,
+      url: `/product/${product.slug}`,
+      type: "website",
+      images: image ? [{ url: image, alt: product.name }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: product.name,
+      description: product.description,
+      images: image ? [image] : undefined,
+    },
   };
 }
 
@@ -86,8 +103,83 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
     accordionItems.push({ title: "Ingredients", content: <p>{product.ingredients}</p> });
   }
 
+  const productUrl = `${siteUrl}/product/${product.slug}`;
+  const image = product.image ?? product.images[0];
+  // Product photos are already absolute (Cloudinary/Unsplash) or a local
+  // /public path — only the local ones need the site origin prefixed.
+  const absoluteImage = image ? (image.startsWith("http") ? image : `${siteUrl}${image}`) : undefined;
+
+  // Product rich-result schema — price/availability/rating are what let
+  // Google show a star rating + price directly in search results, not the
+  // Open Graph tags above (those are for social share previews). rating
+  // and reviewCount here are the same seeded catalog numbers shown on the
+  // page itself, not verified purchase reviews — worth real customer
+  // review data eventually, but consistent with what's visibly displayed.
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description: product.description,
+    image: absoluteImage ? [absoluteImage] : undefined,
+    sku: product.slug,
+    brand: { "@type": "Brand", name: "HEIDIZ Essentialz" },
+    offers: {
+      "@type": "Offer",
+      url: productUrl,
+      priceCurrency: "NGN",
+      price: product.price,
+      availability: product.inStock
+        ? "https://schema.org/InStock"
+        : "https://schema.org/OutOfStock",
+      itemCondition: "https://schema.org/NewCondition",
+    },
+    ...(product.reviewCount > 0
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: product.rating,
+            reviewCount: product.reviewCount,
+          },
+        }
+      : {}),
+  };
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: siteUrl },
+      ...(category
+        ? [
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: category.name,
+              item: `${siteUrl}/category/${category.slug}`,
+            },
+          ]
+        : []),
+      {
+        "@type": "ListItem",
+        position: category ? 3 : 2,
+        name: product.name,
+        item: productUrl,
+      },
+    ],
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <Container className="py-6">
         <Breadcrumbs
           items={[

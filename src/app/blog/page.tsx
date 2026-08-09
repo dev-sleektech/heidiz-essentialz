@@ -6,7 +6,7 @@ import { ProductVisual } from "@/components/ui/product-visual";
 import { blogPosts } from "@/lib/blog-data";
 
 export const metadata: Metadata = {
-  title: "Beauty Journal | HEIDIZ Essentialz",
+  title: "Beauty Journal",
   description: "Perfume guides, skincare tips, and beauty advice from HEIDIZ Essentialz.",
 };
 
