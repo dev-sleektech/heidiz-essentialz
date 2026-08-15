@@ -3,9 +3,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { currentUser } from "@clerk/nextjs/server";
 import { SignOutButton } from "@clerk/nextjs";
-import { LayoutDashboard, Package, ShoppingBag, Wallet, LogOut } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingBag, Wallet, MessageCircle, LogOut } from "lucide-react";
 import { Logo } from "@/components/site/logo";
 import { isStaffEmail } from "@/lib/staff-auth";
+import { unreadCountForStaff } from "@/lib/chat";
 
 export const metadata: Metadata = {
   title: "Admin",
@@ -17,6 +18,7 @@ const NAV_ITEMS = [
   { href: "/admin/orders", label: "Orders", icon: Package },
   { href: "/admin/products", label: "Products", icon: ShoppingBag },
   { href: "/admin/transactions", label: "Transactions", icon: Wallet },
+  { href: "/admin/chat", label: "Live Chat", icon: MessageCircle },
 ];
 
 // Single gate for the whole /admin tree — every page under here inherits
@@ -30,6 +32,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!isStaffEmail(email)) {
     redirect("/");
   }
+
+  // Snapshot at page-load time, not live: the sidebar is a server
+  // component and doesn't poll. The /admin/chat page itself polls the
+  // conversation list every few seconds once you're actually in there.
+  const unreadChatCount = await unreadCountForStaff();
 
   return (
     <div className="flex min-h-full bg-ivory">
@@ -48,6 +55,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             >
               <item.icon className="h-4 w-4" strokeWidth={1.5} />
               {item.label}
+              {item.href === "/admin/chat" && unreadChatCount > 0 && (
+                <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-burnt-orange px-1.5 text-xs font-semibold text-white">
+                  {unreadChatCount}
+                </span>
+              )}
             </Link>
           ))}
         </nav>

@@ -106,6 +106,58 @@ model Product {
   @@index([categorySlug])
 }
 
+// Live chat (2026-08-15): polling-based, not a raw persistent socket
+// connection. Customer/admin widgets re-check the DB every few seconds
+// via /api/chat and /api/admin/chat. Deliberately avoids a third-party
+// realtime service (Pusher/Ably/etc.) so this stays on the existing free
+// Neon+Vercel stack with no new account, at the cost of a few seconds'
+// delivery lag instead of true instant push. Acceptable for a small
+// single-store support inbox. Guest chat works the same way guest
+// checkout/cart/wishlist do: no account needed, the conversation id itself
+// is persisted client-side (localStorage) so a guest returns to the same
+// thread across visits (see src/components/chat/chat-widget.tsx).
+enum ChatStatus {
+  OPEN
+  CLOSED
+}
+
+enum ChatSender {
+  CUSTOMER
+  STAFF
+}
+
+model ChatConversation {
+  id            String        @id @default(cuid())
+  // Clerk user id if signed in. Null for guest chat, mirrors Order.userId.
+  userId        String?
+  customerName  String?
+  customerEmail String?
+  status        ChatStatus    @default(OPEN)
+  lastMessageAt DateTime      @default(now())
+  messages      ChatMessage[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([status, lastMessageAt])
+}
+
+model ChatMessage {
+  id             String           @id @default(cuid())
+  conversation   ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId String
+  sender         ChatSender
+  senderName     String?
+  body           String
+  // Drives the admin sidebar's unread badge (readByStaff) and the
+  // customer-side unread dot on the closed chat bubble (readByCustomer).
+  readByStaff    Boolean          @default(false)
+  readByCustomer Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+
+  @@index([conversationId])
+}
+
 // Abandoned-cart email tracking (2026-08-07): a lightweight snapshot taken
 // when a customer enters their email on the checkout form, before they've
 // necessarily completed payment. If no matching Order shows up within an
