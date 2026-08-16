@@ -1,6 +1,5 @@
-import { Check, XCircle } from "lucide-react";
+import { Check, XCircle, Scooter } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { DeliveryScooter } from "@/components/shop/delivery-scooter";
 
 // Keep in sync with the OrderStatus enum in prisma/schema.prisma.
 export type OrderStatus = "PLACED" | "PAYMENT_CONFIRMED" | "PROCESSING" | "OUT_FOR_DELIVERY" | "DELIVERED" | "CANCELLED";
@@ -28,9 +27,9 @@ export function OrderStatusTimeline({ status }: { status: OrderStatus }) {
   return (
     <div className="flex flex-col gap-6">
       {status === "OUT_FOR_DELIVERY" && (
-        <div className="flex flex-col items-center gap-3 rounded-[4px] bg-champagne/20 px-4 py-6 text-center sm:flex-row sm:gap-6 sm:px-6 sm:text-left">
-          <div className="relative w-40 shrink-0 overflow-hidden sm:w-48">
-            <DeliveryScooter className="animate-scooter-ride h-20 w-full text-burnt-orange sm:h-24" />
+        <div className="flex flex-col items-center gap-4 rounded-[4px] bg-champagne/20 px-4 py-6 text-center sm:flex-row sm:gap-5 sm:px-6 sm:text-left">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-burnt-orange text-white">
+            <Scooter className="animate-scooter-bounce h-8 w-8" strokeWidth={1.75} />
           </div>
           <p className="text-sm text-brand-black">
             <span className="block font-display text-base">Your rider is on the way.</span>

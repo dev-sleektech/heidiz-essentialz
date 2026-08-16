@@ -98,9 +98,10 @@ body {
   }
 }
 
-/* Delivery scooter (Out for Delivery status — see
-   src/components/shop/delivery-scooter.tsx). Whole scooter bobs gently on
-   its suspension while the two wheel groups spin continuously. */
+/* Delivery scooter icon badge (Out for Delivery status — see
+   src/components/shop/order-status-timeline.tsx). A standard Lucide
+   `Scooter` icon, not a custom illustration — just a gentle bob to keep
+   it feeling alive. */
 @keyframes scooter-bounce {
   0%, 100% {
     transform: translateY(0);
@@ -110,43 +111,12 @@ body {
   }
 }
 
-@keyframes scooter-wheel-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes scooter-ride {
-  0% {
-    transform: translateX(-6%);
-  }
-  50% {
-    transform: translateX(6%);
-  }
-  100% {
-    transform: translateX(-6%);
-  }
-}
-
 .animate-scooter-bounce {
   animation: scooter-bounce 1.6s ease-in-out infinite;
 }
 
-.animate-scooter-wheel {
-  animation: scooter-wheel-spin 1.2s linear infinite;
-}
-
-.animate-scooter-ride {
-  animation: scooter-ride 3.2s ease-in-out infinite;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .animate-scooter-bounce,
-  .animate-scooter-wheel,
-  .animate-scooter-ride {
+  .animate-scooter-bounce {
     animation: none;
   }
 }
