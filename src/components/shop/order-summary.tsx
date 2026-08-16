@@ -5,12 +5,20 @@ export function OrderSummary({
   subtotal,
   itemCount,
   children,
+  deliveryFeeOverride,
+  deliveryEtaLabel,
 }: {
   subtotal: number;
   itemCount: number;
   children?: React.ReactNode;
+  // Checkout passes these once it knows the customer's state, for the real
+  // zone-based fee + ETA (see src/lib/delivery.ts getDeliveryEstimate).
+  // Omitted on the cart page (no address collected yet), where this falls
+  // back to the same flat-fee estimate it always showed.
+  deliveryFeeOverride?: number;
+  deliveryEtaLabel?: string;
 }) {
-  const delivery = getDeliveryFee(subtotal);
+  const delivery = deliveryFeeOverride ?? getDeliveryFee(subtotal);
   const total = subtotal + delivery;
   const remainingForFreeDelivery = FREE_DELIVERY_THRESHOLD - subtotal;
 
@@ -27,6 +35,9 @@ export function OrderSummary({
           <span>Delivery</span>
           <span>{delivery === 0 ? "Complimentary" : formatNaira(delivery)}</span>
         </div>
+        {deliveryEtaLabel && (
+          <p className="text-xs text-charcoal/50">Estimated delivery: {deliveryEtaLabel}</p>
+        )}
         {delivery > 0 && remainingForFreeDelivery > 0 && (
           <p className="text-xs text-burnt-orange">
             Add {formatNaira(remainingForFreeDelivery)} more for complimentary delivery.

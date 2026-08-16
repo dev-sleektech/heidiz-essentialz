@@ -8,7 +8,7 @@ import { Button, ButtonLink } from "@/components/ui/button";
 import { OrderSummary } from "@/components/shop/order-summary";
 import { useCart } from "@/lib/cart-context";
 import { useProductCatalog } from "@/lib/product-catalog-context";
-import { getDeliveryFee } from "@/lib/delivery";
+import { getDeliveryFee, getDeliveryEstimate } from "@/lib/delivery";
 import { isPaystackConfigured, openPaystackCheckout, verifyPaystackTransaction } from "@/lib/paystack";
 import { isMonnifyConfigured, openMonnifyCheckout, verifyMonnifyTransaction } from "@/lib/monnify";
 import { buildOrderWhatsAppLink, type OrderDetails } from "@/lib/whatsapp";
@@ -55,6 +55,10 @@ export default function CheckoutPage() {
   const [status, setStatus] = useState<"idle" | "processing" | "verifying">("idle");
   const [orderPhase, setOrderPhase] = useState<"form" | "processingOrder" | "confirmed">("form");
   const [error, setError] = useState<string | null>(null);
+  // Controlled (not just read from FormData at submit) so the delivery fee
+  // and ETA in the order summary react live as the customer picks a state,
+  // the same reactive pattern already used for per-size perfume pricing.
+  const [state, setState] = useState("");
 
   const resolvedLines = lines
     .map((line) => ({ line, product: getProduct(line.slug) }))
@@ -62,7 +66,12 @@ export default function CheckoutPage() {
       Boolean(entry.product)
     );
 
-  const delivery = getDeliveryFee(subtotal);
+  // Before a state is picked, fall back to the plain flat-fee estimate
+  // (matching the cart page) rather than defaulting into the worst-case
+  // "other" zone — the real zone fee/ETA only kicks in once known.
+  const { fee: delivery, etaLabel: deliveryEta } = state
+    ? getDeliveryEstimate(subtotal, state)
+    : { fee: getDeliveryFee(subtotal), etaLabel: "" };
   const total = subtotal + delivery;
   const isCardPayment = paymentMethod === "paystack" || paymentMethod === "monnify";
 
@@ -342,13 +351,19 @@ export default function CheckoutPage() {
               </label>
               <label className="flex flex-col gap-1.5">
                 <span className={labelClass}>State</span>
-                <select required name="state" defaultValue="" className={inputClass}>
+                <select
+                  required
+                  name="state"
+                  value={state}
+                  onChange={(e) => setState(e.target.value)}
+                  className={inputClass}
+                >
                   <option value="" disabled>
                     Select state
                   </option>
-                  {NIGERIAN_STATES.map((state) => (
-                    <option key={state} value={state}>
-                      {state}
+                  {NIGERIAN_STATES.map((stateOption) => (
+                    <option key={stateOption} value={stateOption}>
+                      {stateOption}
                     </option>
                   ))}
                 </select>
@@ -391,7 +406,12 @@ export default function CheckoutPage() {
         </div>
 
         <div className="flex flex-col gap-4">
-          <OrderSummary subtotal={subtotal} itemCount={totalItems}>
+          <OrderSummary
+            subtotal={subtotal}
+            itemCount={totalItems}
+            deliveryFeeOverride={delivery}
+            deliveryEtaLabel={deliveryEta || undefined}
+          >
             {error && (
               <div className="flex items-start gap-2 rounded-button bg-red-50 p-3 text-xs text-red-700">
                 <AlertCircle className="h-4 w-4 shrink-0" strokeWidth={1.5} />
