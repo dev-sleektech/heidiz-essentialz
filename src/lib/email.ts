@@ -1,5 +1,6 @@
 import { formatNaira } from "@/lib/format";
 import type { OrderDetails } from "@/lib/order";
+import type { DailyStats } from "@/lib/ai-summary";
 
 // Order confirmation email via Resend (https://resend.com). Same pattern as
 // Paystack: gracefully report "not configured" instead of throwing, and this
@@ -189,6 +190,241 @@ export async function sendAbandonedCartEmail(
     return { sent: true, message: "Reminder email sent." };
   } catch {
     return { sent: false, message: "Could not reach Resend to send the reminder." };
+  }
+}
+
+const STATUS_LABELS: Record<string, string> = {
+  PLACED: "Order Placed",
+  PAYMENT_CONFIRMED: "Payment Confirmed",
+  PROCESSING: "Processing",
+  OUT_FOR_DELIVERY: "Out for Delivery",
+  DELIVERED: "Delivered",
+  CANCELLED: "Cancelled",
+};
+
+const STATUS_MESSAGES: Record<string, string> = {
+  PROCESSING: "We're getting your order ready.",
+  OUT_FOR_DELIVERY: "Your rider is on the way. Expect your order shortly.",
+  DELIVERED: "Your order has been delivered. Thank you for shopping with us.",
+  CANCELLED: "This order has been cancelled. Reach out to us on WhatsApp if that's unexpected.",
+};
+
+function buildStatusUpdateEmailHtml(orderNumber: string, customerName: string, status: string, trackingUrl: string): string {
+  const label = STATUS_LABELS[status] ?? status;
+  const message = STATUS_MESSAGES[status] ?? "There's an update on your order.";
+
+  return `
+  <div style="background:${IVORY};padding:32px 16px;font-family:Arial,sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:4px;overflow:hidden;">
+      <tr>
+        <td style="background:${BRAND_BLACK};padding:28px 32px;text-align:center;">
+          <div style="font-family:Georgia,serif;color:#ffffff;font-size:22px;letter-spacing:2px;">HEIDIZ</div>
+          <div style="color:${BRAND_ORANGE};font-size:11px;letter-spacing:4px;margin-top:2px;">ESSENTIALZ</div>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:32px;">
+          <p style="font-family:Arial,sans-serif;font-size:11px;letter-spacing:2px;color:${BRAND_ORANGE};text-transform:uppercase;margin:0 0 8px;">Order ${orderNumber}</p>
+          <p style="font-family:Georgia,serif;font-size:22px;color:${BRAND_BLACK};margin:0 0 8px;">${label}</p>
+          <p style="font-size:14px;color:${CHARCOAL};margin:0 0 24px;">
+            Hi ${customerName}, ${message}
+          </p>
+          <div style="text-align:center;">
+            <a href="${trackingUrl}" style="display:inline-block;background:${BRAND_ORANGE};color:#ffffff;font-family:Arial,sans-serif;font-size:14px;font-weight:bold;padding:14px 32px;border-radius:4px;text-decoration:none;">
+              Track Your Order
+            </a>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td style="background:${BRAND_BLACK};padding:20px 32px;text-align:center;">
+          <p style="font-family:Arial,sans-serif;font-size:12px;color:#ffffff99;margin:0;">
+            Shop GF-31, Block C, Mabushi Ultra Modern Market, Jahi, FCT-Abuja
+          </p>
+          <p style="font-family:Arial,sans-serif;font-size:12px;color:#ffffff99;margin:4px 0 0;">
+            info@heidizstores.com &middot; +234 815 885 1166
+          </p>
+        </td>
+      </tr>
+    </table>
+  </div>`;
+}
+
+// Sent whenever staff moves an order to a new status from /admin/orders (see
+// src/app/api/staff/orders/[orderNumber]/status/route.ts). Only PROCESSING/
+// OUT_FOR_DELIVERY/DELIVERED/CANCELLED get a real message copy — PLACED and
+// PAYMENT_CONFIRMED are already covered by the checkout-time receipt email,
+// so this fires only for statuses set later. Same "never block the request"
+// contract as the other email helpers here.
+export async function sendOrderStatusEmail(params: {
+  email: string | null;
+  orderNumber: string;
+  customerName: string;
+  status: string;
+}): Promise<{ sent: boolean; message: string }> {
+  if (!params.email) {
+    return { sent: false, message: "No customer email on file for this order." };
+  }
+  if (!isResendConfigured()) {
+    return { sent: false, message: "Email is not configured yet." };
+  }
+
+  const from = process.env.RESEND_FROM_EMAIL || "HEIDIZ Essentialz <onboarding@resend.dev>";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3300";
+  const trackingUrl = `${siteUrl}/order-tracking?orderNumber=${encodeURIComponent(params.orderNumber)}`;
+  const label = STATUS_LABELS[params.status] ?? params.status;
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from,
+        to: params.email,
+        subject: `Your HEIDIZ order ${params.orderNumber} — ${label}`,
+        html: buildStatusUpdateEmailHtml(params.orderNumber, params.customerName, params.status, trackingUrl),
+      }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      return { sent: false, message: data?.message ?? `Resend responded with ${res.status}.` };
+    }
+    return { sent: true, message: "Status update email sent." };
+  } catch {
+    return { sent: false, message: "Could not reach Resend to send the status update." };
+  }
+}
+
+// Internal alert to staff (ADMIN_EMAILS) when a product flips to out of
+// stock — see the admin product-update route. Not a "low stock" warning:
+// Product only tracks inStock as a boolean, there's no quantity field to
+// threshold against (see the "still not built" note in project memory).
+export async function sendOutOfStockAlertEmail(product: { name: string; slug: string }): Promise<{ sent: boolean; message: string }> {
+  const to = (process.env.ADMIN_EMAILS ?? "").split(",")[0]?.trim();
+  if (!to) {
+    return { sent: false, message: "No ADMIN_EMAILS configured to alert." };
+  }
+  if (!isResendConfigured()) {
+    return { sent: false, message: "Email is not configured yet." };
+  }
+
+  const from = process.env.RESEND_FROM_EMAIL || "HEIDIZ Essentialz <onboarding@resend.dev>";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3300";
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from,
+        to,
+        subject: `Out of stock: ${product.name}`,
+        html: `<div style="font-family:Arial,sans-serif;font-size:14px;color:${CHARCOAL};padding:24px;">
+          <p><strong>${product.name}</strong> just went out of stock.</p>
+          <p><a href="${siteUrl}/admin/products/${product.slug}" style="color:${BRAND_ORANGE};">Update it in the admin</a></p>
+        </div>`,
+      }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      return { sent: false, message: data?.message ?? `Resend responded with ${res.status}.` };
+    }
+    return { sent: true, message: "Out-of-stock alert sent." };
+  } catch {
+    return { sent: false, message: "Could not reach Resend to send the alert." };
+  }
+}
+
+// Daily AI-generated sales digest (see src/lib/ai-summary.ts), sent to
+// ADMIN_EMAILS by the sales-summary cron job. `summaryText` is Claude's
+// generated paragraph; the stat cards below it are computed directly from
+// the DB (not AI-generated) so the headline numbers are always exact, not
+// paraphrased.
+export async function sendSalesSummaryEmail(summaryText: string, stats: DailyStats): Promise<{ sent: boolean; message: string }> {
+  const to = (process.env.ADMIN_EMAILS ?? "").split(",")[0]?.trim();
+  if (!to) {
+    return { sent: false, message: "No ADMIN_EMAILS configured to send the summary to." };
+  }
+  if (!isResendConfigured()) {
+    return { sent: false, message: "Email is not configured yet." };
+  }
+
+  const from = process.env.RESEND_FROM_EMAIL || "HEIDIZ Essentialz <onboarding@resend.dev>";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3300";
+
+  const statCard = (label: string, value: string) => `
+    <td style="padding:16px;background:${IVORY};border-radius:4px;" width="50%">
+      <p style="font-family:Arial,sans-serif;font-size:11px;letter-spacing:1px;color:#999;text-transform:uppercase;margin:0 0 4px;">${label}</p>
+      <p style="font-family:Georgia,serif;font-size:20px;color:${BRAND_BLACK};margin:0;">${value}</p>
+    </td>`;
+
+  const html = `
+  <div style="background:${IVORY};padding:32px 16px;font-family:Arial,sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:4px;overflow:hidden;">
+      <tr>
+        <td style="background:${BRAND_BLACK};padding:28px 32px;text-align:center;">
+          <div style="font-family:Georgia,serif;color:#ffffff;font-size:22px;letter-spacing:2px;">HEIDIZ</div>
+          <div style="color:${BRAND_ORANGE};font-size:11px;letter-spacing:4px;margin-top:2px;">ESSENTIALZ</div>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:32px;">
+          <p style="font-family:Arial,sans-serif;font-size:11px;letter-spacing:2px;color:${BRAND_ORANGE};text-transform:uppercase;margin:0 0 8px;">Daily Sales Summary</p>
+          <p style="font-family:Georgia,serif;font-size:20px;color:${BRAND_BLACK};margin:0 0 20px;">${stats.dateLabel}</p>
+
+          <p style="font-size:14px;line-height:1.6;color:${CHARCOAL};margin:0 0 24px;">${summaryText}</p>
+
+          <table width="100%" cellpadding="0" cellspacing="8">
+            <tr>
+              ${statCard("Orders", String(stats.orderCount))}
+              ${statCard("Revenue", formatNaira(stats.revenue))}
+            </tr>
+            <tr>
+              ${statCard("Needs Attention", String(stats.needsAttentionCount))}
+              ${statCard("Cancelled", String(stats.cancelledCount))}
+            </tr>
+          </table>
+
+          <div style="margin-top:24px;text-align:center;">
+            <a href="${siteUrl}/admin" style="display:inline-block;background:${BRAND_ORANGE};color:#ffffff;font-family:Arial,sans-serif;font-size:14px;font-weight:bold;padding:12px 28px;border-radius:4px;text-decoration:none;">
+              Open Admin Dashboard
+            </a>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </div>`;
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from,
+        to,
+        subject: `HEIDIZ sales summary — ${stats.dateLabel}`,
+        html,
+      }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      return { sent: false, message: data?.message ?? `Resend responded with ${res.status}.` };
+    }
+    return { sent: true, message: "Sales summary email sent." };
+  } catch {
+    return { sent: false, message: "Could not reach Resend to send the summary." };
   }
 }
 

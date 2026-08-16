@@ -4,6 +4,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { isStaffEmail } from "@/lib/staff-auth";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
+import { sendOutOfStockAlertEmail } from "@/lib/email";
 
 type UpdateBody = {
   name: string;
@@ -47,6 +48,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ sl
   }
 
   try {
+    // Read the prior stock state first so we can detect a true→false
+    // transition below — the update itself doesn't tell us what changed.
+    const before = await prisma.product.findUnique({ where: { slug }, select: { inStock: true, name: true } });
+
     await prisma.product.update({
       where: { slug },
       data: {
@@ -77,6 +82,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ sl
     // cache so an admin price/stock edit shows up immediately rather than
     // waiting for the 60s ISR window.
     revalidatePath("/", "layout");
+
+    // Only alert on a real transition (was in stock, now isn't) — not on
+    // every save of a product that was already out of stock.
+    if (before?.inStock && !body.inStock) {
+      sendOutOfStockAlertEmail({ name: body.name, slug }).catch(() => {});
+    }
 
     return NextResponse.json({ updated: true });
   } catch (err) {
