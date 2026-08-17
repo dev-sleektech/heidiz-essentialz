@@ -21,15 +21,26 @@ const NAV_ITEMS = [
   { href: "/admin/chat", label: "Live Chat", icon: MessageCircle },
 ];
 
-// Single gate for the whole /admin tree — every page under here inherits
-// this check instead of repeating it. The API routes each admin page calls
-// (e.g. /api/staff/orders/[orderNumber]/status) still re-check server-side
-// too, as defense in depth against this layout check alone.
+// Single gate for the whole /admin tree (this route group — /admin/sign-in
+// deliberately lives outside it, see that page) — every page under here
+// inherits this check instead of repeating it. The API routes each admin
+// page calls (e.g. /api/staff/orders/[orderNumber]/status) still re-check
+// server-side too, as defense in depth against this layout check alone.
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = await currentUser();
   const email = user?.primaryEmailAddress?.emailAddress;
 
+  if (!user) {
+    // Not signed in at all — send to the actual admin login instead of
+    // silently bouncing to the storefront homepage (the previous, confusing
+    // behavior — see src/app/admin/sign-in for the real fix).
+    redirect("/admin/sign-in");
+  }
+
   if (!isStaffEmail(email)) {
+    // Signed in, but as a non-staff account (e.g. a real customer) —
+    // redirecting back to /admin/sign-in here would just loop, since
+    // they're already authenticated and still wouldn't pass this check.
     redirect("/");
   }
 
