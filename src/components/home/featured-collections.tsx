@@ -10,7 +10,7 @@ export function FeaturedCollections() {
       <Container className="py-20 md:py-28">
         <SectionHeading
           eyebrow="Shop by Collection"
-          title="Curated for Every Ritual"
+          title="Created for Every Moment"
           subtitle="From signature fragrances to fine accessories, explore the world of HEIDIZ Essentialz."
         />
 
