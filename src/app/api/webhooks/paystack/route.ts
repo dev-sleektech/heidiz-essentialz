@@ -15,7 +15,7 @@ import { verifyPaystackReference } from "@/lib/paystack-server";
 // claim is still not enough on its own: we re-verify with Paystack's API
 // (the same verifyPaystackReference() the popup path uses) before touching
 // the order, exactly per Paystack's documented best practice.
-function isValidSignature(rawBody: string, signature: string | null, secretKey: string): boolean {
+export function isValidSignature(rawBody: string, signature: string | null, secretKey: string): boolean {
   if (!signature) return false;
   const expected = createHmac("sha512", secretKey).update(rawBody).digest("hex");
   const expectedBuf = Buffer.from(expected, "utf8");
