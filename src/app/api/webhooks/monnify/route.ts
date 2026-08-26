@@ -16,7 +16,7 @@ import { verifyMonnifyReference } from "@/lib/monnify-server";
 // way, the payload's own claim is never trusted alone — re-verified with
 // Monnify's API (verifyMonnifyReference(), same as the popup path) before
 // touching the order.
-function isValidSignature(rawBody: string, signature: string, secretKey: string): boolean {
+export function isValidSignature(rawBody: string, signature: string, secretKey: string): boolean {
   const expected = createHmac("sha512", secretKey).update(rawBody).digest("hex");
   const expectedBuf = Buffer.from(expected, "utf8");
   const signatureBuf = Buffer.from(signature, "utf8");

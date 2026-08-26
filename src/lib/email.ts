@@ -12,6 +12,22 @@ export function isResendConfigured() {
   return Boolean(key && !key.includes("replace_me"));
 }
 
+// Every template below interpolates customer-submitted checkout fields
+// (name, address, city, state, phone) straight into an HTML string sent as
+// a real email via Resend. None of that is JSX, so nothing here gets
+// React's automatic escaping — a customer typing `<img src=x onerror=...>`
+// as their name would otherwise ship as live HTML/script in the email.
+// Escape every interpolated value that can trace back to user input before
+// it goes in the template.
+export function escapeHtml(value: unknown): string {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 const BRAND_ORANGE = "#B5531E";
 const BRAND_BLACK = "#000000";
 const IVORY = "#F8F6F2";
@@ -23,11 +39,11 @@ function buildReceiptEmailHtml(order: OrderDetails): string {
   const itemRows = order.lines
     .map(
       ({ product, quantity, size, color, unitPrice }) => {
-        const options = [size && `Size ${size}`, color].filter(Boolean).join(", ");
+        const options = [size && `Size ${escapeHtml(size)}`, color && escapeHtml(color)].filter(Boolean).join(", ");
         return `
         <tr>
           <td style="padding:12px 0;border-bottom:1px solid #eee;font-family:Arial,sans-serif;font-size:14px;color:${CHARCOAL};">
-            ${product.name}<br/>
+            ${escapeHtml(product.name)}<br/>
             <span style="color:#999;font-size:12px;">${options ? `${options} &middot; ` : ""}Qty ${quantity}</span>
           </td>
           <td align="right" style="padding:12px 0;border-bottom:1px solid #eee;font-family:Arial,sans-serif;font-size:14px;color:${CHARCOAL};white-space:nowrap;">
@@ -52,7 +68,7 @@ function buildReceiptEmailHtml(order: OrderDetails): string {
           <p style="font-family:Georgia,serif;font-size:22px;color:${BRAND_BLACK};margin:0 0 8px;">Order Confirmed</p>
           <p style="font-size:14px;color:${CHARCOAL};margin:0 0 24px;">
             Thank you for shopping with HEIDIZ Essentialz. Your order
-            <strong>${order.orderNumber}</strong> has been confirmed and paid via ${order.paymentMethodLabel}.
+            <strong>${escapeHtml(order.orderNumber)}</strong> has been confirmed and paid via ${escapeHtml(order.paymentMethodLabel)}.
           </p>
 
           <table width="100%" cellpadding="0" cellspacing="0">
@@ -74,9 +90,9 @@ function buildReceiptEmailHtml(order: OrderDetails): string {
           <div style="margin-top:28px;padding-top:20px;border-top:1px solid #eee;">
             <p style="font-family:Arial,sans-serif;font-size:12px;letter-spacing:1px;color:#999;text-transform:uppercase;margin:0 0 6px;">Delivery Address</p>
             <p style="font-family:Arial,sans-serif;font-size:14px;color:${CHARCOAL};margin:0;">
-              ${order.customerName}<br/>
-              ${order.address}, ${order.city}, ${order.state}<br/>
-              ${order.phone}
+              ${escapeHtml(order.customerName)}<br/>
+              ${escapeHtml(order.address)}, ${escapeHtml(order.city)}, ${escapeHtml(order.state)}<br/>
+              ${escapeHtml(order.phone)}
             </p>
           </div>
         </td>
@@ -103,7 +119,7 @@ function buildAbandonedCartEmailHtml(customerName: string | null, items: Abandon
       (item) => `
         <tr>
           <td style="padding:12px 0;border-bottom:1px solid #eee;font-family:Arial,sans-serif;font-size:14px;color:${CHARCOAL};">
-            ${item.name}<br/>
+            ${escapeHtml(item.name)}<br/>
             <span style="color:#999;font-size:12px;">Qty ${item.quantity}</span>
           </td>
           <td align="right" style="padding:12px 0;border-bottom:1px solid #eee;font-family:Arial,sans-serif;font-size:14px;color:${CHARCOAL};white-space:nowrap;">
@@ -125,7 +141,7 @@ function buildAbandonedCartEmailHtml(customerName: string | null, items: Abandon
       <tr>
         <td style="padding:32px;">
           <p style="font-family:Georgia,serif;font-size:22px;color:${BRAND_BLACK};margin:0 0 8px;">
-            ${customerName ? `${customerName}, y` : "Y"}ou left something behind
+            ${customerName ? `${escapeHtml(customerName)}, y` : "Y"}ou left something behind
           </p>
           <p style="font-size:14px;color:${CHARCOAL};margin:0 0 24px;">
             Your selection is still saved. Complete your order before it's gone.
@@ -224,10 +240,10 @@ function buildStatusUpdateEmailHtml(orderNumber: string, customerName: string, s
       </tr>
       <tr>
         <td style="padding:32px;">
-          <p style="font-family:Arial,sans-serif;font-size:11px;letter-spacing:2px;color:${BRAND_ORANGE};text-transform:uppercase;margin:0 0 8px;">Order ${orderNumber}</p>
-          <p style="font-family:Georgia,serif;font-size:22px;color:${BRAND_BLACK};margin:0 0 8px;">${label}</p>
+          <p style="font-family:Arial,sans-serif;font-size:11px;letter-spacing:2px;color:${BRAND_ORANGE};text-transform:uppercase;margin:0 0 8px;">Order ${escapeHtml(orderNumber)}</p>
+          <p style="font-family:Georgia,serif;font-size:22px;color:${BRAND_BLACK};margin:0 0 8px;">${escapeHtml(label)}</p>
           <p style="font-size:14px;color:${CHARCOAL};margin:0 0 24px;">
-            Hi ${customerName}, ${message}
+            Hi ${escapeHtml(customerName)}, ${escapeHtml(message)}
           </p>
           <div style="text-align:center;">
             <a href="${trackingUrl}" style="display:inline-block;background:${BRAND_ORANGE};color:#ffffff;font-family:Arial,sans-serif;font-size:14px;font-weight:bold;padding:14px 32px;border-radius:4px;text-decoration:none;">
@@ -327,7 +343,7 @@ export async function sendOutOfStockAlertEmail(product: { name: string; slug: st
         to,
         subject: `Out of stock: ${product.name}`,
         html: `<div style="font-family:Arial,sans-serif;font-size:14px;color:${CHARCOAL};padding:24px;">
-          <p><strong>${product.name}</strong> just went out of stock.</p>
+          <p><strong>${escapeHtml(product.name)}</strong> just went out of stock.</p>
           <p><a href="${siteUrl}/admin/products/${product.slug}" style="color:${BRAND_ORANGE};">Update it in the admin</a></p>
         </div>`,
       }),
@@ -362,8 +378,8 @@ export async function sendSalesSummaryEmail(summaryText: string, stats: DailySta
 
   const statCard = (label: string, value: string) => `
     <td style="padding:16px;background:${IVORY};border-radius:4px;" width="50%">
-      <p style="font-family:Arial,sans-serif;font-size:11px;letter-spacing:1px;color:#999;text-transform:uppercase;margin:0 0 4px;">${label}</p>
-      <p style="font-family:Georgia,serif;font-size:20px;color:${BRAND_BLACK};margin:0;">${value}</p>
+      <p style="font-family:Arial,sans-serif;font-size:11px;letter-spacing:1px;color:#999;text-transform:uppercase;margin:0 0 4px;">${escapeHtml(label)}</p>
+      <p style="font-family:Georgia,serif;font-size:20px;color:${BRAND_BLACK};margin:0;">${escapeHtml(value)}</p>
     </td>`;
 
   const html = `
@@ -378,9 +394,9 @@ export async function sendSalesSummaryEmail(summaryText: string, stats: DailySta
       <tr>
         <td style="padding:32px;">
           <p style="font-family:Arial,sans-serif;font-size:11px;letter-spacing:2px;color:${BRAND_ORANGE};text-transform:uppercase;margin:0 0 8px;">Daily Sales Summary</p>
-          <p style="font-family:Georgia,serif;font-size:20px;color:${BRAND_BLACK};margin:0 0 20px;">${stats.dateLabel}</p>
+          <p style="font-family:Georgia,serif;font-size:20px;color:${BRAND_BLACK};margin:0 0 20px;">${escapeHtml(stats.dateLabel)}</p>
 
-          <p style="font-size:14px;line-height:1.6;color:${CHARCOAL};margin:0 0 24px;">${summaryText}</p>
+          <p style="font-size:14px;line-height:1.6;color:${CHARCOAL};margin:0 0 24px;">${escapeHtml(summaryText)}</p>
 
           <table width="100%" cellpadding="0" cellspacing="8">
             <tr>

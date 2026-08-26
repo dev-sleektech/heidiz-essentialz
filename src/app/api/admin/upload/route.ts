@@ -14,6 +14,34 @@ import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 // is SHA1("folder=<folder>&timestamp=<ts>" + apiSecret), per Cloudinary's
 // documented signing scheme (params sorted alphabetically, api_secret
 // appended directly with no separator).
+
+// Raster formats only — image/svg+xml deliberately excluded even though it
+// matches "image/*": an SVG is XML and can carry an inline <script>, so a
+// "product photo" upload could otherwise become a stored-XSS payload served
+// back from Cloudinary's URL.
+const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+
+export function isAllowedImageMimeType(type: string): boolean {
+  return ALLOWED_IMAGE_TYPES.has(type);
+}
+
+// Checks the file's actual leading bytes against known magic numbers for
+// the four raster formats we accept — independent of whatever filename or
+// Content-Type the client claims.
+export function looksLikeAllowedImage(bytes: Uint8Array): boolean {
+  if (bytes.length < 4) return false;
+  const isJpeg = bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+  const isPng =
+    bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47;
+  const isGif =
+    bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x38;
+  const isWebp =
+    bytes.length >= 12 &&
+    bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46 &&
+    bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50;
+  return isJpeg || isPng || isGif || isWebp;
+}
+
 export async function POST(request: Request) {
   const user = await currentUser();
   if (!isStaffEmail(user?.primaryEmailAddress?.emailAddress)) {
@@ -45,12 +73,22 @@ export async function POST(request: Request) {
   if (!(file instanceof File)) {
     return NextResponse.json({ uploaded: false, message: "No file provided." }, { status: 400 });
   }
-  if (!file.type.startsWith("image/")) {
-    return NextResponse.json({ uploaded: false, message: "Only image files are allowed." }, { status: 400 });
+  // file.type is just the multipart Content-Type the browser sent — a
+  // client can set that header to anything regardless of the actual bytes.
+  if (!isAllowedImageMimeType(file.type)) {
+    return NextResponse.json({ uploaded: false, message: "Only JPEG, PNG, WebP, or GIF images are allowed." }, { status: 400 });
   }
   const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10MB — plenty for a product photo, bounds Cloudinary quota abuse
   if (file.size > MAX_UPLOAD_BYTES) {
     return NextResponse.json({ uploaded: false, message: "Image must be 10MB or smaller." }, { status: 400 });
+  }
+
+  // Don't trust the declared type — sniff the real file signature (magic
+  // bytes) so a renamed/relabeled non-image file can't ride through on a
+  // spoofed Content-Type.
+  const headerBytes = new Uint8Array(await file.slice(0, 12).arrayBuffer());
+  if (!looksLikeAllowedImage(headerBytes)) {
+    return NextResponse.json({ uploaded: false, message: "File content doesn't match a supported image format." }, { status: 400 });
   }
 
   const timestamp = Math.round(Date.now() / 1000);
