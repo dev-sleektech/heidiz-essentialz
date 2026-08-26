@@ -6,6 +6,7 @@ import { SiteChrome } from "@/components/site/site-chrome";
 import { ProductCatalogProvider } from "@/lib/product-catalog-context";
 import { CartProvider } from "@/lib/cart-context";
 import { WishlistProvider } from "@/lib/wishlist-context";
+import { jsonLdScript } from "@/lib/json-ld";
 
 // Brand-matched theming for Clerk's prebuilt <SignIn>/<SignUp>/<UserButton>
 // components (see src/app/sign-in, src/app/sign-up).
@@ -128,7 +129,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script
           type="application/ld+json"
           // eslint-disable-next-line react/no-danger
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+          dangerouslySetInnerHTML={jsonLdScript(organizationJsonLd)}
         />
         <ClerkProvider appearance={clerkAppearance}>
           <ProductCatalogProvider>

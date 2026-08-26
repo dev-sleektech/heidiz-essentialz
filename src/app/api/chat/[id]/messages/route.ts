@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { findConversation, listMessages, addMessage, markRead } from "@/lib/chat";
+import { checkRateLimit, clientIp, rateLimitResponse } from "@/lib/rate-limit";
 
 // Customer side of the polling loop: GET returns the full thread (widget
 // re-fetches this every few seconds while open) and also marks any staff
@@ -9,7 +10,16 @@ import { findConversation, listMessages, addMessage, markRead } from "@/lib/chat
 // guest checkout; the conversation id itself (opaque, cuid) is the only
 // thing gating access to a thread, matching how order-tracking gates by
 // order number + phone rather than a login.
-export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+// GET limit is generous — the widget legitimately polls every 4s (see
+// POLL_INTERVAL_MS in chat-widget.tsx), and several guests/tabs can share
+// one IP behind NAT. Still bounds a runaway/scripted polling loop.
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { allowed, retryAfterSeconds } = checkRateLimit(`chat-messages-get:${clientIp(req)}`, {
+    limit: 150,
+    windowMs: 5 * 60 * 1000,
+  });
+  if (!allowed) return rateLimitResponse(retryAfterSeconds);
+
   const { id } = await params;
   const conversation = await findConversation(id);
   if (!conversation) {
@@ -22,6 +32,12 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 }
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { allowed, retryAfterSeconds } = checkRateLimit(`chat-messages-post:${clientIp(req)}`, {
+    limit: 20,
+    windowMs: 5 * 60 * 1000,
+  });
+  if (!allowed) return rateLimitResponse(retryAfterSeconds);
+
   const { id } = await params;
   const conversation = await findConversation(id);
   if (!conversation) {

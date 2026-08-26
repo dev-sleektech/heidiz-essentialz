@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit, clientIp, rateLimitResponse } from "@/lib/rate-limit";
 
 type TrackBody = {
   email: string;
@@ -17,6 +18,12 @@ type TrackBody = {
 // duplicate rows — matches/updates any not-yet-converted snapshot from the
 // last 24h for the same email instead of piling up new ones.
 export async function POST(request: Request) {
+  const { allowed, retryAfterSeconds } = checkRateLimit(`checkout-track:${clientIp(request)}`, {
+    limit: 20,
+    windowMs: 10 * 60 * 1000,
+  });
+  if (!allowed) return rateLimitResponse(retryAfterSeconds);
+
   let body: TrackBody;
   try {
     body = await request.json();

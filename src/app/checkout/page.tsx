@@ -9,7 +9,7 @@ import { OrderSummary } from "@/components/shop/order-summary";
 import { useCart } from "@/lib/cart-context";
 import { useProductCatalog } from "@/lib/product-catalog-context";
 import { getDeliveryFee, getDeliveryEstimate } from "@/lib/delivery";
-import { isPaystackConfigured, openPaystackCheckout, verifyPaystackTransaction } from "@/lib/paystack";
+import { isPaystackConfigured, openPaystackCheckout, verifyPaystackTransaction, type VerifyLine } from "@/lib/paystack";
 import { isMonnifyConfigured, openMonnifyCheckout, verifyMonnifyTransaction } from "@/lib/monnify";
 import { buildOrderWhatsAppLink, type OrderDetails } from "@/lib/whatsapp";
 
@@ -162,15 +162,27 @@ export default function CheckoutPage() {
       return;
     }
 
+    // Sent alongside the payment reference so the verify route can
+    // recompute the real total from the Product table and confirm the
+    // amount actually charged matches it (see src/lib/order-pricing.ts) —
+    // never trust this component's own client-computed `total` as proof of
+    // what was paid.
+    const verifyLines: VerifyLine[] = resolvedLines.map(({ product, line }) => ({
+      slug: product.slug,
+      quantity: line.quantity,
+      size: line.size,
+      color: line.color,
+    }));
+
     // Shared between both providers: once their SDK confirms a charge
     // *appeared* to succeed, verify it server-side before treating the
     // order as paid — never trust the client-side callback alone.
     const onProviderSuccess = (
       reference: string,
-      verify: (ref: string) => Promise<boolean>
+      verify: (ref: string, items: VerifyLine[], state: string) => Promise<boolean>
     ) => {
       setStatus("verifying");
-      verify(reference)
+      verify(reference, verifyLines, state)
         .then((ok) => {
           if (ok) {
             completeOrder(form, reference, true);

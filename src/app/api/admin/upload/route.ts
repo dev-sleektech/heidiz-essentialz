@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createHash } from "node:crypto";
 import { currentUser } from "@clerk/nextjs/server";
 import { isStaffEmail } from "@/lib/staff-auth";
+import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 // Real product-photo upload, backing the image field in the admin product
 // form (src/components/admin/product-edit-form.tsx). Product.image just
@@ -18,6 +19,15 @@ export async function POST(request: Request) {
   if (!isStaffEmail(user?.primaryEmailAddress?.emailAddress)) {
     return NextResponse.json({ uploaded: false, message: "Not authorized." }, { status: 403 });
   }
+
+  // Keyed by staff user (not IP) since this is already authenticated —
+  // bounds Cloudinary quota usage from a compromised session or runaway
+  // script, not normal admin usage.
+  const { allowed, retryAfterSeconds } = checkRateLimit(`admin-upload:${user!.id}`, {
+    limit: 30,
+    windowMs: 10 * 60 * 1000,
+  });
+  if (!allowed) return rateLimitResponse(retryAfterSeconds);
 
   const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
   const apiKey = process.env.CLOUDINARY_API_KEY;
@@ -37,6 +47,10 @@ export async function POST(request: Request) {
   }
   if (!file.type.startsWith("image/")) {
     return NextResponse.json({ uploaded: false, message: "Only image files are allowed." }, { status: 400 });
+  }
+  const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10MB — plenty for a product photo, bounds Cloudinary quota abuse
+  if (file.size > MAX_UPLOAD_BYTES) {
+    return NextResponse.json({ uploaded: false, message: "Image must be 10MB or smaller." }, { status: 400 });
   }
 
   const timestamp = Math.round(Date.now() / 1000);

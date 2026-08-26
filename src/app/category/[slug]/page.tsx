@@ -5,6 +5,7 @@ import { Container } from "@/components/ui/container";
 import { ProductGrid } from "@/components/shop/product-grid";
 import { categories, getCategory, accessoryCategorySlugs, beautyCategorySlugs } from "@/lib/placeholder-data";
 import { getProductsByCategory } from "@/lib/products";
+import { jsonLdScript } from "@/lib/json-ld";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://heidiz-essentialz.vercel.app";
 
@@ -66,7 +67,7 @@ export default async function CategoryPage(props: PageProps<"/category/[slug]">)
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+        dangerouslySetInnerHTML={jsonLdScript(breadcrumbJsonLd)}
       />
       <CollectionHeader
         eyebrow="Shop"

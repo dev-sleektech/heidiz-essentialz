@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import type { OrderDetails } from "@/lib/order";
+import { computeOrderTotals } from "@/lib/order-pricing";
+import { checkRateLimit, clientIp, rateLimitResponse } from "@/lib/rate-limit";
 
 // An order paid via either card gateway arrives here already verified
 // (see completeOrder()'s sendEmailReceipt=true branch in checkout/page.tsx,
@@ -18,6 +20,12 @@ function isCardPayment(label: string) {
 // after completeOrder() builds the order object, same moment the WhatsApp
 // link and (for Paystack) the email receipt fire.
 export async function POST(request: Request) {
+  const { allowed, retryAfterSeconds } = checkRateLimit(`orders-create:${clientIp(request)}`, {
+    limit: 10,
+    windowMs: 10 * 60 * 1000,
+  });
+  if (!allowed) return rateLimitResponse(retryAfterSeconds);
+
   const { userId } = await auth();
 
   let order: OrderDetails;
@@ -29,6 +37,21 @@ export async function POST(request: Request) {
 
   if (!order?.orderNumber || !Array.isArray(order.lines) || order.lines.length === 0) {
     return NextResponse.json({ saved: false, message: "Missing order details." }, { status: 400 });
+  }
+
+  // Never trust order.subtotal/delivery/total/lines[].unitPrice from the
+  // client — the cart is client-side localStorage, so those are editable
+  // before this request ever leaves the browser. Recompute the real prices
+  // from the Product table; this is what actually gets stored and shipped.
+  const computed = await computeOrderTotals(
+    order.lines.map(({ product, quantity, size, color }) => ({ slug: product.slug, quantity, size, color })),
+    order.state
+  );
+  if (!computed) {
+    return NextResponse.json(
+      { saved: false, message: "One or more items in this order could not be priced. Please refresh your cart and try again." },
+      { status: 400 }
+    );
   }
 
   try {
@@ -45,20 +68,11 @@ export async function POST(request: Request) {
         notes: order.notes,
         paymentMethodLabel: order.paymentMethodLabel,
         paymentReference: isCardPayment(order.paymentMethodLabel) ? order.orderNumber : null,
-        subtotal: order.subtotal,
-        delivery: order.delivery,
-        total: order.total,
+        subtotal: computed.subtotal,
+        delivery: computed.delivery,
+        total: computed.total,
         status: isCardPayment(order.paymentMethodLabel) ? "PAYMENT_CONFIRMED" : "PLACED",
-        items: {
-          create: order.lines.map(({ product, quantity, size, color, unitPrice }) => ({
-            productSlug: product.slug,
-            productName: product.name,
-            unitPrice: unitPrice ?? product.price,
-            quantity,
-            size: size ?? null,
-            color: color ?? null,
-          })),
-        },
+        items: { create: computed.items },
       },
     });
 

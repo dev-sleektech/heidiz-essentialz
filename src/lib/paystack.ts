@@ -56,11 +56,17 @@ export async function openPaystackCheckout({
   });
 }
 
-export async function verifyPaystackTransaction(reference: string): Promise<boolean> {
+export type VerifyLine = { slug: string; quantity: number; size?: string; color?: string };
+
+// items/state let the server recompute the real order total from the
+// Product table and confirm the amount actually charged matches it — see
+// src/lib/order-pricing.ts. Without this, a client-tampered cart could pay
+// less than the true cost and still be treated as fully paid.
+export async function verifyPaystackTransaction(reference: string, items: VerifyLine[], state: string): Promise<boolean> {
   const res = await fetch("/api/paystack/verify", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ reference }),
+    body: JSON.stringify({ reference, items, state }),
   });
   const data = await res.json();
   return Boolean(data?.status);

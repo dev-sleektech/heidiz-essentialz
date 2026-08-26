@@ -10,6 +10,7 @@ import { Accordion, type AccordionItem } from "@/components/ui/accordion";
 import { StarRating } from "@/components/ui/star-rating";
 import { getCategory } from "@/lib/placeholder-data";
 import { getAllProducts, getProduct, getRelatedProducts } from "@/lib/products";
+import { jsonLdScript } from "@/lib/json-ld";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://heidiz-essentialz.vercel.app";
 
@@ -173,12 +174,12 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+        dangerouslySetInnerHTML={jsonLdScript(productJsonLd)}
       />
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+        dangerouslySetInnerHTML={jsonLdScript(breadcrumbJsonLd)}
       />
       <Container className="py-6">
         <Breadcrumbs
