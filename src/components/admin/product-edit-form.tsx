@@ -1,11 +1,15 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Loader2, CheckCircle2, AlertCircle, Upload, X } from "lucide-react";
-import { categories } from "@/lib/placeholder-data";
+import { DeleteButton } from "@/components/admin/delete-button";
+import type { Category } from "@/lib/category-types";
 import type { Product } from "@/lib/product-types";
+import { inputClass, labelClass } from "@/lib/form-styles";
+import { slugify } from "@/lib/slug";
 
 const BADGE_OPTIONS: { value: string; label: string }[] = [
   { value: "", label: "None" },
@@ -18,9 +22,6 @@ const BADGE_OPTIONS: { value: string; label: string }[] = [
   { value: "Christmas", label: "Christmas (promo indicator)" },
 ];
 
-const inputClass =
-  "w-full rounded-button border border-brand-black/15 bg-white px-4 py-2.5 text-sm text-charcoal placeholder:text-charcoal/40 focus:outline-none focus:ring-2 focus:ring-burnt-orange";
-const labelClass = "text-xs uppercase tracking-wide text-charcoal/60";
 
 // Arrays (benefits, fragrance note lists) are edited as one-item-per-line
 // textareas rather than a repeater UI — matches how the static catalog
@@ -75,25 +76,36 @@ const FULL_SHOE_SIZE_RANGE = [
   ...WOMENS_US_TO_EU.map(([us, eu]) => `EU ${eu} / US ${us} (Women)`),
 ].join("\n");
 
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
 
 // Same form for both create and edit — pass `product` to edit an existing
 // one (PATCHes /api/admin/products/[slug]), omit it to create a new one
 // (POSTs to /api/admin/products, then redirects to the new product's edit
 // page). The only real difference is the extra Slug field in create mode.
-export function ProductEditForm({ product }: { product?: Product }) {
+// `categories` is passed in from the server page rather than imported:
+// they live in the DB now (src/lib/categories.ts) and this is a client
+// component.
+export function ProductEditForm({
+  product,
+  categories,
+}: {
+  product?: Product;
+  categories: Category[];
+}) {
   const router = useRouter();
   const isCreate = !product;
   const [saving, setSaving] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null);
   const [slug, setSlug] = useState(product?.slug ?? "");
   const [slugTouched, setSlugTouched] = useState(false);
+  // Free-text sub-collection label stored on the product ("Oil Perfumes",
+  // "Gift Sets", "Niche Perfumes"). Tracked in state so picking a category
+  // can prefill it on a new product without overwriting a deliberate label
+  // on an existing one — /oil-perfumes and /gift-sets query this field
+  // directly, so silently resetting it to the category name (what this
+  // form used to do on every save) dropped products off those pages.
+  const [collectionLabel, setCollectionLabel] = useState(
+    product?.category ?? categories[0]?.name ?? ""
+  );
   const [image, setImage] = useState(product?.image ?? "");
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -174,7 +186,8 @@ export function ProductEditForm({ product }: { product?: Product }) {
 
     const data = new FormData(e.currentTarget);
     const categorySlug = String(data.get("categorySlug"));
-    const category = categories.find((c) => c.slug === categorySlug)?.name ?? categorySlug;
+    const category =
+      collectionLabel.trim() || categories.find((c) => c.slug === categorySlug)?.name || categorySlug;
 
     const hasFragranceNotes =
       String(data.get("notesTop")).trim() ||
@@ -274,13 +287,46 @@ export function ProductEditForm({ product }: { product?: Product }) {
 
         <label className="flex flex-col gap-1.5">
           <span className={labelClass}>Category</span>
-          <select required name="categorySlug" defaultValue={product?.categorySlug ?? categories[0].slug} className={inputClass}>
+          <select
+            required
+            name="categorySlug"
+            defaultValue={product?.categorySlug ?? categories[0]?.slug}
+            className={inputClass}
+            onChange={(e) => {
+              if (isCreate) {
+                const picked = categories.find((c) => c.slug === e.target.value);
+                if (picked) setCollectionLabel(picked.name);
+              }
+            }}
+          >
             {categories.map((c) => (
               <option key={c.slug} value={c.slug}>
                 {c.name}
               </option>
             ))}
           </select>
+          <span className="text-xs text-charcoal/40">
+            Manage the list at{" "}
+            <Link href="/admin/categories" className="text-burnt-orange hover:underline">
+              Categories
+            </Link>
+          </span>
+        </label>
+
+        <label className="flex flex-col gap-1.5">
+          <span className={labelClass}>Collection Label</span>
+          <input
+            required
+            value={collectionLabel}
+            onChange={(e) => setCollectionLabel(e.target.value)}
+            className={inputClass}
+            placeholder="e.g. Oil Perfumes"
+          />
+          <span className="text-xs text-charcoal/40">
+            The finer label shown on the product card, inside the category. &quot;Oil Perfumes&quot;
+            and &quot;Gift Sets&quot; are matched exactly to build those two pages, so keep the
+            spelling if this product belongs on one.
+          </span>
         </label>
 
         <div className="flex flex-col gap-1.5">
@@ -524,7 +570,23 @@ export function ProductEditForm({ product }: { product?: Product }) {
             {result.message}
           </span>
         )}
+
+        {!isCreate && (
+          <div className="ml-auto">
+            <DeleteButton
+              endpoint={`/api/admin/products/${product.slug}`}
+              confirmLabel="Remove this product from the store?"
+              redirectTo="/admin/products"
+            />
+          </div>
+        )}
       </div>
+      {!isCreate && (
+        <p className="text-xs text-charcoal/40">
+          Deleting removes the product from the storefront for good. Past orders keep their own copy
+          of the name and price, so order history and receipts are unaffected.
+        </p>
+      )}
     </form>
   );
 }

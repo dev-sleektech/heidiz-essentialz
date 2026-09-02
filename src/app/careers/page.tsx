@@ -17,9 +17,9 @@ export default function CareersPage() {
         <Briefcase className="h-12 w-12 text-burnt-orange" strokeWidth={1.5} />
         <h2 className="font-display text-2xl text-brand-black">No Open Positions Right Now</h2>
         <p className="max-w-md text-sm text-charcoal/70">
-          We don't have current openings, but we're always glad to hear from people who love
-          this space. If you're interested in working with HEIDIZ Essentialz, send your CV
-          and a short note about yourself and we'll keep it on file.
+          We don&apos;t have current openings, but we&apos;re always glad to hear from people who love
+          this space. If you&apos;re interested in working with HEIDIZ Essentialz, send your CV
+          and a short note about yourself and we&apos;ll keep it on file.
         </p>
         <a
           href="mailto:info@heidizstores.com?subject=Careers%20Inquiry"

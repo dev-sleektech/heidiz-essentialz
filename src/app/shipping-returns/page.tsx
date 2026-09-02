@@ -86,7 +86,7 @@ export default function ShippingReturnsPage() {
             <p className="text-sm leading-relaxed text-charcoal/70">
               If your order arrives damaged, faulty, or different from what you ordered,
               contact us within 48 hours of delivery with photos of the item and packaging.
-              We'll arrange a replacement or full refund at no extra cost to you.
+              We&apos;ll arrange a replacement or full refund at no extra cost to you.
             </p>
           </section>
         </div>

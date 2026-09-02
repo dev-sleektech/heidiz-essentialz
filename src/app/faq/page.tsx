@@ -14,7 +14,7 @@ const FAQ_ITEMS: AccordionItem[] = [
     content: (
       <p>
         Yes. Every fragrance and accessory sold at HEIDIZ Essentialz is sourced through
-        authorized channels. We do not sell counterfeit or "inspired by" products unless
+        authorized channels. We do not sell counterfeit or &quot;inspired by&quot; products unless
         explicitly labeled as such.
       </p>
     ),
@@ -58,7 +58,7 @@ const FAQ_ITEMS: AccordionItem[] = [
     title: "How do I track my order?",
     content: (
       <p>
-        After checkout, tap "Confirm Order via WhatsApp" to send your order details directly
+        After checkout, tap &quot;Confirm Order via WhatsApp&quot; to send your order details directly
         to our team. We will confirm and keep you updated on delivery status by WhatsApp or
         phone.
       </p>
@@ -68,7 +68,7 @@ const FAQ_ITEMS: AccordionItem[] = [
     title: "Do you offer gift wrapping or gift sets?",
     content: (
       <p>
-        Select fragrances are available as curated gift sets, and we're happy to arrange gift
+        Select fragrances are available as curated gift sets, and we&apos;re happy to arrange gift
         wrapping on request. Add a note at checkout or message us on WhatsApp.
       </p>
     ),
@@ -77,7 +77,7 @@ const FAQ_ITEMS: AccordionItem[] = [
     title: "I'm not sure which fragrance to choose. Can you help?",
     content: (
       <p>
-        Absolutely. Message us on WhatsApp with what you usually wear or the occasion you're
+        Absolutely. Message us on WhatsApp with what you usually wear or the occasion you&apos;re
         shopping for, and our team will recommend a few options from the collection.
       </p>
     ),

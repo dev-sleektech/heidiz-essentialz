@@ -3,32 +3,28 @@ import { notFound } from "next/navigation";
 import { CollectionHeader } from "@/components/shop/collection-header";
 import { Container } from "@/components/ui/container";
 import { ProductGrid } from "@/components/shop/product-grid";
-import { categories, getCategory, accessoryCategorySlugs, beautyCategorySlugs } from "@/lib/placeholder-data";
+import { getAllCategories, getCategory } from "@/lib/categories";
 import { getProductsByCategory } from "@/lib/products";
 import { jsonLdScript } from "@/lib/json-ld";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://heidiz-essentialz.vercel.app";
 
-const ACCESSORIES = {
-  slug: "accessories",
-  name: "Accessories",
-  tagline: "Watches, handbags, jewelry & sunglasses",
-  description:
-    "The finishing pieces: timepieces, leather goods, fine jewelry, and eyewear, gathered in one edit.",
-  image: undefined as string | undefined,
-};
-
 export const revalidate = 60;
 
-export function generateStaticParams() {
-  return [...categories.map((c) => ({ slug: c.slug })), { slug: "accessories" }];
+// Accessories used to be hard-coded here; it's an ordinary Category row now
+// (a pure umbrella, see Category.groupSlugs) so it comes out of the DB with
+// the rest. dynamicParams stays on by default, so a category added in
+// /admin/categories after a build still renders on first request.
+export async function generateStaticParams() {
+  const categories = await getAllCategories();
+  return categories.map((c) => ({ slug: c.slug }));
 }
 
 export async function generateMetadata(
   props: PageProps<"/category/[slug]">
 ): Promise<Metadata> {
   const { slug } = await props.params;
-  const category = slug === "accessories" ? ACCESSORIES : getCategory(slug);
+  const category = await getCategory(slug);
   if (!category) return {};
   return {
     title: category.name,
@@ -45,13 +41,14 @@ export async function generateMetadata(
 
 export default async function CategoryPage(props: PageProps<"/category/[slug]">) {
   const { slug } = await props.params;
-  const category = slug === "accessories" ? ACCESSORIES : getCategory(slug);
+  const category = await getCategory(slug);
 
   if (!category) notFound();
 
   const products = await getProductsByCategory(slug);
-  const noteAccessories = slug === "accessories";
-  const noteBeauty = slug === "beauty-skincare";
+  // Umbrella categories say so, rather than leaving a shopper wondering why
+  // a "Watches" product turned up under Accessories.
+  const groupedCount = category.groupSlugs.length;
 
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
@@ -77,16 +74,10 @@ export default async function CategoryPage(props: PageProps<"/category/[slug]">)
       />
       <Container className="py-12 md:py-16">
         <ProductGrid products={products} />
-        {noteAccessories && (
+        {groupedCount > 0 && (
           <p className="mt-10 text-center text-xs text-charcoal/40">
-            Browsing {accessoryCategorySlugs.length} combined collections. Prefer one at a time?
-            Use the Accessories menu above.
-          </p>
-        )}
-        {noteBeauty && (
-          <p className="mt-10 text-center text-xs text-charcoal/40">
-            Browsing {beautyCategorySlugs.length} combined collections, including Makeup and Hair
-            Care.
+            Browsing {category.assignable ? groupedCount + 1 : groupedCount} combined collections.
+            Prefer one at a time? Use the menu above.
           </p>
         )}
       </Container>

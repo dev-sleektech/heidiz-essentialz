@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { getProduct } from "@/lib/products";
+import { getAssignableCategories } from "@/lib/categories";
 import { ProductEditForm } from "@/components/admin/product-edit-form";
 
 export async function generateMetadata(
@@ -15,7 +16,7 @@ export async function generateMetadata(
 
 export default async function AdminProductEditPage(props: PageProps<"/admin/products/[slug]">) {
   const { slug } = await props.params;
-  const product = await getProduct(slug);
+  const [product, categories] = await Promise.all([getProduct(slug), getAssignableCategories()]);
 
   if (!product) notFound();
 
@@ -33,7 +34,7 @@ export default async function AdminProductEditPage(props: PageProps<"/admin/prod
       <p className="mt-1 text-sm text-charcoal/50">/product/{product.slug}</p>
 
       <div className="mt-8 max-w-3xl rounded-[4px] border border-brand-black/10 bg-white p-6 md:p-8">
-        <ProductEditForm product={product} />
+        <ProductEditForm product={product} categories={categories} />
       </div>
     </div>
   );

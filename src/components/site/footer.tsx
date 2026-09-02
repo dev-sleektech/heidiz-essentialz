@@ -3,9 +3,7 @@ import { MapPin, Phone, Mail, MessageCircle } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { InstagramIcon, FacebookIcon } from "@/components/ui/social-icons";
 import { Logo } from "@/components/site/logo";
-import { categories } from "@/lib/placeholder-data";
-
-const shopLinks = categories.slice(0, 6);
+import { groupForNav, type Category } from "@/lib/category-types";
 
 const helpLinks = [
   { label: "Fragrance Finder", href: "/fragrance-finder" },
@@ -23,7 +21,12 @@ const aboutLinks = [
   { label: "Careers", href: "/careers" },
 ];
 
-export function Footer() {
+export function Footer({ categories }: { categories: Category[] }) {
+  // The Collections dropdown, same nine entries in the same alphabetical
+  // order as the header and homepage. Accessories gets a single link to its
+  // umbrella page rather than six more rows in an already-tall column.
+  const shopLinks = groupForNav(categories).collections;
+
   return (
     <footer className="bg-brand-black text-white">
       <Container className="grid grid-cols-1 gap-12 py-16 lg:grid-cols-[1.3fr_1fr_1fr_1.2fr]">
@@ -71,6 +74,21 @@ export function Footer() {
                 </Link>
               </li>
             ))}
+            <li>
+              <Link href="/category/combo-deals" className="hover:text-white">
+                Combo Deals
+              </Link>
+            </li>
+            <li>
+              <Link href="/category/accessories" className="hover:text-white">
+                Accessories
+              </Link>
+            </li>
+            <li>
+              <Link href="/category/beauty-skincare" className="hover:text-white">
+                Beauty &amp; Skincare
+              </Link>
+            </li>
           </ul>
         </div>
 

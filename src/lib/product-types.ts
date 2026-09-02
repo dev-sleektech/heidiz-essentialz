@@ -5,17 +5,24 @@
 // Instagram posts — not part of the product-catalog DB migration) to avoid
 // a circular import between that file and the Prisma-backed one.
 
-export type IconKey =
-  | "perfume"
-  | "skincare"
-  | "makeup"
-  | "hair"
-  | "watch"
-  | "bag"
-  | "jewelry"
-  | "sunglasses"
-  | "shoes"
-  | "candle";
+// Stock-illustration keys. Declared as a const array (rather than a bare
+// union) so the admin category form can render a picker from it and the
+// API routes can validate against it at runtime — the derived union is
+// identical to what this used to declare by hand.
+export const ICON_KEYS = [
+  "perfume",
+  "skincare",
+  "makeup",
+  "hair",
+  "watch",
+  "bag",
+  "jewelry",
+  "sunglasses",
+  "shoes",
+  "candle",
+] as const;
+
+export type IconKey = (typeof ICON_KEYS)[number];
 
 export type FragranceNotes = {
   top: string[];

@@ -18,11 +18,11 @@ export default function GiftCardsPage() {
         <Gift className="h-12 w-12 text-burnt-orange" strokeWidth={1.5} />
         <h2 className="font-display text-2xl text-brand-black">Gift Cards Are Coming Soon</h2>
         <p className="max-w-md text-sm text-charcoal/70">
-          We're building a proper gift card experience. In the meantime, browse our{" "}
+          We&apos;re building a proper gift card experience. In the meantime, browse our{" "}
           <a href="/gift-sets" className="text-burnt-orange hover:underline">
             curated Gift Sets
           </a>
-          , or message us on WhatsApp and we'll arrange a gift on your behalf, wrapped and
+          , or message us on WhatsApp and we&apos;ll arrange a gift on your behalf, wrapped and
           ready.
         </p>
         <div className="mt-2 flex flex-col items-center gap-3 sm:flex-row">

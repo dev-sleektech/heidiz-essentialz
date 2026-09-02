@@ -2,10 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { ProductEditForm } from "@/components/admin/product-edit-form";
+import { getAssignableCategories } from "@/lib/categories";
 
 export const metadata: Metadata = { title: "New Product | HEIDIZ Admin" };
 
-export default function AdminNewProductPage() {
+export default async function AdminNewProductPage() {
+  const categories = await getAssignableCategories();
+
   return (
     <div className="p-8 md:p-10">
       <Link
@@ -19,7 +22,7 @@ export default function AdminNewProductPage() {
       <h1 className="mt-4 font-display text-2xl text-brand-black">New Product</h1>
 
       <div className="mt-8 max-w-3xl rounded-[4px] border border-brand-black/10 bg-white p-6 md:p-8">
-        <ProductEditForm />
+        <ProductEditForm categories={categories} />
       </div>
     </div>
   );

@@ -5,12 +5,16 @@ import { BrandStory } from "@/components/home/brand-story";
 import { Testimonials } from "@/components/home/testimonials";
 import { InstagramGallery } from "@/components/home/instagram-gallery";
 import { Newsletter } from "@/components/home/newsletter";
-import { getBestSellers, getNewArrivals } from "@/lib/products";
+import { getBestSellers, getComboDeals, getNewArrivals } from "@/lib/products";
 
 export const revalidate = 60;
 
 export default async function Home() {
-  const [bestSellers, newArrivals] = await Promise.all([getBestSellers(), getNewArrivals()]);
+  const [bestSellers, newArrivals, comboDeals] = await Promise.all([
+    getBestSellers(),
+    getNewArrivals(),
+    getComboDeals(),
+  ]);
   return (
     <>
       <Hero />
@@ -30,6 +34,18 @@ export default async function Home() {
         products={newArrivals}
         viewAllHref="/new-arrivals"
       />
+      {/* Hidden until there are combos to show, so the homepage never
+          renders an empty section heading. */}
+      {comboDeals.length > 0 && (
+        <ProductSection
+          eyebrow="Combo Deals"
+          title="Bundled, Better Value"
+          subtitle="Multi-piece sets priced below the sum of their parts."
+          products={comboDeals}
+          viewAllHref="/category/combo-deals"
+          tinted
+        />
+      )}
       <BrandStory />
       <Testimonials />
       <InstagramGallery />

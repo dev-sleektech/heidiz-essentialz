@@ -2,30 +2,58 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, X, Search, User, Heart, ShoppingBag } from "lucide-react";
+import { Menu, X, Search, User, Heart, ShoppingBag, ChevronDown } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
 import { Container } from "@/components/ui/container";
 import { Logo } from "@/components/site/logo";
-import { categories } from "@/lib/placeholder-data";
+import { NavDropdown } from "@/components/site/nav-dropdown";
+import { groupForNav, type Category } from "@/lib/category-types";
 import { useCart } from "@/lib/cart-context";
 import { useWishlist } from "@/lib/wishlist-context";
 
-const navLinks = [
+// Top-level bar, exactly as the client specified:
+//
+//   New Arrivals | Combo Deals | Collections ▾ | Beauty & Skincare |
+//   Accessories ▾ | Contact | Refund Policy
+//
+// The two dropdowns are filled from the DB (Category.navGroup, set per
+// category at /admin/categories) and sorted alphabetically, so adding a
+// collection puts it on the menu without touching this file. The plain
+// links are pages, not categories, so they stay declared here.
+//
+// "Refund Policy" points at /shipping-returns, which is where the refund
+// terms actually live — there is no separate refunds page.
+// Combo Deals sits beside New Arrivals rather than inside a dropdown, so
+// it's declared here with the other top-level links. It is a real category
+// (see scripts/add-combo-deals.mjs) — staff file bundle products into it at
+// /admin/products, and it has its own /category page like any other.
+const STATIC_LINKS_BEFORE = [
   { label: "New Arrivals", href: "/new-arrivals" },
-  { label: "Perfumes", href: "/category/perfumes" },
-  { label: "Oil Perfumes", href: "/oil-perfumes" },
-  { label: "Beauty & Skincare", href: "/category/beauty-skincare" },
-  { label: "Shoes", href: "/category/shoes" },
-  { label: "Home Fragrance", href: "/category/home-fragrance" },
-  { label: "Accessories", href: "/category/accessories" },
-  { label: "Gift Sets", href: "/gift-sets" },
+  { label: "Combo Deals", href: "/category/combo-deals" },
 ];
 
-export function Header() {
+const STATIC_LINK_MIDDLE = { label: "Beauty & Skincare", href: "/category/beauty-skincare" };
+
+const STATIC_LINKS_AFTER = [
+  { label: "Contact", href: "/contact" },
+  { label: "Refund Policy", href: "/shipping-returns" },
+];
+
+export function Header({ categories }: { categories: Category[] }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  // Which mobile accordion is expanded. Only one at a time, so a long
+  // catalog can't push the rest of the menu off a phone screen.
+  const [openGroup, setOpenGroup] = useState<"collections" | "accessories" | null>(null);
   const { totalItems } = useCart();
   const { slugs: wishlistSlugs } = useWishlist();
   const { isSignedIn } = useUser();
+
+  const menus = groupForNav(categories);
+
+  function closeMenu() {
+    setMenuOpen(false);
+    setOpenGroup(null);
+  }
 
   return (
     <header className="sticky top-0 z-50 border-b border-brand-black/10 bg-ivory/90 backdrop-blur-md">
@@ -37,7 +65,10 @@ export function Header() {
         <button
           type="button"
           className="flex items-center gap-2 lg:hidden"
-          onClick={() => setMenuOpen((open) => !open)}
+          onClick={() => {
+            setMenuOpen((open) => !open);
+            setOpenGroup(null);
+          }}
           aria-label="Toggle menu"
         >
           {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -47,12 +78,33 @@ export function Header() {
           <Logo priority />
         </Link>
 
-        <nav className="hidden lg:flex items-center gap-8">
-          {navLinks.map((link) => (
+        <nav className="hidden lg:flex items-center gap-7">
+          {STATIC_LINKS_BEFORE.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm text-charcoal/80 hover:text-burnt-orange transition-colors"
+              className="text-sm text-charcoal/80 transition-colors hover:text-burnt-orange"
+            >
+              {link.label}
+            </Link>
+          ))}
+
+          <NavDropdown label="Collections" href="/category/collections" items={menus.collections} />
+
+          <Link
+            href={STATIC_LINK_MIDDLE.href}
+            className="text-sm text-charcoal/80 transition-colors hover:text-burnt-orange"
+          >
+            {STATIC_LINK_MIDDLE.label}
+          </Link>
+
+          <NavDropdown label="Accessories" href="/category/accessories" items={menus.accessories} />
+
+          {STATIC_LINKS_AFTER.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="text-sm text-charcoal/80 transition-colors hover:text-burnt-orange"
             >
               {link.label}
             </Link>
@@ -105,7 +157,7 @@ export function Header() {
               <Link
                 href="/search"
                 className="flex items-center gap-2 text-sm text-charcoal/80 hover:text-burnt-orange"
-                onClick={() => setMenuOpen(false)}
+                onClick={closeMenu}
               >
                 <Search className="h-4 w-4" strokeWidth={1.5} />
                 Search
@@ -113,7 +165,7 @@ export function Header() {
               <Link
                 href="/account"
                 className="flex items-center gap-2 text-sm text-charcoal/80 hover:text-burnt-orange"
-                onClick={() => setMenuOpen(false)}
+                onClick={closeMenu}
               >
                 <User className="h-4 w-4" strokeWidth={1.5} />
                 Account
@@ -121,7 +173,7 @@ export function Header() {
               <Link
                 href="/wishlist"
                 className="flex items-center gap-2 text-sm text-charcoal/80 hover:text-burnt-orange"
-                onClick={() => setMenuOpen(false)}
+                onClick={closeMenu}
               >
                 <Heart className="h-4 w-4" strokeWidth={1.5} />
                 Wishlist{wishlistSlugs.length > 0 ? ` (${wishlistSlugs.length})` : ""}
@@ -129,25 +181,78 @@ export function Header() {
             </div>
             <div className="hairline mb-2 sm:hidden" />
 
-            {navLinks.map((link) => (
+            {STATIC_LINKS_BEFORE.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 className="text-sm text-charcoal/80 hover:text-burnt-orange"
-                onClick={() => setMenuOpen(false)}
+                onClick={closeMenu}
               >
                 {link.label}
               </Link>
             ))}
-            <div className="hairline my-2" />
-            {categories.map((cat) => (
+
+            {/* Same two menus as the desktop bar, as accordions — a hover
+                dropdown has no equivalent on a phone. */}
+            {(
+              [
+                { key: "collections" as const, label: "Collections", href: "/category/collections" },
+                { key: "accessories" as const, label: "Accessories", href: "/category/accessories" },
+              ]
+            ).map((group) => (
+              <div key={group.key} className="flex flex-col gap-3">
+                <button
+                  type="button"
+                  onClick={() => setOpenGroup((current) => (current === group.key ? null : group.key))}
+                  aria-expanded={openGroup === group.key}
+                  className="flex items-center justify-between text-sm text-charcoal/80 hover:text-burnt-orange"
+                >
+                  {group.label}
+                  <ChevronDown
+                    className={`h-4 w-4 transition-transform ${openGroup === group.key ? "rotate-180" : ""}`}
+                    strokeWidth={1.5}
+                  />
+                </button>
+                {openGroup === group.key && (
+                  <div className="flex flex-col gap-3 border-l border-brand-black/10 pl-4">
+                    {menus[group.key].map((cat) => (
+                      <Link
+                        key={cat.slug}
+                        href={`/category/${cat.slug}`}
+                        className="text-xs uppercase tracking-wide text-charcoal/60 hover:text-burnt-orange"
+                        onClick={closeMenu}
+                      >
+                        {cat.name}
+                      </Link>
+                    ))}
+                    <Link
+                      href={group.href}
+                      className="text-xs uppercase tracking-wide text-burnt-orange"
+                      onClick={closeMenu}
+                    >
+                      View all {group.label}
+                    </Link>
+                  </div>
+                )}
+              </div>
+            ))}
+
+            <Link
+              href={STATIC_LINK_MIDDLE.href}
+              className="text-sm text-charcoal/80 hover:text-burnt-orange"
+              onClick={closeMenu}
+            >
+              {STATIC_LINK_MIDDLE.label}
+            </Link>
+
+            {STATIC_LINKS_AFTER.map((link) => (
               <Link
-                key={cat.slug}
-                href={`/category/${cat.slug}`}
-                className="text-xs uppercase tracking-wide text-charcoal/50 hover:text-burnt-orange"
-                onClick={() => setMenuOpen(false)}
+                key={link.href}
+                href={link.href}
+                className="text-sm text-charcoal/80 hover:text-burnt-orange"
+                onClick={closeMenu}
               >
-                {cat.name}
+                {link.label}
               </Link>
             ))}
           </Container>

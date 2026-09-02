@@ -7,6 +7,7 @@ import { ProductCatalogProvider } from "@/lib/product-catalog-context";
 import { CartProvider } from "@/lib/cart-context";
 import { WishlistProvider } from "@/lib/wishlist-context";
 import { jsonLdScript } from "@/lib/json-ld";
+import { getAllCategories } from "@/lib/categories";
 
 // Brand-matched theming for Clerk's prebuilt <SignIn>/<SignUp>/<UserButton>
 // components (see src/app/sign-in, src/app/sign-up).
@@ -119,7 +120,12 @@ const organizationJsonLd = {
   sameAs: ["https://www.instagram.com/heidizessentialz/", "https://facebook.com/HeidizEssentialz"],
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+// Categories are read here, once per request, and passed down rather than
+// fetched from the client: Header and Footer are client components, and a
+// client-side fetch would flash an empty nav on every page load.
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const categories = await getAllCategories();
+
   return (
     <html
       lang="en"
@@ -135,7 +141,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <ProductCatalogProvider>
             <CartProvider>
               <WishlistProvider>
-                <SiteChrome>{children}</SiteChrome>
+                <SiteChrome categories={categories}>{children}</SiteChrome>
               </WishlistProvider>
             </CartProvider>
           </ProductCatalogProvider>

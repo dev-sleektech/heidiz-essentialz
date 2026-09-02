@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { categories } from "@/lib/placeholder-data";
+import { getAllCategories } from "@/lib/categories";
 import { blogPosts } from "@/lib/blog-data";
 import { getAllProducts } from "@/lib/products";
 
@@ -10,7 +10,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://heidiz-essentialz.v
 // routes (cart, checkout, account, admin, staff, search, auth) are
 // deliberately left out here and blocked in robots.ts.
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const products = await getAllProducts();
+  const [products, categories] = await Promise.all([getAllProducts(), getAllCategories()]);
   const now = new Date();
 
   const staticPages: MetadataRoute.Sitemap = [
@@ -34,15 +34,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteUrl}/terms`, lastModified: now, changeFrequency: "yearly", priority: 0.2 },
   ];
 
-  const categoryPages: MetadataRoute.Sitemap = [
-    ...categories.map((cat) => ({
-      url: `${siteUrl}/category/${cat.slug}`,
-      lastModified: now,
-      changeFrequency: "daily" as const,
-      priority: 0.8,
-    })),
-    { url: `${siteUrl}/category/accessories`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
-  ];
+  // Accessories is a real Category row now (a pure umbrella), so it comes
+  // out of the same list rather than being appended by hand.
+  const categoryPages: MetadataRoute.Sitemap = categories.map((cat) => ({
+    url: `${siteUrl}/category/${cat.slug}`,
+    lastModified: now,
+    changeFrequency: "daily" as const,
+    priority: cat.assignable ? 0.8 : 0.7,
+  }));
 
   const blogPages: MetadataRoute.Sitemap = blogPosts.map((post) => ({
     url: `${siteUrl}/blog/${post.slug}`,

@@ -3,6 +3,8 @@ import { currentUser } from "@clerk/nextjs/server";
 import { isStaffEmail } from "@/lib/staff-auth";
 import { findConversation, listMessages, addMessage, markRead } from "@/lib/chat";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const user = await currentUser();
   if (!isStaffEmail(user?.primaryEmailAddress?.emailAddress)) {
@@ -17,7 +19,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
   await markRead(id, "STAFF");
   const messages = await listMessages(id);
-  return NextResponse.json({ messages });
+  return NextResponse.json({ messages, status: conversation.status });
 }
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

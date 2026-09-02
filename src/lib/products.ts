@@ -6,7 +6,7 @@
 // instead (src/lib/product-catalog-context.tsx), which calls /api/products.
 
 import { prisma } from "@/lib/prisma";
-import { accessoryCategorySlugs, beautyCategorySlugs } from "@/lib/placeholder-data";
+import { getCategorySlugsForPage } from "@/lib/categories";
 import type { Product, FragranceNotes, IconKey, ProductBadge } from "@/lib/product-types";
 
 // Raw shape as stored/returned by Prisma — badge/icon are plain strings in
@@ -73,14 +73,14 @@ export async function getProduct(slug: string): Promise<Product | undefined> {
   return row ? toProduct(row) : undefined;
 }
 
+// Umbrella categories (Accessories, Beauty & Skincare) list their own
+// products plus everything from the categories they fold in — which pairs
+// with which is Category.groupSlugs in the DB now, editable from
+// /admin/categories, rather than the constants this used to hard-code.
 export async function getProductsByCategory(categorySlug: string): Promise<Product[]> {
+  const slugs = await getCategorySlugsForPage(categorySlug);
   const rows = await prisma.product.findMany({
-    where:
-      categorySlug === "accessories"
-        ? { categorySlug: { in: accessoryCategorySlugs } }
-        : categorySlug === "beauty-skincare"
-          ? { categorySlug: { in: beautyCategorySlugs } }
-          : { categorySlug },
+    where: slugs.length > 1 ? { categorySlug: { in: slugs } } : { categorySlug },
     orderBy: { name: "asc" },
   });
   return rows.map(toProduct);
@@ -110,13 +110,39 @@ export async function getNewArrivals(): Promise<Product[]> {
   return rows.map(toProduct);
 }
 
+// Gift Sets, like oil perfumes, was promoted from a free-text label to a
+// real category on 2026-09-02 (see scripts/restructure-categories.mjs).
+// The old label is still matched as a fallback so a product filed either
+// way shows up on /gift-sets.
 export async function getGiftSets(): Promise<Product[]> {
-  const rows = await prisma.product.findMany({ where: { category: "Gift Sets" }, orderBy: { name: "asc" } });
+  const rows = await prisma.product.findMany({
+    where: { OR: [{ categorySlug: "gift-sets" }, { category: "Gift Sets" }] },
+    orderBy: { name: "asc" },
+  });
   return rows.map(toProduct);
 }
 
+// Oil perfumes became a real category on 2026-09-02 (see
+// scripts/migrate-oil-perfumes.mjs). The old free-text label is still
+// matched as a fallback so a product filed the old way — or one an admin
+// labels "Oil Perfumes" while leaving it under Perfumes — still shows up
+// on /oil-perfumes.
 export async function getOilPerfumes(): Promise<Product[]> {
-  const rows = await prisma.product.findMany({ where: { category: "Oil Perfumes" }, orderBy: { name: "asc" } });
+  const rows = await prisma.product.findMany({
+    where: { OR: [{ categorySlug: "oil-perfumes" }, { category: "Oil Perfumes" }] },
+    orderBy: { name: "asc" },
+  });
+  return rows.map(toProduct);
+}
+
+// Bundle products, for the homepage row and /category/combo-deals. The
+// homepage section hides itself when this comes back empty, so the row
+// never renders as a bare heading before any combos have been created.
+export async function getComboDeals(): Promise<Product[]> {
+  const rows = await prisma.product.findMany({
+    where: { categorySlug: "combo-deals" },
+    orderBy: { name: "asc" },
+  });
   return rows.map(toProduct);
 }
 

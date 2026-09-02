@@ -4,6 +4,7 @@ import { Container } from "@/components/ui/container";
 import { CollectionHeader } from "@/components/shop/collection-header";
 import { ProductGrid } from "@/components/shop/product-grid";
 import { searchProducts } from "@/lib/products";
+import { inputClass } from "@/lib/form-styles";
 
 export const metadata: Metadata = {
   title: "Search",
@@ -13,8 +14,6 @@ export const metadata: Metadata = {
   robots: { index: false, follow: true },
 };
 
-const inputClass =
-  "w-full rounded-button border border-brand-black/15 bg-white px-4 py-3 text-sm text-charcoal placeholder:text-charcoal/40 focus:outline-none focus:ring-2 focus:ring-burnt-orange";
 
 export default async function SearchPage(props: PageProps<"/search">) {
   const searchParams = await props.searchParams;
