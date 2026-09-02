@@ -17,6 +17,9 @@ Run order, if a database ever has to be rebuilt from an old snapshot:
    the collections the client named that didn't exist yet, and split
    Jewelry into Bracelets and Necklaces.
 3. `add-combo-deals.mjs` — added the Combo Deals collection.
+4. `move-luxury-perfumes-to-arabian.mjs` — emptied the legacy Luxury
+   Perfumes collection into Arabian Perfumes, once the client decided where
+   the 31 unfiled perfumes belonged.
 
 Each is safe to re-run: they use `on conflict do nothing` for inserts and
 guard every update on the change not already being in place.
