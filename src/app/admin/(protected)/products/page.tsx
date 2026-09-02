@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { Pencil, Plus } from "lucide-react";
-import { categories } from "@/lib/placeholder-data";
+import { Pencil, Plus, Tags } from "lucide-react";
+import { getAllCategoriesFresh } from "@/lib/categories";
 import { getAllProducts } from "@/lib/products";
 import { formatNaira } from "@/lib/format";
+import { DeleteButton } from "@/components/admin/delete-button";
 
 export const metadata: Metadata = { title: "Products | HEIDIZ Admin" };
 
@@ -13,7 +14,7 @@ export default async function AdminProductsPage(props: PageProps<"/admin/product
   const q = typeof searchParams.q === "string" ? searchParams.q.trim().toLowerCase() : "";
   const categorySlug = typeof searchParams.category === "string" ? searchParams.category : "";
 
-  const allProducts = await getAllProducts();
+  const [allProducts, categories] = await Promise.all([getAllProducts(), getAllCategoriesFresh()]);
   const products = allProducts.filter((p) => {
     if (categorySlug && p.categorySlug !== categorySlug) return false;
     if (q && !p.name.toLowerCase().includes(q)) return false;
@@ -24,13 +25,22 @@ export default async function AdminProductsPage(props: PageProps<"/admin/product
     <div className="p-8 md:p-10">
       <div className="flex items-center justify-between">
         <h1 className="font-display text-2xl text-brand-black">Products ({products.length})</h1>
-        <Link
-          href="/admin/products/new"
-          className="inline-flex items-center gap-1.5 rounded-button bg-burnt-orange px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
-        >
-          <Plus className="h-4 w-4" strokeWidth={1.5} />
-          New Product
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/admin/categories"
+            className="inline-flex items-center gap-1.5 rounded-button border border-brand-black/15 px-4 py-2.5 text-sm font-medium text-charcoal transition-colors hover:border-burnt-orange hover:text-burnt-orange"
+          >
+            <Tags className="h-4 w-4" strokeWidth={1.5} />
+            Categories
+          </Link>
+          <Link
+            href="/admin/products/new"
+            className="inline-flex items-center gap-1.5 rounded-button bg-burnt-orange px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+          >
+            <Plus className="h-4 w-4" strokeWidth={1.5} />
+            New Product
+          </Link>
+        </div>
       </div>
 
       <form method="GET" className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -47,11 +57,13 @@ export default async function AdminProductsPage(props: PageProps<"/admin/product
           className="rounded-button border border-brand-black/15 bg-white px-4 py-2.5 text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-burnt-orange"
         >
           <option value="">All Categories</option>
-          {categories.map((c) => (
-            <option key={c.slug} value={c.slug}>
-              {c.name}
-            </option>
-          ))}
+          {categories
+            .filter((c) => c.assignable)
+            .map((c) => (
+              <option key={c.slug} value={c.slug}>
+                {c.name}
+              </option>
+            ))}
         </select>
         <button
           type="submit"
@@ -60,9 +72,9 @@ export default async function AdminProductsPage(props: PageProps<"/admin/product
           Filter
         </button>
         {(q || categorySlug) && (
-          <a href="/admin/products" className="text-sm text-charcoal/50 hover:text-burnt-orange">
+          <Link href="/admin/products" className="text-sm text-charcoal/50 hover:text-burnt-orange">
             Clear
-          </a>
+          </Link>
         )}
       </form>
 
@@ -115,14 +127,21 @@ export default async function AdminProductsPage(props: PageProps<"/admin/product
                     {product.inStock ? "In Stock" : "Out of Stock"}
                   </span>
                 </td>
-                <td className="px-5 py-3 text-right">
-                  <Link
-                    href={`/admin/products/${product.slug}`}
-                    className="inline-flex items-center gap-1.5 text-sm text-burnt-orange hover:underline"
-                  >
-                    <Pencil className="h-3.5 w-3.5" strokeWidth={1.5} />
-                    Edit
-                  </Link>
+                <td className="px-5 py-3">
+                  <div className="flex items-center justify-end gap-4">
+                    <Link
+                      href={`/admin/products/${product.slug}`}
+                      className="inline-flex items-center gap-1.5 text-sm text-burnt-orange hover:underline"
+                    >
+                      <Pencil className="h-3.5 w-3.5" strokeWidth={1.5} />
+                      Edit
+                    </Link>
+                    <DeleteButton
+                      endpoint={`/api/admin/products/${product.slug}`}
+                      confirmLabel={`Delete ${product.name}?`}
+                      compact
+                    />
+                  </div>
                 </td>
               </tr>
             ))}

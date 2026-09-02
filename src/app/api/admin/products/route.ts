@@ -3,11 +3,14 @@ import { revalidatePath } from "next/cache";
 import { currentUser } from "@clerk/nextjs/server";
 import { isStaffEmail } from "@/lib/staff-auth";
 import { prisma } from "@/lib/prisma";
-import { getCategory } from "@/lib/placeholder-data";
+import { getCategoryFresh } from "@/lib/categories";
 
 type CreateBody = {
   slug: string;
   name: string;
+  /** Free-text collection label under the category ("Oil Perfumes",
+   *  "Gift Sets", "Niche Perfumes") — /oil-perfumes and /gift-sets query
+   *  this directly, so it is NOT a copy of the category's name. */
   category: string;
   categorySlug: string;
   price: number;
@@ -68,7 +71,7 @@ export async function POST(request: Request) {
         // Falls back to the category's own stock icon when no product image
         // is set (see ProductVisual) — same convention every seeded product
         // already follows.
-        icon: getCategory(body.categorySlug)?.icon ?? "perfume",
+        icon: (await getCategoryFresh(body.categorySlug))?.icon ?? "perfume",
         image: body.image,
         images: body.images ?? [],
         description: body.description,

@@ -12,6 +12,7 @@ import { getDeliveryFee, getDeliveryEstimate } from "@/lib/delivery";
 import { isPaystackConfigured, openPaystackCheckout, verifyPaystackTransaction, type VerifyLine } from "@/lib/paystack";
 import { isMonnifyConfigured, openMonnifyCheckout, verifyMonnifyTransaction } from "@/lib/monnify";
 import { buildOrderWhatsAppLink, type OrderDetails } from "@/lib/whatsapp";
+import { inputClass, labelClass } from "@/lib/form-styles";
 
 const NIGERIAN_STATES = [
   "FCT - Abuja",
@@ -34,9 +35,6 @@ const PAYMENT_METHODS = [
   { id: "delivery", label: "Pay on Delivery (FCT-Abuja only)" },
 ];
 
-const inputClass =
-  "w-full rounded-button border border-brand-black/15 bg-white px-4 py-3 text-sm text-charcoal placeholder:text-charcoal/40 focus:outline-none focus:ring-2 focus:ring-burnt-orange";
-const labelClass = "text-xs uppercase tracking-wide text-charcoal/60";
 
 function makeOrderNumber() {
   return `HE-${Date.now().toString().slice(-8)}`;

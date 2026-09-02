@@ -5,17 +5,16 @@
 // for a server-backed cart (session/user-scoped) once accounts + a real
 // backend exist.
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { createContext, useCallback, useContext, useMemo } from "react";
 import { useProductCatalog } from "@/lib/product-catalog-context";
+import { usePersistedState } from "@/lib/use-persisted-state";
 
 const STORAGE_KEY = "heidiz-cart-v1";
+
+// Module-level so the reference is stable across renders — usePersistedState
+// hands this back as-is when nothing is stored, and a fresh [] each time
+// would loop React's useSyncExternalStore.
+const NO_LINES: CartLine[] = [];
 
 // Optional, informational-only selections (see sizes/colors on Product) —
 // not a full variant-inventory system, just carried along on the line so
@@ -46,24 +45,10 @@ const CartContext = createContext<CartContextValue | null>(null);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const { getProduct } = useProductCatalog();
-  const [lines, setLines] = useState<CartLine[]>([]);
-  const [hydrated, setHydrated] = useState(false);
-
-  // Load once on mount (client only, avoids SSR/localStorage mismatch).
-  useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) setLines(JSON.parse(raw));
-    } catch {
-      // ignore malformed/inaccessible storage
-    }
-    setHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (!hydrated) return;
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(lines));
-  }, [lines, hydrated]);
+  // Reads through on the first client render rather than a render later, so
+  // the cart badge never flashes empty, and stays in step across tabs. See
+  // src/lib/persisted-store.ts.
+  const [lines, setLines] = usePersistedState<CartLine[]>(STORAGE_KEY, NO_LINES);
 
   const addItem = useCallback((slug: string, quantity = 1, options?: LineOptions) => {
     const product = getProduct(slug);
@@ -79,20 +64,20 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       }
       return [...prev, { slug, quantity, size: options?.size, color: options?.color, unitPrice }];
     });
-  }, [getProduct]);
+  }, [getProduct, setLines]);
 
   const removeItem = useCallback((slug: string, options?: LineOptions) => {
     setLines((prev) => prev.filter((l) => !sameLine(l, slug, options)));
-  }, []);
+  }, [setLines]);
 
   const setQuantity = useCallback((slug: string, quantity: number, options?: LineOptions) => {
     setLines((prev) => {
       if (quantity <= 0) return prev.filter((l) => !sameLine(l, slug, options));
       return prev.map((l) => (sameLine(l, slug, options) ? { ...l, quantity } : l));
     });
-  }, []);
+  }, [setLines]);
 
-  const clear = useCallback(() => setLines([]), []);
+  const clear = useCallback(() => setLines(NO_LINES), [setLines]);
 
   const { totalItems, subtotal } = useMemo(() => {
     let count = 0;
@@ -106,13 +91,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     return { totalItems: count, subtotal: sum };
   }, [lines, getProduct]);
 
-  return (
-    <CartContext.Provider
-      value={{ lines, addItem, removeItem, setQuantity, clear, totalItems, subtotal }}
-    >
-      {children}
-    </CartContext.Provider>
+  // Memoised so the context value keeps its identity between renders —
+  // otherwise every consumer (header badge, each product card's add button,
+  // the cart page) re-renders whenever any parent does.
+  const value = useMemo(
+    () => ({ lines, addItem, removeItem, setQuantity, clear, totalItems, subtotal }),
+    [lines, addItem, removeItem, setQuantity, clear, totalItems, subtotal]
   );
+
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
 export function useCart() {

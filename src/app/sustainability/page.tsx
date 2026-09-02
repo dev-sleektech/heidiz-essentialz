@@ -52,8 +52,8 @@ export default function SustainabilityPage() {
 
         <div className="mx-auto mt-16 max-w-2xl text-center text-sm leading-relaxed text-charcoal/70">
           <p>
-            This is early work for us, and we're building it thoughtfully rather than
-            quickly. If sustainability in fragrance and beauty retail matters to you, we'd
+            This is early work for us, and we&apos;re building it thoughtfully rather than
+            quickly. If sustainability in fragrance and beauty retail matters to you, we&apos;d
             genuinely like to hear from you, reach out at info@heidizstores.com.
           </p>
         </div>

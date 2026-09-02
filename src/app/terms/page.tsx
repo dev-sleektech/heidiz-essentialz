@@ -62,7 +62,7 @@ export default function TermsPage() {
             <h2 className="font-display text-xl text-brand-black">5. Product Authenticity</h2>
             <p>
               All products sold by HEIDIZ Essentialz are sourced through authorized channels.
-              Any product marketed as "inspired by" a fragrance house will be clearly labeled
+              Any product marketed as &quot;inspired by&quot; a fragrance house will be clearly labeled
               as such.
             </p>
           </section>

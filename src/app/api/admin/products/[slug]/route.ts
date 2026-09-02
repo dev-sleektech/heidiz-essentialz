@@ -8,6 +8,9 @@ import { sendOutOfStockAlertEmail } from "@/lib/email";
 
 type UpdateBody = {
   name: string;
+  /** Free-text collection label under the category ("Oil Perfumes",
+   *  "Gift Sets", "Niche Perfumes") — /oil-perfumes and /gift-sets query
+   *  this directly, so it is NOT a copy of the category's name. */
   category: string;
   categorySlug: string;
   price: number;
@@ -93,5 +96,36 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ sl
   } catch (err) {
     console.error("Failed to update product:", err);
     return NextResponse.json({ updated: false, message: "Could not save changes." }, { status: 500 });
+  }
+}
+
+// Permanently removes a product. Past orders are unaffected: OrderItem
+// stores productSlug/productName/unitPrice as its own copy at checkout
+// time (see prisma/schema.prisma), precisely so order history survives a
+// catalog change. Anything still holding the slug client-side (a cart or
+// wishlist in localStorage) already degrades to "product not found" per
+// line rather than breaking, same as it did for a mistyped slug.
+export async function DELETE(_request: Request, { params }: { params: Promise<{ slug: string }> }) {
+  const user = await currentUser();
+  if (!isStaffEmail(user?.primaryEmailAddress?.emailAddress)) {
+    return NextResponse.json({ deleted: false, message: "Not authorized." }, { status: 403 });
+  }
+
+  const { slug } = await params;
+
+  try {
+    const existing = await prisma.product.findUnique({ where: { slug }, select: { slug: true } });
+    if (!existing) {
+      return NextResponse.json({ deleted: false, message: "Product not found." }, { status: 404 });
+    }
+
+    await prisma.product.delete({ where: { slug } });
+
+    revalidatePath("/", "layout");
+
+    return NextResponse.json({ deleted: true });
+  } catch (err) {
+    console.error("Failed to delete product:", err);
+    return NextResponse.json({ deleted: false, message: "Could not delete product." }, { status: 500 });
   }
 }

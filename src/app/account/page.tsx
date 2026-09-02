@@ -5,6 +5,7 @@ import { SignOutButton } from "@clerk/nextjs";
 import { Container } from "@/components/ui/container";
 import { CollectionHeader } from "@/components/shop/collection-header";
 import { ButtonLink } from "@/components/ui/button";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Account",
@@ -70,14 +71,15 @@ export default async function AccountPage() {
             <p className="text-sm text-charcoal/70">
               Track every order placed on this account, from confirmation through delivery.
             </p>
-            <a
+            <Link
               href="/account/orders"
               className="mt-1 inline-flex w-fit items-center gap-2 text-sm text-burnt-orange hover:underline"
             >
               <Package className="h-4 w-4" strokeWidth={1.5} />
               View Order History
               <ChevronRight className="h-3.5 w-3.5" strokeWidth={1.5} />
-            </a>
+            </Link>
+            {/* External link, so a plain anchor is correct here. */}
             <a
               href="https://wa.me/2347053220268"
               target="_blank"

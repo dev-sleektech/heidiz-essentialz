@@ -66,7 +66,7 @@ export default async function FragranceFinderPage(props: PageProps<"/fragrance-f
             </fieldset>
 
             <fieldset className={fieldsetClass}>
-              <legend className={legendClass}>What's your budget?</legend>
+              <legend className={legendClass}>What&apos;s your budget?</legend>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {BUDGET_OPTIONS.map((opt) => (
                   <label key={opt.value} className={optionClass}>
@@ -80,7 +80,7 @@ export default async function FragranceFinderPage(props: PageProps<"/fragrance-f
             </fieldset>
 
             <fieldset className={fieldsetClass}>
-              <legend className={legendClass}>What's the occasion?</legend>
+              <legend className={legendClass}>What&apos;s the occasion?</legend>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {OCCASION_OPTIONS.map((opt) => (
                   <label key={opt.value} className={optionClass}>

@@ -1,9 +1,11 @@
-// Catalog data for HEIDIZ Essentialz: categories, testimonials, Instagram
-// posts, and (below) the original static product array — kept only as the
-// one-time seed source for the Product table (see
-// src/app/api/admin/seed-products) now that the live catalog lives in
-// Postgres via src/lib/products.ts. Swap categories/testimonials for real
-// client copy as it comes in; see project memory for status.
+// Catalog data for HEIDIZ Essentialz: stock imagery, testimonials,
+// Instagram posts, and (below) the original static product array — kept
+// only as the one-time seed source for the Product table now that the live
+// catalog lives in Postgres via src/lib/products.ts.
+//
+// Categories moved out on 2026-09-02: they're a DB table now, read through
+// src/lib/categories.ts and managed at /admin/categories. The original
+// static list survives as the seed in scripts/seed-categories.mjs.
 
 import type { IconKey, FragranceNotes, Product } from "@/lib/product-types";
 
@@ -46,123 +48,6 @@ export const stockImages: Record<IconKey, string> = {
   candle:
     "https://images.unsplash.com/photo-1643122966676-29e8597257f7?auto=format&fit=crop&w=800&q=80",
 };
-
-export type Category = {
-  slug: string;
-  name: string;
-  tagline: string;
-  description: string;
-  icon: IconKey;
-  /** Real photo (public path) shown on the category tile, if available. */
-  image?: string;
-};
-
-export const categories: Category[] = [
-  {
-    slug: "perfumes",
-    name: "Luxury Perfumes",
-    tagline: "Signature scents & oud",
-    description:
-      "Fragrances layered from rare oud, warm amber, and bright florals, each bottle designed to be worn like a signature.",
-    icon: "perfume",
-    image: "/products/perfumes/amouroud-dark-orchid.jpg",
-  },
-  {
-    slug: "beauty-skincare",
-    name: "Beauty & Skincare",
-    tagline: "Skincare, makeup & hair care",
-    description:
-      "Face and body formulations built around proven actives, made for skin that has to handle Abuja heat and harmattan dust in the same week, alongside color cosmetics and hair care.",
-    icon: "skincare",
-    image: "/products/skincare/cerave-moisturizing-cream.jpg",
-  },
-  {
-    slug: "makeup",
-    name: "Makeup Collection",
-    tagline: "Editorial-ready color",
-    description:
-      "Pigment-rich color cosmetics built for melanin-rich skin tones, from soft everyday looks to full editorial glam.",
-    icon: "makeup",
-    image: "/products/makeup/fenty-beauty-pro-filtr-foundation.jpg",
-  },
-  {
-    slug: "hair-care",
-    name: "Hair Care",
-    tagline: "Salon-grade nourishment",
-    description:
-      "Treatments and stylers formulated for textured hair, delivering salon-level results between appointments.",
-    icon: "hair",
-    image: "/products/hair-care/mielle-rosemary-mint-oil.jpg",
-  },
-  {
-    slug: "watches",
-    name: "Watches",
-    tagline: "Timeless precision",
-    description:
-      "Timepieces that carry their own gravity, built from precision movements and finished by hand.",
-    icon: "watch",
-    image: "/products/watches/fossil-grant-chronograph.jpg",
-  },
-  {
-    slug: "handbags",
-    name: "Handbags",
-    tagline: "Crafted to carry",
-    description:
-      "Full-grain leather silhouettes structured to hold their shape from the boardroom to the airport lounge.",
-    icon: "bag",
-    image: "/products/handbags/coach-tabby-shoulder-bag.jpg",
-  },
-  {
-    slug: "jewelry",
-    name: "Jewelry",
-    tagline: "Fine finishing touches",
-    description:
-      "Fine pieces in gold, silver, and precious stones, made for everyday wear as much as the occasion.",
-    icon: "jewelry",
-    image: "/products/jewelry/swarovski-stud-earrings.jpg",
-  },
-  {
-    slug: "sunglasses",
-    name: "Sunglasses",
-    tagline: "Statement optics",
-    description:
-      "Statement frames with UV-rated lenses, cut for a silhouette that holds up outdoors and on camera.",
-    icon: "sunglasses",
-    image: "/products/sunglasses/rayban-aviator-classic.jpg",
-  },
-  {
-    slug: "shoes",
-    name: "Shoes",
-    tagline: "Corporate, sneakers & slippers",
-    description:
-      "Footwear for every register: boardroom loafers, everyday sneakers, and easy slides, for men and women alike.",
-    icon: "shoes",
-    image: "/products/shoes/premium-leather-loafers.jpg",
-  },
-  {
-    slug: "home-fragrance",
-    name: "Diffusers & Candles",
-    tagline: "Scent your space",
-    description:
-      "Reed diffusers and hand-poured candles that carry the same signature-scent philosophy from the bottle to the home.",
-    icon: "candle",
-    image: "/products/home-fragrance/heidiz-signature-candle-trio.jpg",
-  },
-];
-
-// "Accessories" bundles watches, handbags, jewelry, and sunglasses under one
-// umbrella for the header's "Accessories" link, since those four each also
-// have their own dedicated category page.
-export const accessoryCategorySlugs = ["watches", "handbags", "jewelry", "sunglasses"];
-
-// Same idea, folded into "Beauty & Skincare" for the header nav: Makeup and
-// Hair Care keep their own dedicated category pages, they just don't get
-// their own top-level nav link anymore.
-export const beautyCategorySlugs = ["beauty-skincare", "makeup", "hair-care"];
-
-export function getCategory(slug: string): Category | undefined {
-  return categories.find((c) => c.slug === slug);
-}
 
 // Real HEIDIZ Essentialz perfume inventory (2026-08-04), sourced from the
 // client's own product photos (C:\Users\HP\Downloads\Perfumes\, copied into
@@ -1377,7 +1262,19 @@ export const productReviewPool: Testimonial[] = [
 
 export const instagramHandle = "@heidizessentialz";
 
+// Placeholder tiles until the real Instagram feed is wired up — the icons
+// just need to look varied, so they cycle a fixed spread of stock keys
+// rather than following the (now DB-backed, editable) category list.
+const INSTAGRAM_PLACEHOLDER_ICONS: IconKey[] = [
+  "perfume",
+  "skincare",
+  "makeup",
+  "watch",
+  "bag",
+  "candle",
+];
+
 export const instagramPosts = Array.from({ length: 6 }).map((_, i) => ({
   id: i,
-  icon: categories[i % categories.length].icon,
+  icon: INSTAGRAM_PLACEHOLDER_ICONS[i % INSTAGRAM_PLACEHOLDER_ICONS.length],
 }));

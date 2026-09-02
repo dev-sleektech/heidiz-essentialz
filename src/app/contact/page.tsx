@@ -3,15 +3,13 @@ import { MapPin, Phone, Mail, MessageCircle, Clock } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { CollectionHeader } from "@/components/shop/collection-header";
 import { Button } from "@/components/ui/button";
+import { inputClass, labelClass } from "@/lib/form-styles";
 
 export const metadata: Metadata = {
   title: "Contact Us",
   description: "Get in touch with HEIDIZ Essentialz. Visit our Abuja store, call, WhatsApp, or email us.",
 };
 
-const inputClass =
-  "w-full rounded-button border border-brand-black/15 bg-white px-4 py-3 text-sm text-charcoal placeholder:text-charcoal/40 focus:outline-none focus:ring-2 focus:ring-burnt-orange";
-const labelClass = "text-xs uppercase tracking-wide text-charcoal/60";
 
 export default function ContactPage() {
   return (

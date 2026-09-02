@@ -12,10 +12,15 @@ import { checkRateLimit, clientIp, rateLimitResponse } from "@/lib/rate-limit";
 // order number + phone rather than a login.
 // GET limit is generous — the widget legitimately polls every 4s (see
 // POLL_INTERVAL_MS in chat-widget.tsx), and several guests/tabs can share
-// one IP behind NAT. Still bounds a runaway/scripted polling loop.
+// one IP behind NAT: at 75 calls per tab per 5 minutes, the old limit of
+// 150 was tripped by two open tabs on one office/cafe connection, after
+// which the widget silently stopped updating (it swallows fetch errors).
+// Still bounds a runaway/scripted polling loop.
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { allowed, retryAfterSeconds } = checkRateLimit(`chat-messages-get:${clientIp(req)}`, {
-    limit: 150,
+    limit: 500,
     windowMs: 5 * 60 * 1000,
   });
   if (!allowed) return rateLimitResponse(retryAfterSeconds);
@@ -28,7 +33,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   await markRead(id, "CUSTOMER");
   const messages = await listMessages(id);
-  return NextResponse.json({ messages });
+  return NextResponse.json({ messages, status: conversation.status });
 }
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

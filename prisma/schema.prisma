@@ -59,11 +59,53 @@ model OrderItem {
   @@index([orderId])
 }
 
+// Storefront categories, migrated 2026-09-02 from the static `categories`
+// array in src/lib/placeholder-data.ts so staff can add/rename/remove a
+// collection without a code deploy (see /admin/categories). Product.categorySlug
+// points at Category.slug, but deliberately without a real FK relation: the
+// product catalog was migrated first and already holds free-text slugs, and
+// the delete route enforces the same rule a FK would (a category holding
+// products can't be deleted) with a far better error message.
+model Category {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  tagline     String
+  description String
+  // One of the IconKey values in src/lib/product-types.ts — picks the stock
+  // illustration/photo used when no `image` is set.
+  icon        String
+  image       String?
+  // Umbrella categories: /category/[slug] also lists products from every
+  // slug named here, on top of its own. Replaces the hard-coded
+  // accessoryCategorySlugs / beautyCategorySlugs constants. The category's
+  // own slug is always included implicitly, so this holds only the extras.
+  groupSlugs  String[] @default([])
+  // Which header dropdown this collection appears under: "collections",
+  // "accessories", or null for none. The two menus are alphabetical, so
+  // sortOrder doesn't apply there — it orders the homepage grid instead.
+  // Managed from /admin/categories so a new collection can be put on the
+  // menu without a deploy.
+  navGroup    String?
+  // Display order for the homepage grid, footer and pickers.
+  sortOrder   Int      @default(0)
+  // False for pure umbrellas like Accessories: it has no products of its
+  // own, so it must not be offered as a choice when editing a product.
+  assignable  Boolean  @default(true)
+  // Whether it gets a tile in the homepage "Shop by Collection" grid.
+  showOnHome  Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([sortOrder])
+  @@index([navGroup])
+}
+
 // Full product catalog, migrated 2026-08-07 from the static
 // src/lib/placeholder-data.ts array so admin can edit price/stock/promo
-// state live. categorySlug references the still-static category list in
-// placeholder-data.ts (categories aren't part of this migration — just
-// products). fragranceNotes is a nested {top,heart,base} object, relevant
+// state live. categorySlug references Category.slug (migrated to the DB in
+// turn on 2026-09-02, see the Category model above).
+// fragranceNotes is a nested {top,heart,base} object, relevant
 // to perfumes only, stored as Json since it's a small fixed shape.
 model Product {
   id             String   @id @default(cuid())

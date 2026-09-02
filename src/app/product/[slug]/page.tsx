@@ -8,7 +8,7 @@ import { ProductReviews } from "@/components/shop/product-reviews";
 import { ProductSection } from "@/components/home/product-section";
 import { Accordion, type AccordionItem } from "@/components/ui/accordion";
 import { StarRating } from "@/components/ui/star-rating";
-import { getCategory } from "@/lib/placeholder-data";
+import { getCategory } from "@/lib/categories";
 import { getAllProducts, getProduct, getRelatedProducts } from "@/lib/products";
 import { jsonLdScript } from "@/lib/json-ld";
 
@@ -54,8 +54,10 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
 
   if (!product) notFound();
 
-  const category = getCategory(product.categorySlug);
-  const related = await getRelatedProducts(product);
+  const [category, related] = await Promise.all([
+    getCategory(product.categorySlug),
+    getRelatedProducts(product),
+  ]);
 
   const accordionItems: AccordionItem[] = [
     { title: "Description", content: <p>{product.description}</p> },

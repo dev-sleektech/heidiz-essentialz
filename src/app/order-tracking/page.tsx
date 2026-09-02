@@ -5,15 +5,13 @@ import { CollectionHeader } from "@/components/shop/collection-header";
 import { OrderStatusTimeline, type OrderStatus } from "@/components/shop/order-status-timeline";
 import { formatNaira } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
+import { inputClass, labelClass } from "@/lib/form-styles";
 
 export const metadata: Metadata = {
   title: "Order Tracking",
   description: "Track the status of your HEIDIZ Essentialz order using your order number and phone number.",
 };
 
-const inputClass =
-  "w-full rounded-button border border-brand-black/15 bg-white px-4 py-3 text-sm text-charcoal placeholder:text-charcoal/40 focus:outline-none focus:ring-2 focus:ring-burnt-orange";
-const labelClass = "text-xs uppercase tracking-wide text-charcoal/60";
 
 // Normalizes phone input for comparison — customers type numbers with all
 // sorts of spacing/dashes/leading-zero variations, and we only need to

@@ -52,7 +52,7 @@ export default function PrivacyPage() {
             <h2 className="font-display text-xl text-brand-black">4. Data Protection</h2>
             <p>
               We take reasonable technical and organizational measures to protect your
-              information, in line with Nigeria's Data Protection Regulation (NDPR). We
+              information, in line with Nigeria&apos;s Data Protection Regulation (NDPR). We
               retain order information only as long as necessary for legal, accounting, and
               customer service purposes.
             </p>
