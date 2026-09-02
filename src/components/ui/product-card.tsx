@@ -7,7 +7,7 @@ import { ProductVisual } from "@/components/ui/product-visual";
 import { useCart } from "@/lib/cart-context";
 import { useWishlist } from "@/lib/wishlist-context";
 import { cn } from "@/lib/utils";
-import type { Product } from "@/lib/placeholder-data";
+import type { Product } from "@/lib/product-types";
 import { formatNaira } from "@/lib/format";
 import { PromoBadge, computeDiscountPercent, isPromoBadge } from "@/components/ui/promo-badge";
 

@@ -63,7 +63,7 @@ export default async function CategoryPage(props: PageProps<"/category/[slug]">)
     <>
       <script
         type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
+         
         dangerouslySetInnerHTML={jsonLdScript(breadcrumbJsonLd)}
       />
       <CollectionHeader

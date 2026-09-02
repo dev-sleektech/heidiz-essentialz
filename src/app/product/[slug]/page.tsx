@@ -175,12 +175,12 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
     <>
       <script
         type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
+         
         dangerouslySetInnerHTML={jsonLdScript(productJsonLd)}
       />
       <script
         type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
+         
         dangerouslySetInnerHTML={jsonLdScript(breadcrumbJsonLd)}
       />
       <Container className="py-6">

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { stockImages, type IconKey } from "@/lib/placeholder-data";
+import { stockImages } from "@/lib/placeholder-data";
+import type { IconKey } from "@/lib/product-types";
 
 // Licensed Unsplash stock photography standing in for real product/store
 // photography (see stockImages in placeholder-data.ts for sourcing notes).

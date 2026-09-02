@@ -134,7 +134,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col bg-ivory text-charcoal font-sans">
         <script
           type="application/ld+json"
-          // eslint-disable-next-line react/no-danger
+           
           dangerouslySetInnerHTML={jsonLdScript(organizationJsonLd)}
         />
         <ClerkProvider appearance={clerkAppearance}>

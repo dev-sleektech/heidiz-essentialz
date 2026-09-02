@@ -9,7 +9,13 @@ import { DeleteButton } from "@/components/admin/delete-button";
 import type { Category } from "@/lib/category-types";
 import type { Product } from "@/lib/product-types";
 import { inputClass, labelClass } from "@/lib/form-styles";
+import { useImageUpload } from "@/lib/use-image-upload";
 import { slugify } from "@/lib/slug";
+
+// Matches the gallery cap documented on Product.images in the schema.
+// Enforced here only — the API doesn't check it (see the note in the
+// route), so this is a UI guard, not a guarantee.
+const MAX_GALLERY_IMAGES = 10;
 
 const BADGE_OPTIONS: { value: string; label: string }[] = [
   { value: "", label: "None" },
@@ -107,73 +113,23 @@ export function ProductEditForm({
     product?.category ?? categories[0]?.name ?? ""
   );
   const [image, setImage] = useState(product?.image ?? "");
-  const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { uploading, error: uploadError, inputRef: fileInputRef, handleFiles } = useImageUpload();
 
   // Gallery: extra photos beyond the primary "Product Photo" above, up to
   // 10 total, shown as a thumbnail strip on the product detail page (see
   // ProductGallery). The primary photo stays the cover used in cards.
   const [images, setImages] = useState<string[]>(product?.images ?? []);
-  const [galleryUploading, setGalleryUploading] = useState(false);
-  const [galleryError, setGalleryError] = useState<string | null>(null);
-  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const {
+    uploading: galleryUploading,
+    error: galleryError,
+    inputRef: galleryInputRef,
+    handleFiles: handleGalleryFiles,
+  } = useImageUpload({
+    max: MAX_GALLERY_IMAGES,
+    current: () => images.length,
+    message: `Up to ${MAX_GALLERY_IMAGES} gallery photos allowed.`,
+  });
   const sizesInputRef = useRef<HTMLTextAreaElement>(null);
-
-  async function handleFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    setUploadError(null);
-
-    const uploadForm = new FormData();
-    uploadForm.append("file", file);
-
-    try {
-      const res = await fetch("/api/admin/upload", { method: "POST", body: uploadForm });
-      const json = await res.json();
-      if (json.uploaded) {
-        setImage(json.url);
-      } else {
-        setUploadError(json.message ?? "Upload failed.");
-      }
-    } catch {
-      setUploadError("Upload failed.");
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
-  }
-
-  async function handleGalleryFilesSelected(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files ?? []);
-    if (files.length === 0) return;
-    setGalleryUploading(true);
-    setGalleryError(null);
-
-    try {
-      for (const file of files) {
-        if (images.length >= 10) {
-          setGalleryError("Up to 10 gallery photos allowed.");
-          break;
-        }
-        const uploadForm = new FormData();
-        uploadForm.append("file", file);
-        const res = await fetch("/api/admin/upload", { method: "POST", body: uploadForm });
-        const json = await res.json();
-        if (json.uploaded) {
-          setImages((prev) => [...prev, json.url]);
-        } else {
-          setGalleryError(json.message ?? "Upload failed.");
-        }
-      }
-    } catch {
-      setGalleryError("Upload failed.");
-    } finally {
-      setGalleryUploading(false);
-      if (galleryInputRef.current) galleryInputRef.current.value = "";
-    }
-  }
 
   function removeGalleryImage(index: number) {
     setImages((prev) => prev.filter((_, i) => i !== index));
@@ -345,7 +301,7 @@ export function ProductEditForm({
                   ref={fileInputRef}
                   type="file"
                   accept="image/*"
-                  onChange={handleFileSelected}
+                  onChange={(e) => handleFiles(e, setImage)}
                   disabled={uploading}
                   className="text-xs text-charcoal/60 file:mr-3 file:rounded-button file:border-0 file:bg-brand-black file:px-3 file:py-1.5 file:text-xs file:text-white file:hover:bg-burnt-orange"
                 />
@@ -390,7 +346,7 @@ export function ProductEditForm({
                   type="file"
                   accept="image/*"
                   multiple
-                  onChange={handleGalleryFilesSelected}
+                  onChange={(e) => handleGalleryFiles(e, (url) => setImages((prev) => [...prev, url]))}
                   disabled={galleryUploading}
                   className="hidden"
                 />

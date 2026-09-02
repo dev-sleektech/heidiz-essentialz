@@ -1,4 +1,4 @@
-import type { IconKey } from "@/lib/placeholder-data";
+import type { IconKey } from "@/lib/product-types";
 
 export type BlogPost = {
   slug: string;

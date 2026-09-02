@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { stockImages, type IconKey } from "@/lib/placeholder-data";
+import { stockImages } from "@/lib/placeholder-data";
+import type { IconKey } from "@/lib/product-types";
 import { cn } from "@/lib/utils";
 
 // Main image + thumbnail strip when a product has multiple photos (up to

@@ -8,7 +8,7 @@
 // every product's categorySlug points at, so changing it would 404 live
 // links and orphan products.
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Loader2, CheckCircle2, AlertCircle, Upload } from "lucide-react";
@@ -16,6 +16,7 @@ import { DeleteButton } from "@/components/admin/delete-button";
 import { ICON_KEYS } from "@/lib/product-types";
 import { NAV_GROUPS, NAV_GROUP_LABELS, type Category } from "@/lib/category-types";
 import { inputClass, labelClass } from "@/lib/form-styles";
+import { useImageUpload } from "@/lib/use-image-upload";
 import { slugify } from "@/lib/slug";
 
 
@@ -51,35 +52,9 @@ export function CategoryEditForm({
   const [slug, setSlug] = useState(category?.slug ?? "");
   const [slugTouched, setSlugTouched] = useState(false);
   const [image, setImage] = useState(category?.image ?? "");
-  const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
   const [groupSlugs, setGroupSlugs] = useState<string[]>(category?.groupSlugs ?? []);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { uploading, error: uploadError, inputRef: fileInputRef, handleFiles } = useImageUpload();
 
-  async function handleFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    setUploadError(null);
-
-    const uploadForm = new FormData();
-    uploadForm.append("file", file);
-
-    try {
-      const res = await fetch("/api/admin/upload", { method: "POST", body: uploadForm });
-      const json = await res.json();
-      if (json.uploaded) {
-        setImage(json.url);
-      } else {
-        setUploadError(json.message ?? "Upload failed.");
-      }
-    } catch {
-      setUploadError("Upload failed.");
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
-  }
 
   function toggleGroupSlug(target: string) {
     setGroupSlugs((prev) =>
@@ -242,7 +217,7 @@ export function CategoryEditForm({
                   ref={fileInputRef}
                   type="file"
                   accept="image/*"
-                  onChange={handleFileSelected}
+                  onChange={(e) => handleFiles(e, setImage)}
                   disabled={uploading}
                   className="text-xs text-charcoal/60 file:mr-3 file:rounded-button file:border-0 file:bg-brand-black file:px-3 file:py-1.5 file:text-xs file:text-white file:hover:bg-burnt-orange"
                 />
