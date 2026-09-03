@@ -49,7 +49,7 @@ export default async function AdminProductsPage(props: PageProps<"/admin/product
           name="q"
           defaultValue={q}
           placeholder="Search product name"
-          className="w-full max-w-sm rounded-button border border-brand-black/15 bg-white px-4 py-2.5 text-sm text-charcoal placeholder:text-charcoal/40 focus:outline-none focus:ring-2 focus:ring-burnt-orange"
+          className="w-full max-w-sm rounded-button border border-brand-black/15 bg-white px-4 py-2.5 text-sm text-charcoal placeholder:text-charcoal/70 focus:outline-none focus:ring-2 focus:ring-burnt-orange"
         />
         <select
           name="category"
@@ -72,7 +72,7 @@ export default async function AdminProductsPage(props: PageProps<"/admin/product
           Filter
         </button>
         {(q || categorySlug) && (
-          <Link href="/admin/products" className="text-sm text-charcoal/50 hover:text-burnt-orange">
+          <Link href="/admin/products" className="text-sm text-charcoal/70 hover:text-burnt-orange">
             Clear
           </Link>
         )}
@@ -81,7 +81,7 @@ export default async function AdminProductsPage(props: PageProps<"/admin/product
       <div className="mt-6 overflow-x-auto rounded-[4px] border border-brand-black/10 bg-white">
         <table className="w-full min-w-[900px] border-collapse text-sm">
           <thead>
-            <tr className="border-b border-brand-black/10 text-left text-xs uppercase tracking-wide text-charcoal/50">
+            <tr className="border-b border-brand-black/10 text-left text-xs uppercase tracking-wide text-charcoal/70">
               <th className="px-5 py-3">Product</th>
               <th className="px-5 py-3">Category</th>
               <th className="px-5 py-3">Price</th>
@@ -148,7 +148,7 @@ export default async function AdminProductsPage(props: PageProps<"/admin/product
           </tbody>
         </table>
         {products.length === 0 && (
-          <p className="py-10 text-center text-sm text-charcoal/50">No products match this search.</p>
+          <p className="py-10 text-center text-sm text-charcoal/70">No products match this search.</p>
         )}
       </div>
     </div>

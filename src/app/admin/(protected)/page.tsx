@@ -32,7 +32,7 @@ function StatCard({
       </div>
       <div>
         <p className="font-display text-2xl text-brand-black">{value}</p>
-        <p className="text-xs uppercase tracking-wide text-charcoal/50">{label}</p>
+        <p className="text-xs uppercase tracking-wide text-charcoal/70">{label}</p>
       </div>
     </div>
   );
@@ -58,7 +58,7 @@ export default async function AdminDashboardPage() {
   return (
     <div className="p-8 md:p-10">
       <h1 className="font-display text-2xl text-brand-black">Dashboard</h1>
-      <p className="mt-1 text-sm text-charcoal/50">
+      <p className="mt-1 text-sm text-charcoal/70">
         {now.toLocaleDateString("en-NG", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
       </p>
 
@@ -68,7 +68,7 @@ export default async function AdminDashboardPage() {
         <StatCard icon={Clock} label="Needs Attention" value={String(pendingCount)} />
         <StatCard icon={TrendingUp} label="All-Time Revenue" value={formatNaira(allTimeRevenueAgg._sum.total ?? 0)} />
       </div>
-      <p className="mt-3 text-xs text-charcoal/40">
+      <p className="mt-3 text-xs text-charcoal/70">
         {allTimeCount} orders total · revenue figures exclude cancelled orders
       </p>
 
@@ -87,7 +87,7 @@ export default async function AdminDashboardPage() {
         <div className="mt-4 overflow-x-auto rounded-[4px] border border-brand-black/10 bg-white">
           <table className="w-full min-w-[700px] border-collapse text-sm">
             <thead>
-              <tr className="border-b border-brand-black/10 text-left text-xs uppercase tracking-wide text-charcoal/50">
+              <tr className="border-b border-brand-black/10 text-left text-xs uppercase tracking-wide text-charcoal/70">
                 <th className="px-5 py-3">Order</th>
                 <th className="px-5 py-3">Customer</th>
                 <th className="px-5 py-3">Total</th>
@@ -108,7 +108,7 @@ export default async function AdminDashboardPage() {
             </tbody>
           </table>
           {recentOrders.length === 0 && (
-            <p className="py-10 text-center text-sm text-charcoal/50">No orders yet.</p>
+            <p className="py-10 text-center text-sm text-charcoal/70">No orders yet.</p>
           )}
         </div>
       </div>

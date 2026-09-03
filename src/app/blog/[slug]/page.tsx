@@ -45,7 +45,7 @@ export default async function BlogPostPage(props: PageProps<"/blog/[slug]">) {
       </div>
 
       <div className="mx-auto mt-12 flex max-w-2xl flex-col items-center gap-4 border-t border-brand-black/10 pt-8 text-center">
-        <p className="text-sm text-charcoal/60">Have a question about this topic?</p>
+        <p className="text-sm text-charcoal/80">Have a question about this topic?</p>
         <ButtonLink href="/blog" variant="outline" size="md">
           Back to Beauty Journal
         </ButtonLink>

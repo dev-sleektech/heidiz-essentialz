@@ -18,7 +18,7 @@ export function StarRating({
         return (
           <Star
             key={i}
-            className={cn(starClassName, !filled && !half && "text-charcoal/20")}
+            className={cn(starClassName, !filled && !half && "text-charcoal/60")}
             strokeWidth={1.5}
             fill={filled || half ? "currentColor" : "none"}
             fillOpacity={half ? 0.5 : 1}

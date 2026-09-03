@@ -36,7 +36,7 @@ export function Accordion({
               {open ? (
                 <Minus className="h-4 w-4 shrink-0 text-burnt-orange" strokeWidth={1.5} />
               ) : (
-                <Plus className="h-4 w-4 shrink-0 text-charcoal/50" strokeWidth={1.5} />
+                <Plus className="h-4 w-4 shrink-0 text-charcoal/70" strokeWidth={1.5} />
               )}
             </button>
             {open && (

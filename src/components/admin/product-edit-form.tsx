@@ -9,7 +9,13 @@ import { DeleteButton } from "@/components/admin/delete-button";
 import type { Category } from "@/lib/category-types";
 import type { Product } from "@/lib/product-types";
 import { inputClass, labelClass } from "@/lib/form-styles";
+import { useImageUpload } from "@/lib/use-image-upload";
 import { slugify } from "@/lib/slug";
+
+// Matches the gallery cap documented on Product.images in the schema.
+// Enforced here only — the API doesn't check it (see the note in the
+// route), so this is a UI guard, not a guarantee.
+const MAX_GALLERY_IMAGES = 10;
 
 const BADGE_OPTIONS: { value: string; label: string }[] = [
   { value: "", label: "None" },
@@ -107,73 +113,23 @@ export function ProductEditForm({
     product?.category ?? categories[0]?.name ?? ""
   );
   const [image, setImage] = useState(product?.image ?? "");
-  const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { uploading, error: uploadError, inputRef: fileInputRef, handleFiles } = useImageUpload();
 
   // Gallery: extra photos beyond the primary "Product Photo" above, up to
   // 10 total, shown as a thumbnail strip on the product detail page (see
   // ProductGallery). The primary photo stays the cover used in cards.
   const [images, setImages] = useState<string[]>(product?.images ?? []);
-  const [galleryUploading, setGalleryUploading] = useState(false);
-  const [galleryError, setGalleryError] = useState<string | null>(null);
-  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const {
+    uploading: galleryUploading,
+    error: galleryError,
+    inputRef: galleryInputRef,
+    handleFiles: handleGalleryFiles,
+  } = useImageUpload({
+    max: MAX_GALLERY_IMAGES,
+    current: () => images.length,
+    message: `Up to ${MAX_GALLERY_IMAGES} gallery photos allowed.`,
+  });
   const sizesInputRef = useRef<HTMLTextAreaElement>(null);
-
-  async function handleFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    setUploadError(null);
-
-    const uploadForm = new FormData();
-    uploadForm.append("file", file);
-
-    try {
-      const res = await fetch("/api/admin/upload", { method: "POST", body: uploadForm });
-      const json = await res.json();
-      if (json.uploaded) {
-        setImage(json.url);
-      } else {
-        setUploadError(json.message ?? "Upload failed.");
-      }
-    } catch {
-      setUploadError("Upload failed.");
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
-  }
-
-  async function handleGalleryFilesSelected(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files ?? []);
-    if (files.length === 0) return;
-    setGalleryUploading(true);
-    setGalleryError(null);
-
-    try {
-      for (const file of files) {
-        if (images.length >= 10) {
-          setGalleryError("Up to 10 gallery photos allowed.");
-          break;
-        }
-        const uploadForm = new FormData();
-        uploadForm.append("file", file);
-        const res = await fetch("/api/admin/upload", { method: "POST", body: uploadForm });
-        const json = await res.json();
-        if (json.uploaded) {
-          setImages((prev) => [...prev, json.url]);
-        } else {
-          setGalleryError(json.message ?? "Upload failed.");
-        }
-      }
-    } catch {
-      setGalleryError("Upload failed.");
-    } finally {
-      setGalleryUploading(false);
-      if (galleryInputRef.current) galleryInputRef.current.value = "";
-    }
-  }
 
   function removeGalleryImage(index: number) {
     setImages((prev) => prev.filter((_, i) => i !== index));
@@ -281,7 +237,7 @@ export function ProductEditForm({
               className={inputClass}
               placeholder="my-new-product"
             />
-            <span className="text-xs text-charcoal/40">/product/{slugify(slug) || "..."}</span>
+            <span className="text-xs text-charcoal/70">/product/{slugify(slug) || "..."}</span>
           </label>
         )}
 
@@ -305,7 +261,7 @@ export function ProductEditForm({
               </option>
             ))}
           </select>
-          <span className="text-xs text-charcoal/40">
+          <span className="text-xs text-charcoal/70">
             Manage the list at{" "}
             <Link href="/admin/categories" className="text-burnt-orange hover:underline">
               Categories
@@ -322,7 +278,7 @@ export function ProductEditForm({
             className={inputClass}
             placeholder="e.g. Oil Perfumes"
           />
-          <span className="text-xs text-charcoal/40">
+          <span className="text-xs text-charcoal/70">
             The finer label shown on the product card, inside the category. &quot;Oil Perfumes&quot;
             and &quot;Gift Sets&quot; are matched exactly to build those two pages, so keep the
             spelling if this product belongs on one.
@@ -336,7 +292,7 @@ export function ProductEditForm({
               {image ? (
                 <Image src={image} alt="" width={64} height={64} className="h-full w-full object-cover" />
               ) : (
-                <Upload className="h-5 w-5 text-charcoal/30" strokeWidth={1.5} />
+                <Upload className="h-5 w-5 text-charcoal/60" strokeWidth={1.5} />
               )}
             </div>
             <div className="flex flex-1 flex-col gap-1.5">
@@ -345,9 +301,9 @@ export function ProductEditForm({
                   ref={fileInputRef}
                   type="file"
                   accept="image/*"
-                  onChange={handleFileSelected}
+                  onChange={(e) => handleFiles(e, setImage)}
                   disabled={uploading}
-                  className="text-xs text-charcoal/60 file:mr-3 file:rounded-button file:border-0 file:bg-brand-black file:px-3 file:py-1.5 file:text-xs file:text-white file:hover:bg-burnt-orange"
+                  className="text-xs text-charcoal/80 file:mr-3 file:rounded-button file:border-0 file:bg-brand-black file:px-3 file:py-1.5 file:text-xs file:text-white file:hover:bg-burnt-orange"
                 />
                 {uploading && <Loader2 className="h-4 w-4 shrink-0 animate-spin text-burnt-orange" strokeWidth={1.5} />}
               </div>
@@ -379,7 +335,7 @@ export function ProductEditForm({
               </div>
             ))}
             {images.length < 10 && (
-              <label className="flex h-16 w-16 shrink-0 cursor-pointer items-center justify-center rounded-[4px] border border-dashed border-brand-black/20 text-charcoal/40 hover:border-burnt-orange hover:text-burnt-orange">
+              <label className="flex h-16 w-16 shrink-0 cursor-pointer items-center justify-center rounded-[4px] border border-dashed border-brand-black/20 text-charcoal/70 hover:border-burnt-orange hover:text-burnt-orange">
                 {galleryUploading ? (
                   <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.5} />
                 ) : (
@@ -390,7 +346,7 @@ export function ProductEditForm({
                   type="file"
                   accept="image/*"
                   multiple
-                  onChange={handleGalleryFilesSelected}
+                  onChange={(e) => handleGalleryFiles(e, (url) => setImages((prev) => [...prev, url]))}
                   disabled={galleryUploading}
                   className="hidden"
                 />
@@ -427,7 +383,7 @@ export function ProductEditForm({
             ))}
           </select>
         </label>
-        <p className="text-xs text-charcoal/50 sm:col-span-3">
+        <p className="text-xs text-charcoal/70 sm:col-span-3">
           Set a Compare-At Price higher than Price to show a discount (crossed-out original price).
           The &quot;Sale&quot; badge is the promo indicator shown on product cards.
         </p>
@@ -456,15 +412,15 @@ export function ProductEditForm({
         <span className={labelClass}>Fragrance Notes (perfumes only, one per line, leave all blank to omit)</span>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <label className="flex flex-col gap-1.5">
-            <span className="text-xs text-charcoal/50">Top</span>
+            <span className="text-xs text-charcoal/70">Top</span>
             <textarea name="notesTop" rows={3} defaultValue={product?.fragranceNotes?.top.join("\n") ?? ""} className={inputClass} />
           </label>
           <label className="flex flex-col gap-1.5">
-            <span className="text-xs text-charcoal/50">Heart</span>
+            <span className="text-xs text-charcoal/70">Heart</span>
             <textarea name="notesHeart" rows={3} defaultValue={product?.fragranceNotes?.heart.join("\n") ?? ""} className={inputClass} />
           </label>
           <label className="flex flex-col gap-1.5">
-            <span className="text-xs text-charcoal/50">Base</span>
+            <span className="text-xs text-charcoal/70">Base</span>
             <textarea name="notesBase" rows={3} defaultValue={product?.fragranceNotes?.base.join("\n") ?? ""} className={inputClass} />
           </label>
         </div>
@@ -477,7 +433,7 @@ export function ProductEditForm({
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <label className="flex flex-col gap-1.5">
             <div className="flex items-center justify-between gap-2">
-              <span className="text-xs text-charcoal/50">Sizes</span>
+              <span className="text-xs text-charcoal/70">Sizes</span>
               <button
                 type="button"
                 onClick={() => {
@@ -498,7 +454,7 @@ export function ProductEditForm({
             />
           </label>
           <label className="flex flex-col gap-1.5">
-            <span className="text-xs text-charcoal/50">Colors</span>
+            <span className="text-xs text-charcoal/70">Colors</span>
             <textarea
               name="colors"
               rows={3}
@@ -508,7 +464,7 @@ export function ProductEditForm({
             />
           </label>
         </div>
-        <p className="text-xs text-charcoal/50">
+        <p className="text-xs text-charcoal/70">
           Shown as a dropdown/selectable options on the product page. Customers must pick one of
           each before adding to cart if any are listed. For shoes, use the fill button above for
           the standard EU/US Men&apos;s + Women&apos;s range, then delete any lines that don&apos;t
@@ -516,7 +472,7 @@ export function ProductEditForm({
         </p>
 
         <label className="flex flex-col gap-1.5">
-          <span className="text-xs text-charcoal/50">
+          <span className="text-xs text-charcoal/70">
             Size Prices (optional, one per line: size = price in ₦)
           </span>
           <textarea
@@ -527,7 +483,7 @@ export function ProductEditForm({
             placeholder={"25ml = 45000\n50ml = 65000\n75ml = 85000\n100ml = 105000"}
           />
         </label>
-        <p className="text-xs text-charcoal/50">
+        <p className="text-xs text-charcoal/70">
           Only needed when different sizes should have different prices, like perfume ml options.
           Any size left out here just uses the base Price above, so this can stay empty for
           products like shoes where size doesn&apos;t change the price.
@@ -582,7 +538,7 @@ export function ProductEditForm({
         )}
       </div>
       {!isCreate && (
-        <p className="text-xs text-charcoal/40">
+        <p className="text-xs text-charcoal/70">
           Deleting removes the product from the storefront for good. Past orders keep their own copy
           of the name and price, so order history and receipts are unaffected.
         </p>

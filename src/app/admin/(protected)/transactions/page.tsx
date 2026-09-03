@@ -65,13 +65,13 @@ export default async function AdminTransactionsPage(props: PageProps<"/admin/tra
   return (
     <div className="p-8 md:p-10">
       <h1 className="font-display text-2xl text-brand-black">Transactions</h1>
-      <p className="mt-1 text-sm text-charcoal/50">
+      <p className="mt-1 text-sm text-charcoal/70">
         Sales income by payment method, a running cash book pulled straight from real orders.
       </p>
 
       <form method="GET" className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-end">
         <label className="flex flex-col gap-1.5">
-          <span className="text-xs uppercase tracking-wide text-charcoal/60">From</span>
+          <span className="text-xs uppercase tracking-wide text-charcoal/80">From</span>
           <input
             type="date"
             name="from"
@@ -80,7 +80,7 @@ export default async function AdminTransactionsPage(props: PageProps<"/admin/tra
           />
         </label>
         <label className="flex flex-col gap-1.5">
-          <span className="text-xs uppercase tracking-wide text-charcoal/60">To</span>
+          <span className="text-xs uppercase tracking-wide text-charcoal/80">To</span>
           <input
             type="date"
             name="to"
@@ -94,16 +94,16 @@ export default async function AdminTransactionsPage(props: PageProps<"/admin/tra
         >
           Filter
         </button>
-        <a href="/admin/transactions" className="pb-2.5 text-sm text-charcoal/50 hover:text-burnt-orange">
+        <a href="/admin/transactions" className="pb-2.5 text-sm text-charcoal/70 hover:text-burnt-orange">
           This Month
         </a>
       </form>
 
       <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="flex flex-col gap-3 rounded-[4px] border border-burnt-orange/30 bg-champagne/20 p-6">
-          <span className="text-xs uppercase tracking-wide text-charcoal/50">Total Sales</span>
+          <span className="text-xs uppercase tracking-wide text-charcoal/70">Total Sales</span>
           <span className="font-display text-2xl text-brand-black">{formatNaira(totalSales)}</span>
-          <span className="text-xs text-charcoal/40">{counted.length} transactions</span>
+          <span className="text-xs text-charcoal/70">{counted.length} transactions</span>
         </div>
         {Array.from(byMethod.entries()).map(([label, { count, total }]) => {
           const Icon = methodIcon(label);
@@ -113,7 +113,7 @@ export default async function AdminTransactionsPage(props: PageProps<"/admin/tra
                 <Icon className="h-4 w-4" strokeWidth={1.5} />
               </div>
               <span className="font-display text-2xl text-brand-black">{formatNaira(total)}</span>
-              <span className="text-xs text-charcoal/50">
+              <span className="text-xs text-charcoal/70">
                 {label} &middot; {count}
               </span>
             </div>
@@ -124,7 +124,7 @@ export default async function AdminTransactionsPage(props: PageProps<"/admin/tra
       <div className="mt-8 overflow-x-auto rounded-[4px] border border-brand-black/10 bg-white">
         <table className="w-full min-w-[800px] border-collapse text-sm">
           <thead>
-            <tr className="border-b border-brand-black/10 text-left text-xs uppercase tracking-wide text-charcoal/50">
+            <tr className="border-b border-brand-black/10 text-left text-xs uppercase tracking-wide text-charcoal/70">
               <th className="px-5 py-3">Date</th>
               <th className="px-5 py-3">Order</th>
               <th className="px-5 py-3">Customer</th>
@@ -155,7 +155,7 @@ export default async function AdminTransactionsPage(props: PageProps<"/admin/tra
                 </td>
                 <td className="px-5 py-3 text-right text-charcoal/70">
                   {order.status === "CANCELLED" ? (
-                    <span className="text-charcoal/40 line-through">{formatNaira(order.total)}</span>
+                    <span className="text-charcoal/70 line-through">{formatNaira(order.total)}</span>
                   ) : (
                     formatNaira(order.total)
                   )}
@@ -165,7 +165,7 @@ export default async function AdminTransactionsPage(props: PageProps<"/admin/tra
           </tbody>
         </table>
         {orders.length === 0 && (
-          <p className="py-10 text-center text-sm text-charcoal/50">No transactions in this date range.</p>
+          <p className="py-10 text-center text-sm text-charcoal/70">No transactions in this date range.</p>
         )}
       </div>
     </div>

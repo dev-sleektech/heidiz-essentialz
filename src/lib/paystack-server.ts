@@ -13,7 +13,18 @@ export function isPaystackServerConfigured() {
 export async function verifyPaystackReference(reference: string): Promise<{
   paid: boolean;
   message: string;
+  /** Gross kobo the customer was actually debited. When the Paystack
+   *  account passes the transaction fee to the customer, this is the order
+   *  total PLUS that fee, so it does not equal what the order cost. */
   amount?: number;
+  /** Kobo we asked Paystack to collect for the order itself, fee excluded.
+   *  This is the figure to reconcile an order against. Paystack has
+   *  returned it on every transaction since 2022, but it stays optional
+   *  here so a missing field degrades to `amount` rather than throwing. */
+  requestedAmount?: number;
+  /** Paystack's cut, in kobo. Logged on a mismatch so the next person can
+   *  see at a glance whether fee-bearing explains the gap. */
+  fees?: number;
   currency?: string;
 }> {
   const secretKey = process.env.PAYSTACK_SECRET_KEY;
@@ -35,6 +46,8 @@ export async function verifyPaystackReference(reference: string): Promise<{
     paid,
     message: paid ? "Payment verified." : "Payment was not successful.",
     amount: data.data?.amount,
+    requestedAmount: data.data?.requested_amount,
+    fees: data.data?.fees,
     currency: data.data?.currency,
   };
 }

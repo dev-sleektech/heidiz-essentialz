@@ -26,7 +26,7 @@ export default async function OilPerfumesPage() {
       />
       <Container className="py-12 md:py-16">
         <div className="mb-10 flex flex-wrap items-center gap-3">
-          <span className="text-xs uppercase tracking-wide text-charcoal/50">Available sizes</span>
+          <span className="text-xs uppercase tracking-wide text-charcoal/70">Available sizes</span>
           <div className="flex flex-wrap gap-2">
             {OIL_PERFUME_SIZES.map((size) => (
               <span
@@ -42,7 +42,7 @@ export default async function OilPerfumesPage() {
         <ProductGrid products={products} />
 
         {products.length > 0 && (
-          <p className="mt-10 text-center text-xs text-charcoal/40">
+          <p className="mt-10 text-center text-xs text-charcoal/70">
             Pick a size on any product page. Price updates to match, ready to add to cart.
           </p>
         )}

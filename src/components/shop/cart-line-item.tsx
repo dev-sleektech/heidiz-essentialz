@@ -26,18 +26,18 @@ export function CartLineItem({
   return (
     <div className="flex gap-4 border-b border-brand-black/10 py-6 first:pt-0">
       <Link href={`/product/${product.slug}`} className="shrink-0">
-        <ProductVisual icon={product.icon} src={product.image} className="h-24 w-20 sm:h-28 sm:w-24" />
+        <ProductVisual icon={product.icon} src={product.image} alt={product.name} sizes="96px" className="h-24 w-20 sm:h-28 sm:w-24" />
       </Link>
 
       <div className="flex flex-1 flex-col gap-1">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <span className="text-xs uppercase tracking-wide text-charcoal/50">{product.category}</span>
+            <span className="text-xs uppercase tracking-wide text-charcoal/70">{product.category}</span>
             <Link href={`/product/${product.slug}`}>
               <h3 className="font-display text-base text-brand-black sm:text-lg">{product.name}</h3>
             </Link>
             {(size || color) && (
-              <span className="text-xs text-charcoal/50">
+              <span className="text-xs text-charcoal/70">
                 {[size && `Size ${size}`, color].filter(Boolean).join(" · ")}
               </span>
             )}
@@ -46,7 +46,7 @@ export function CartLineItem({
             type="button"
             aria-label="Remove from cart"
             onClick={() => removeItem(product.slug, options)}
-            className="shrink-0 text-charcoal/40 hover:text-burnt-orange"
+            className="shrink-0 text-charcoal/70 hover:text-burnt-orange"
           >
             <X className="h-4 w-4" strokeWidth={1.5} />
           </button>

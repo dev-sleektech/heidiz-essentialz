@@ -25,7 +25,7 @@ export function Newsletter() {
             type="email"
             required
             placeholder="Enter your email"
-            className="w-full rounded-button border border-brand-black/15 bg-white px-5 py-3 text-sm text-charcoal placeholder:text-charcoal/40 focus:outline-none focus:ring-2 focus:ring-burnt-orange"
+            className="w-full rounded-button border border-brand-black/15 bg-white px-5 py-3 text-sm text-charcoal placeholder:text-charcoal/70 focus:outline-none focus:ring-2 focus:ring-burnt-orange"
           />
           <Button type="submit" variant="dark" className="shrink-0">
             Subscribe

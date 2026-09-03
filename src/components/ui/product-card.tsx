@@ -1,26 +1,43 @@
 "use client";
 
-import { useState } from "react";
+
 import Link from "next/link";
 import { Heart, Check } from "lucide-react";
 import { ProductVisual } from "@/components/ui/product-visual";
 import { useCart } from "@/lib/cart-context";
+import { useTransientFlag } from "@/lib/use-transient-flag";
 import { useWishlist } from "@/lib/wishlist-context";
 import { cn } from "@/lib/utils";
-import type { Product } from "@/lib/placeholder-data";
+import type { Product } from "@/lib/product-types";
 import { formatNaira } from "@/lib/format";
 import { PromoBadge, computeDiscountPercent, isPromoBadge } from "@/components/ui/promo-badge";
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({
+  product,
+  priority = false,
+}: {
+  product: Product;
+  /** Set on the first row of a grid: on the catalog routes these cards are
+   *  the first visible content, so lazy-loading them delayed the largest
+   *  paint on exactly the pages built to sell. */
+  priority?: boolean;
+}) {
   const { addItem } = useCart();
   const { toggle, has } = useWishlist();
-  const [justAdded, setJustAdded] = useState(false);
+  const [justAdded, markAdded] = useTransientFlag();
   const wishlisted = has(product.slug);
+
+  // Two notes is the most that fits on one line in a 2-up mobile grid
+  // without wrapping and pushing the price below the fold of the card.
+  const notes = product.fragranceNotes;
+  const scentSignature = notes
+    ? [...(notes.top ?? []), ...(notes.heart ?? []), ...(notes.base ?? [])].slice(0, 2).join(" / ") ||
+      null
+    : null;
 
   function handleAddToCart() {
     addItem(product.slug);
-    setJustAdded(true);
-    setTimeout(() => setJustAdded(false), 1500);
+    markAdded();
   }
 
   return (
@@ -36,6 +53,7 @@ export function ProductCard({ product }: { product: Product }) {
         />
 
         <ProductVisual
+          priority={priority}
           icon={product.icon}
           src={product.image}
           className="aspect-[4/5] w-full"
@@ -101,8 +119,15 @@ export function ProductCard({ product }: { product: Product }) {
       </div>
 
       <Link href={`/product/${product.slug}`} className="mt-4 flex flex-col gap-1">
-        <span className="text-xs uppercase tracking-wide text-charcoal/50">
-          {product.category}
+        {/* Lead with the scent, not the shelf it sits on. Every card in a
+            fragrance grid used to repeat the same category label, which told
+            a browsing customer nothing they couldn't read off the page
+            heading. The dominant notes are what actually distinguishes one
+            bottle from the next, and they're already in the catalog. Falls
+            back to the category for anything without notes (bags, shoes,
+            skincare). */}
+        <span className="text-xs uppercase tracking-wide text-charcoal/70">
+          {scentSignature ?? product.category}
         </span>
         <h3 className="font-display text-lg text-brand-black">{product.name}</h3>
         <span className="flex items-center gap-2">
@@ -110,7 +135,7 @@ export function ProductCard({ product }: { product: Product }) {
             {formatNaira(product.price)}
           </span>
           {product.compareAtPrice && (
-            <span className="text-xs text-charcoal/40 line-through">
+            <span className="text-xs text-charcoal/70 line-through">
               {formatNaira(product.compareAtPrice)}
             </span>
           )}

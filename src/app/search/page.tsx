@@ -48,13 +48,13 @@ export default async function SearchPage(props: PageProps<"/search">) {
         </form>
 
         {query && (
-          <p className="mt-6 text-center text-xs text-charcoal/50">
+          <p className="mt-6 text-center text-xs text-charcoal/70">
             {results.length} {results.length === 1 ? "result" : "results"}
           </p>
         )}
 
         {query && results.length === 0 && (
-          <p className="mt-16 text-center text-sm text-charcoal/60">
+          <p className="mt-16 text-center text-sm text-charcoal/80">
             No products matched &quot;{query}&quot;. Try a different word, or browse the shop
             instead.
           </p>

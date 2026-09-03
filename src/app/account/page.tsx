@@ -40,7 +40,7 @@ export default async function AccountPage() {
             href="https://wa.me/2347053220268"
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-1 inline-flex items-center gap-2 text-xs text-charcoal/50 hover:text-burnt-orange"
+            className="mt-1 inline-flex items-center gap-2 text-xs text-charcoal/70 hover:text-burnt-orange"
           >
             <MessageCircle className="h-3.5 w-3.5" strokeWidth={1.5} />
             Or chat with us to place an order as a guest
@@ -60,14 +60,14 @@ export default async function AccountPage() {
       <Container className="py-12 md:py-16">
         <div className="mx-auto flex max-w-md flex-col gap-6 rounded-[4px] border border-brand-black/10 bg-white p-8">
           <div className="flex flex-col gap-1">
-            <span className="text-xs uppercase tracking-wide text-charcoal/50">Signed in as</span>
+            <span className="text-xs uppercase tracking-wide text-charcoal/70">Signed in as</span>
             <span className="font-display text-lg text-brand-black">{email}</span>
           </div>
 
           <div className="hairline" />
 
           <div className="flex flex-col gap-1">
-            <span className="text-xs uppercase tracking-wide text-charcoal/50">Order History</span>
+            <span className="text-xs uppercase tracking-wide text-charcoal/70">Order History</span>
             <p className="text-sm text-charcoal/70">
               Track every order placed on this account, from confirmation through delivery.
             </p>
@@ -84,7 +84,7 @@ export default async function AccountPage() {
               href="https://wa.me/2347053220268"
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-1 inline-flex w-fit items-center gap-2 text-sm text-charcoal/60 hover:text-burnt-orange"
+              className="mt-1 inline-flex w-fit items-center gap-2 text-sm text-charcoal/80 hover:text-burnt-orange"
             >
               <MessageCircle className="h-4 w-4" strokeWidth={1.5} />
               Or check an order on WhatsApp
@@ -96,7 +96,7 @@ export default async function AccountPage() {
           <SignOutButton redirectUrl="/">
             <button
               type="button"
-              className="inline-flex w-fit items-center gap-2 text-sm text-charcoal/60 hover:text-burnt-orange"
+              className="inline-flex w-fit items-center gap-2 text-sm text-charcoal/80 hover:text-burnt-orange"
             >
               <LogOut className="h-4 w-4" strokeWidth={1.5} />
               Sign Out

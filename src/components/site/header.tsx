@@ -39,6 +39,13 @@ const STATIC_LINKS_AFTER = [
   { label: "Refund Policy", href: "/shipping-returns" },
 ];
 
+// The header icons were bare 20x20 glyphs with no padding — under half the
+// 44px touch minimum, in the one bar that follows the customer down every
+// page. The box is now 44px with the icon centred; `gap-1` on the row keeps
+// the icons looking about as close together as they did before.
+const iconLinkClass =
+  "relative inline-flex h-11 w-11 items-center justify-center hover:text-burnt-orange";
+
 export function Header({ categories }: { categories: Category[] }) {
   const [menuOpen, setMenuOpen] = useState(false);
   // Which mobile accordion is expanded. Only one at a time, so a long
@@ -111,35 +118,35 @@ export function Header({ categories }: { categories: Category[] }) {
           ))}
         </nav>
 
-        <div className="flex items-center gap-4 text-brand-black">
-          <Link href="/search" aria-label="Search" className="hidden sm:inline-flex hover:text-burnt-orange">
+        <div className="flex items-center gap-1 text-brand-black">
+          <Link href="/search" aria-label="Search" className={iconLinkClass}>
             <Search className="h-5 w-5" strokeWidth={1.5} />
           </Link>
           <Link
             href="/account"
             aria-label="Account"
-            className="relative hidden sm:inline-flex hover:text-burnt-orange"
+            className={`${iconLinkClass} hidden sm:inline-flex`}
           >
             <User className="h-5 w-5" strokeWidth={1.5} />
             {isSignedIn && (
-              <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-burnt-orange ring-2 ring-ivory" />
+              <span className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-burnt-orange ring-2 ring-ivory" />
             )}
           </Link>
           <Link
             href="/wishlist"
             aria-label="Wishlist"
-            className="relative hidden sm:inline-flex hover:text-burnt-orange"
+            className={`${iconLinkClass} hidden sm:inline-flex`}
           >
             <Heart className="h-5 w-5" strokeWidth={1.5} />
             {wishlistSlugs.length > 0 && (
-              <span className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-burnt-orange text-[0.6rem] text-white">
+              <span className="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-burnt-orange text-[0.6rem] text-white">
                 {wishlistSlugs.length}
               </span>
             )}
           </Link>
-          <Link href="/cart" aria-label="Cart" className="relative inline-flex hover:text-burnt-orange">
+          <Link href="/cart" aria-label="Cart" className={iconLinkClass}>
             <ShoppingBag className="h-5 w-5" strokeWidth={1.5} />
-            <span className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-burnt-orange text-[0.6rem] text-white">
+            <span className="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-burnt-orange text-[0.6rem] text-white">
               {totalItems}
             </span>
           </Link>
@@ -219,7 +226,7 @@ export function Header({ categories }: { categories: Category[] }) {
                       <Link
                         key={cat.slug}
                         href={`/category/${cat.slug}`}
-                        className="text-xs uppercase tracking-wide text-charcoal/60 hover:text-burnt-orange"
+                        className="text-xs uppercase tracking-wide text-charcoal/80 hover:text-burnt-orange"
                         onClick={closeMenu}
                       >
                         {cat.name}

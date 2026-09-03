@@ -40,7 +40,7 @@ export default async function OrderDetailPage(props: PageProps<"/account/orders/
 
       <div className="mt-4 flex flex-col gap-2">
         <h1 className="font-display text-3xl text-brand-black md:text-4xl">{order.orderNumber}</h1>
-        <span className="text-sm text-charcoal/50">
+        <span className="text-sm text-charcoal/70">
           Placed{" "}
           {new Date(order.createdAt).toLocaleDateString("en-NG", {
             day: "numeric",
@@ -62,7 +62,7 @@ export default async function OrderDetailPage(props: PageProps<"/account/orders/
               <div key={item.id} className="flex items-center justify-between gap-4 p-4">
                 <div className="flex flex-col">
                   <span className="text-sm font-medium text-brand-black">{item.productName}</span>
-                  <span className="text-xs text-charcoal/50">
+                  <span className="text-xs text-charcoal/70">
                     {[item.size && `Size ${item.size}`, item.color].filter(Boolean).join(" · ")}
                     {(item.size || item.color) ? " · " : ""}Qty {item.quantity}
                   </span>
@@ -89,7 +89,7 @@ export default async function OrderDetailPage(props: PageProps<"/account/orders/
               <span>Total</span>
               <span>{formatNaira(order.total)}</span>
             </div>
-            <p className="pt-2 text-xs text-charcoal/50">Paid via {order.paymentMethodLabel}</p>
+            <p className="pt-2 text-xs text-charcoal/70">Paid via {order.paymentMethodLabel}</p>
           </div>
 
           <div className="flex flex-col gap-2 rounded-[4px] border border-brand-black/10 bg-white p-6">

@@ -2,9 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { Minus, Plus, Heart, Repeat, Share2, Check } from "lucide-react";
+import { Minus, Plus, Heart, Share2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/lib/cart-context";
+import { useTransientFlag } from "@/lib/use-transient-flag";
 import { useWishlist } from "@/lib/wishlist-context";
 import { formatNaira } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -12,6 +13,7 @@ import { PromoBadge, computeDiscountPercent, isPromoBadge } from "@/components/u
 
 export function ProductActions({
   slug,
+  name,
   price,
   compareAtPrice,
   badge,
@@ -21,6 +23,8 @@ export function ProductActions({
   sizePricing,
 }: {
   slug: string;
+  /** Used as the title in the native share sheet. */
+  name: string;
   price: number;
   compareAtPrice?: number;
   badge?: string;
@@ -30,7 +34,8 @@ export function ProductActions({
   sizePricing?: Record<string, number>;
 }) {
   const [quantity, setQuantity] = useState(1);
-  const [justAdded, setJustAdded] = useState(false);
+  const [justAdded, markAdded] = useTransientFlag();
+  const [shared, markShared] = useTransientFlag(2000);
   // Size starts unselected (unlike color) since the list mixes men's and
   // women's sizes — defaulting to the first entry would silently pick a
   // gendered size for the customer instead of making them choose.
@@ -64,8 +69,25 @@ export function ProductActions({
   function handleAddToCart() {
     if (!validated()) return;
     addItem(slug, quantity, { size, color });
-    setJustAdded(true);
-    setTimeout(() => setJustAdded(false), 1500);
+    markAdded();
+  }
+
+  // Native share sheet where the browser has one (every mobile browser
+  // that matters here), clipboard everywhere else. This button also had no
+  // onClick before.
+  async function handleShare() {
+    const url = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: name, url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      markShared();
+    } catch {
+      // The customer dismissed the share sheet, or the clipboard was
+      // blocked. Neither needs an error surfaced.
+    }
   }
 
   function handleBuyNow() {
@@ -81,7 +103,7 @@ export function ProductActions({
       <div className="flex items-center gap-3">
         <span className="font-display text-2xl text-burnt-orange">{formatNaira(effectivePrice)}</span>
         {compareAtPrice && (
-          <span className="text-base text-charcoal/40 line-through">{formatNaira(compareAtPrice)}</span>
+          <span className="text-base text-charcoal/70 line-through">{formatNaira(compareAtPrice)}</span>
         )}
         {badge && isPromoBadge(badge) ? (
           <PromoBadge badge={badge} discountPercent={computeDiscountPercent(effectivePrice, compareAtPrice)} />
@@ -94,18 +116,18 @@ export function ProductActions({
         )}
       </div>
       {hasSizePricing && !size && (
-        <p className="-mt-2 text-xs text-charcoal/50">Price varies by size, select one below.</p>
+        <p className="-mt-2 text-xs text-charcoal/70">Price varies by size, select one below.</p>
       )}
 
       {sizes.length > 0 && (
         <label className="flex flex-col gap-2">
-          <span className="text-xs uppercase tracking-wide text-charcoal/60">Size</span>
+          <span className="text-xs uppercase tracking-wide text-charcoal/80">Size</span>
           <select
             value={size ?? ""}
             onChange={(e) => setSize(e.target.value || undefined)}
             className={cn(
               "rounded-button border bg-white px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-burnt-orange",
-              size ? "border-brand-black/15 text-brand-black" : "border-brand-black/15 text-charcoal/50"
+              size ? "border-brand-black/15 text-brand-black" : "border-brand-black/15 text-charcoal/70"
             )}
           >
             <option value="" disabled>
@@ -122,7 +144,7 @@ export function ProductActions({
 
       {colors.length > 0 && (
         <div className="flex flex-col gap-2">
-          <span className="text-xs uppercase tracking-wide text-charcoal/60">Color</span>
+          <span className="text-xs uppercase tracking-wide text-charcoal/80">Color</span>
           <div className="flex flex-wrap gap-2">
             {colors.map((c) => (
               <button
@@ -192,7 +214,7 @@ export function ProductActions({
         Buy Now
       </Button>
 
-      <div className="flex items-center gap-6 pt-1 text-xs text-charcoal/60">
+      <div className="flex items-center gap-6 pt-1 text-xs text-charcoal/80">
         <button
           type="button"
           onClick={() => toggle(slug)}
@@ -204,13 +226,12 @@ export function ProductActions({
           <Heart className="h-4 w-4" strokeWidth={1.5} fill={wishlisted ? "currentColor" : "none"} />
           {wishlisted ? "Wishlisted" : "Wishlist"}
         </button>
-        <button type="button" className="flex items-center gap-1.5 hover:text-burnt-orange">
-          <Repeat className="h-4 w-4" strokeWidth={1.5} />
-          Compare
-        </button>
-        <button type="button" className="flex items-center gap-1.5 hover:text-burnt-orange">
+        {/* "Compare" was removed rather than left inert: it had no onClick
+            at all, so it did nothing on every product page since launch.
+            There is no comparison feature to wire it to. */}
+        <button type="button" onClick={handleShare} className="flex items-center gap-1.5 hover:text-burnt-orange">
           <Share2 className="h-4 w-4" strokeWidth={1.5} />
-          Share
+          {shared ? "Link copied" : "Share"}
         </button>
       </div>
     </div>

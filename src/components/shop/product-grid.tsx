@@ -34,7 +34,7 @@ export function ProductGrid({ products }: { products: Product[] }) {
   return (
     <div>
       <div className="flex items-center justify-between border-b border-brand-black/10 pb-4">
-        <span className="text-xs uppercase tracking-wide text-charcoal/50">
+        <span className="text-xs uppercase tracking-wide text-charcoal/70">
           {products.length} {products.length === 1 ? "piece" : "pieces"}
         </span>
 
@@ -60,12 +60,19 @@ export function ProductGrid({ products }: { products: Product[] }) {
           <p className="font-display text-xl text-brand-black">
             This collection is still being curated.
           </p>
-          <p className="text-sm text-charcoal/60">Check back soon, or explore another category.</p>
+          <p className="text-sm text-charcoal/80">Check back soon, or explore another category.</p>
         </div>
       ) : (
         <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-3 lg:grid-cols-4">
-          {sorted.map((product) => (
-            <ProductCard key={product.slug} product={product} />
+          {/* Catalog pages ran h1 -> h3, since the page title is an h1 and
+              every card is an h3. Naming the grid restores the missing
+              level for screen readers without changing ProductCard, which
+              is correctly h3 under the homepage's h2 section headings. */}
+          <h2 className="sr-only">Products</h2>
+          {sorted.map((product, i) => (
+            // The grid is 4-up at its widest, so the first four are the
+            // only ones reliably above the fold.
+            <ProductCard key={product.slug} product={product} priority={i < 4} />
           ))}
         </div>
       )}

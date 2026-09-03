@@ -24,7 +24,7 @@ export function InstagramGallery() {
 
         <div className="mt-10 grid grid-cols-3 gap-3 md:grid-cols-6">
           {instagramPosts.map((post) => (
-            <ProductVisual
+            <ProductVisual sizes="(min-width: 768px) 16vw, 33vw"
               key={post.id}
               icon={post.icon}
               className="aspect-square w-full"
