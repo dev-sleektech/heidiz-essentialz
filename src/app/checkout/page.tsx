@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { CheckCircle2, AlertCircle, Loader2, MessageCircle, ShieldCheck } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { Breadcrumbs } from "@/components/shop/breadcrumbs";
@@ -54,6 +54,13 @@ export default function CheckoutPage() {
   // Paystack and flips to Monnify when the customer retries after a
   // Paystack failure, so a bad provider day doesn't cost the sale.
   const [cardProvider, setCardProvider] = useState<"paystack" | "monnify">("paystack");
+  // Every card attempt this page has opened, newest last. Before starting
+  // another one we re-verify these, because a customer who was charged and
+  // then shown an error will tap Place Order again — and did, twice for
+  // the same NGN 513,900 order, 90 seconds apart, on 2026-09-03. A failure
+  // between "the bank debited them" and "we recorded the order" must never
+  // cost them a second charge.
+  const attemptedPayments = useRef<{ ref: string; provider: "paystack" | "monnify" }[]>([]);
   const [email, setEmail] = useState("");
   const [completedOrder, setCompletedOrder] = useState<OrderDetails | null>(null);
   // "processing"/"verifying" drive the in-form submit button (payment in
@@ -232,6 +239,29 @@ export default function CheckoutPage() {
       setStatus((s) => (s === "verifying" ? s : "idle"));
     };
 
+    // Idempotency gate. Anything already paid for wins over charging again:
+    // if one of this page's earlier references now verifies, the money is
+    // in and the only thing that failed was our bookkeeping, so finish the
+    // order from that reference instead of opening a new checkout.
+    setStatus("verifying");
+    for (const attempt of attemptedPayments.current) {
+      const verify =
+        attempt.provider === "paystack" ? verifyPaystackTransaction : verifyMonnifyTransaction;
+      try {
+        if (await verify(attempt.ref, verifyLines, state)) {
+          completeOrder(form, attempt.ref, true);
+          return;
+        }
+      } catch {
+        // Couldn't reach the verify route for this one. Fall through and
+        // check the rest; a network blip here must not block the customer
+        // from paying, and the worst case is the behaviour we had before.
+      }
+    }
+
+    const paymentRef = makeOrderNumber();
+    attemptedPayments.current.push({ ref: paymentRef, provider: cardProvider });
+
     setStatus("processing");
     try {
       if (cardProvider === "paystack") {
@@ -239,7 +269,7 @@ export default function CheckoutPage() {
           email,
           amount: Math.round(total * 100), // kobo
           currency: "NGN",
-          ref: makeOrderNumber(),
+          ref: paymentRef,
           metadata: { itemCount: totalItems },
           callback: (response) => onProviderSuccess(response.reference, verifyPaystackTransaction),
           onClose: onProviderClose,
@@ -250,7 +280,7 @@ export default function CheckoutPage() {
           email,
           amount: total, // naira, not kobo
           customerName,
-          ref: makeOrderNumber(),
+          ref: paymentRef,
           callback: (response) => onProviderSuccess(response.reference, verifyMonnifyTransaction),
           onClose: onProviderClose,
         });
