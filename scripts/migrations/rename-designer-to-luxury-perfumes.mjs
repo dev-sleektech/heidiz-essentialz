@@ -10,14 +10,13 @@
 // /category/designer-perfumes keeps resolving and no existing link, share
 // or search result breaks. Only the display name changes.
 //
-// It is also removed from all three places it was listed:
-//   - navGroup    -> null   (out of the Collections dropdown and footer)
-//   - showOnHome  -> false  (out of the homepage "Shop by Collection" grid)
-//   - groupSlugs  -> dropped from the `collections` and `perfumes` umbrellas
-//
-// Its products keep their category assignment and stay reachable through
-// /shop, search and the direct URL - they are not orphaned, just no longer
-// surfaced as their own collection.
+// CORRECTED same day: this originally also unlisted the collection
+// (navGroup -> null, showOnHome -> false, dropped from the `collections`
+// and `perfumes` umbrellas). That was a misread of the brief. The request
+// was to get the *old label* off the menu, and the rename alone does that
+// - it is the same row, so unlisting it hid the renamed collection rather
+// than removing anything. Visibility is left exactly as it was; only the
+// name changes.
 //
 // Product.category (the display label on cards and product pages) moves
 // with the name, the same way it did in the Arabian migration: an admin
@@ -37,7 +36,6 @@ try {
 
 const SLUG = "designer-perfumes";
 const NEW_NAME = "Luxury Perfumes";
-const UMBRELLAS = ["collections", "perfumes"];
 
 const client = new pg.Client({ connectionString: process.env.DATABASE_URL });
 await client.connect();
@@ -63,10 +61,8 @@ try {
   await client.query("begin");
 
   const cat = await client.query(
-    `update "Category"
-        set name = $1, "navGroup" = null, "showOnHome" = false, "updatedAt" = now()
-      where slug = $2
-        and (name <> $1 or "navGroup" is not null or "showOnHome" = true)`,
+    `update "Category" set name = $1, "updatedAt" = now()
+      where slug = $2 and name <> $1`,
     [NEW_NAME, SLUG]
   );
 
@@ -76,19 +72,11 @@ try {
     [NEW_NAME, SLUG]
   );
 
-  const umbrellas = await client.query(
-    `update "Category"
-        set "groupSlugs" = array_remove("groupSlugs", $1), "updatedAt" = now()
-      where slug = any($2::text[]) and $1 = any("groupSlugs")`,
-    [SLUG, UMBRELLAS]
-  );
-
   await client.query("commit");
 
   console.log(`Renamed "${existing[0].name}" to "${NEW_NAME}" (slug ${SLUG} unchanged).`);
   console.log(`  category row updated:      ${cat.rowCount}`);
   console.log(`  product labels updated:    ${products.rowCount}`);
-  console.log(`  umbrellas it left:         ${umbrellas.rowCount}`);
 
   const { rows: after } = await client.query(
     `select slug, name, "navGroup", "showOnHome" from "Category" where slug = $1`,
@@ -99,11 +87,7 @@ try {
     `select slug from "Category" where $1 = any("groupSlugs")`,
     [SLUG]
   );
-  console.log(
-    still.length === 0
-      ? "Listed in no umbrella page."
-      : `Still listed in: ${still.map((r) => r.slug).join(", ")}`
-  );
+  console.log(`Listed in umbrellas: ${still.map((r) => r.slug).join(", ") || "none"}`);
 } catch (err) {
   await client.query("rollback").catch(() => {});
   throw err;
