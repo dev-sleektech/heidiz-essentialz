@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { OrderStatusSelect } from "@/components/staff/order-status-select";
+import { SendReceiptButton } from "@/components/staff/send-receipt-button";
 import type { OrderStatus } from "@/components/shop/order-status-timeline";
 import { formatNaira } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
@@ -74,7 +75,7 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
       </form>
 
       <div className="mt-6 overflow-x-auto rounded-[4px] border border-brand-black/10 bg-white">
-        <table className="w-full min-w-[900px] border-collapse text-sm">
+        <table className="w-full min-w-[1040px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-brand-black/10 text-left text-xs uppercase tracking-wide text-charcoal/70">
               <th className="px-5 py-3">Order</th>
@@ -84,6 +85,7 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
               <th className="px-5 py-3">Total</th>
               <th className="px-5 py-3">Payment</th>
               <th className="px-5 py-3">Status</th>
+              <th className="px-5 py-3">Receipt</th>
             </tr>
           </thead>
           <tbody>
@@ -110,6 +112,9 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
                 <td className="px-5 py-3 text-charcoal/70">{order.paymentMethodLabel}</td>
                 <td className="px-5 py-3">
                   <OrderStatusSelect orderNumber={order.orderNumber} currentStatus={order.status as OrderStatus} />
+                </td>
+                <td className="px-5 py-3">
+                  <SendReceiptButton orderNumber={order.orderNumber} hasEmail={Boolean(order.email)} />
                 </td>
               </tr>
             ))}
