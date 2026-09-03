@@ -4,6 +4,7 @@ import { Container } from "@/components/ui/container";
 import { Breadcrumbs } from "@/components/shop/breadcrumbs";
 import { ProductGallery } from "@/components/shop/product-gallery";
 import { ProductActions } from "@/components/shop/product-actions";
+import { FragranceNotes } from "@/components/shop/fragrance-notes";
 import { ProductReviews } from "@/components/shop/product-reviews";
 import { ProductSection } from "@/components/home/product-section";
 import { Accordion, type AccordionItem } from "@/components/ui/accordion";
@@ -59,32 +60,12 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
     getRelatedProducts(product),
   ]);
 
-  const accordionItems: AccordionItem[] = [
-    { title: "Description", content: <p>{product.description}</p> },
-  ];
-
-  if (product.fragranceNotes) {
-    const { top, heart, base } = product.fragranceNotes;
-    accordionItems.push({
-      title: "Fragrance Notes",
-      content: (
-        <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div>
-            <dt className="text-xs uppercase tracking-wide text-burnt-orange">Top</dt>
-            <dd>{top.join(", ")}</dd>
-          </div>
-          <div>
-            <dt className="text-xs uppercase tracking-wide text-burnt-orange">Heart</dt>
-            <dd>{heart.join(", ")}</dd>
-          </div>
-          <div>
-            <dt className="text-xs uppercase tracking-wide text-burnt-orange">Base</dt>
-            <dd>{base.join(", ")}</dd>
-          </div>
-        </dl>
-      ),
-    });
-  }
+  // No "Description" panel: it repeated, verbatim, the copy already
+  // rendered at full size in the main column. And no "Fragrance Notes"
+  // panel — those now lead the page as <FragranceNotes> rather than
+  // hiding behind a plus sign. The accordion is for the reference detail
+  // a buyer goes looking for, not the reason they buy.
+  const accordionItems: AccordionItem[] = [];
 
   accordionItems.push({
     title: "Benefits",
@@ -234,7 +215,15 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
             sizePricing={product.sizePricing}
           />
 
-          <Accordion items={accordionItems} className="mt-4" />
+          {/* The scent leads, then the reference detail. This is the one
+              thing on the page a customer can't get from a photograph. */}
+          {product.fragranceNotes && (
+            <div className="mt-6">
+              <FragranceNotes notes={product.fragranceNotes} />
+            </div>
+          )}
+
+          {accordionItems.length > 0 && <Accordion items={accordionItems} className="mt-4" />}
         </div>
       </Container>
 

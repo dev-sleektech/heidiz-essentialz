@@ -27,6 +27,14 @@ export function ProductCard({
   const [justAdded, markAdded] = useTransientFlag();
   const wishlisted = has(product.slug);
 
+  // Two notes is the most that fits on one line in a 2-up mobile grid
+  // without wrapping and pushing the price below the fold of the card.
+  const notes = product.fragranceNotes;
+  const scentSignature = notes
+    ? [...(notes.top ?? []), ...(notes.heart ?? []), ...(notes.base ?? [])].slice(0, 2).join(" / ") ||
+      null
+    : null;
+
   function handleAddToCart() {
     addItem(product.slug);
     markAdded();
@@ -111,8 +119,15 @@ export function ProductCard({
       </div>
 
       <Link href={`/product/${product.slug}`} className="mt-4 flex flex-col gap-1">
+        {/* Lead with the scent, not the shelf it sits on. Every card in a
+            fragrance grid used to repeat the same category label, which told
+            a browsing customer nothing they couldn't read off the page
+            heading. The dominant notes are what actually distinguishes one
+            bottle from the next, and they're already in the catalog. Falls
+            back to the category for anything without notes (bags, shoes,
+            skincare). */}
         <span className="text-xs uppercase tracking-wide text-charcoal/70">
-          {product.category}
+          {scentSignature ?? product.category}
         </span>
         <h3 className="font-display text-lg text-brand-black">{product.name}</h3>
         <span className="flex items-center gap-2">
