@@ -70,18 +70,53 @@ export function ChatWidget() {
   const [ending, setEnding] = useState(false);
 
   const [formError, setFormError] = useState<string | null>(null);
+  // null until the staff check answers. Staff never get seeded from their
+  // account, see the effect and the seed below.
+  const [isStaff, setIsStaff] = useState<boolean | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Prefill from a previous visit, else from the signed-in Clerk account —
-  // saves a customer retyping what we already know. Derived during render
-  // and applied as defaultValue on uncontrolled inputs rather than pushed
-  // into state from an effect, so there is no render pass where the fields
-  // are wrong. Clerk resolves asynchronously, so the form is keyed on the
-  // seed and remounts once when the account arrives; anything typed before
-  // that is preserved because the key only changes from empty.
-  const seedName = identity?.name || `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim();
-  const seedEmail = identity?.email || user?.primaryEmailAddress?.emailAddress || "";
+  // Prefill from a previous visit, else from the signed-in Clerk account,
+  // which saves a customer retyping what we already know. Derived during
+  // render and applied as defaultValue on uncontrolled inputs rather than
+  // pushed into state from an effect, so there is no render pass where the
+  // fields are wrong. Clerk resolves asynchronously, so the form is keyed
+  // on the seed and remounts once when the account arrives; anything typed
+  // before that is preserved because the key only changes from empty.
+  //
+  // Staff are pointedly excluded. An admin browsing the storefront while
+  // signed in was getting their own admin address prefilled into the
+  // customer chat form, which is not what that seed is for and puts an
+  // internal address one stray click away from a customer thread. Only seed
+  // once the check has come back negative: while it is still unknown the
+  // fields stay blank, so the admin address never appears even briefly.
+  const seedFromAccount = isStaff === false;
+  const seedName = identity?.name || (seedFromAccount ? `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim() : "");
+  const seedEmail = identity?.email || (seedFromAccount ? user?.primaryEmailAddress?.emailAddress ?? "" : "");
+
+  // Resolve staff status lazily: only once a signed-in visitor with no
+  // stored identity actually opens the panel. Doing it on mount would cost
+  // the whole storefront a request per page load for a form most visitors
+  // never open.
+  useEffect(() => {
+    if (!open || !user || identity || isStaff !== null) return;
+    let cancelled = false;
+    fetch("/api/staff/me")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled) setIsStaff(Boolean(data?.isStaff));
+      })
+      .catch(() => {
+        // Fail closed. If the check cannot be reached, assume staff and
+        // leave the fields blank: the cost of being wrong that way is one
+        // retyped address, against seeding an internal address into a
+        // customer conversation.
+        if (!cancelled) setIsStaff(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, user, identity, isStaff]);
 
   const fetchMessages = useCallback((id: string) => {
     fetch(`/api/chat/${id}/messages`)
