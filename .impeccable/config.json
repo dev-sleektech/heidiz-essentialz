@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "bounce-easing",
+        "value": "scooter-bounce",
+        "createdAt": "2026-09-03T10:01:51.963Z",
+        "reason": "False positive: rule matched the keyframe identifier, not an easing function. globals.css:129 uses 'ease-in-out'; the file's only cubic-beziers (L42-44) are all monotonic with no overshoot. The keyframes are a 3px translateY bob that never passes the rest position, on the Out-for-Delivery status icon, and it is already gated behind prefers-reduced-motion at L132."
+      }
+    ]
+  }
+}

@@ -85,7 +85,7 @@ export default async function OrderTrackingPage(props: PageProps<"/order-trackin
         )}
 
         {!hasSearched && !order && (
-          <div className="mt-10 flex flex-col items-center gap-2 text-center text-charcoal/50">
+          <div className="mt-10 flex flex-col items-center gap-2 text-center text-charcoal/70">
             <PackageSearch className="h-10 w-10 text-burnt-orange/60" strokeWidth={1.5} />
             <p className="max-w-sm text-sm">
               Your order number was sent to you when you checked out. It looks like{" "}
@@ -98,7 +98,7 @@ export default async function OrderTrackingPage(props: PageProps<"/order-trackin
           <div className="mt-10 w-full max-w-2xl">
             <div className="flex flex-col gap-2 text-center">
               <h2 className="font-display text-2xl text-brand-black">{order.orderNumber}</h2>
-              <span className="text-sm text-charcoal/50">
+              <span className="text-sm text-charcoal/70">
                 Placed{" "}
                 {new Date(order.createdAt).toLocaleDateString("en-NG", {
                   day: "numeric",
@@ -119,7 +119,7 @@ export default async function OrderTrackingPage(props: PageProps<"/order-trackin
                   <div key={item.id} className="flex items-center justify-between gap-4 py-3">
                     <div className="flex flex-col">
                       <span className="text-sm font-medium text-brand-black">{item.productName}</span>
-                      <span className="text-xs text-charcoal/50">
+                      <span className="text-xs text-charcoal/70">
                         {[item.size && `Size ${item.size}`, item.color].filter(Boolean).join(" · ")}
                         {(item.size || item.color) ? " · " : ""}Qty {item.quantity}
                       </span>

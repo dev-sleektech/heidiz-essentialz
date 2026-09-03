@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 export default function NotFound() {
   return (
     <Container className="py-24 text-center md:py-32">
-      <p className="text-xs uppercase tracking-wide text-charcoal/60">404</p>
+      <p className="text-xs uppercase tracking-wide text-charcoal/80">404</p>
       <h1 className="mt-3 font-display text-3xl text-brand-black md:text-4xl">
         We couldn&apos;t find that page
       </h1>
@@ -32,7 +32,7 @@ export default function NotFound() {
           Back to Home
         </ButtonLink>
       </div>
-      <p className="mt-8 text-xs text-charcoal/50">
+      <p className="mt-8 text-xs text-charcoal/70">
         Looking for something specific?{" "}
         <a href="/contact" className="text-burnt-orange underline underline-offset-4">
           Talk to us

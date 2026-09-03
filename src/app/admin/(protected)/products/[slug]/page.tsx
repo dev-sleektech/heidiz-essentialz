@@ -24,14 +24,14 @@ export default async function AdminProductEditPage(props: PageProps<"/admin/prod
     <div className="p-8 md:p-10">
       <Link
         href="/admin/products"
-        className="inline-flex items-center gap-1 text-sm text-charcoal/60 hover:text-burnt-orange"
+        className="inline-flex items-center gap-1 text-sm text-charcoal/80 hover:text-burnt-orange"
       >
         <ChevronLeft className="h-4 w-4" strokeWidth={1.5} />
         Back to Products
       </Link>
 
       <h1 className="mt-4 font-display text-2xl text-brand-black">{product.name}</h1>
-      <p className="mt-1 text-sm text-charcoal/50">/product/{product.slug}</p>
+      <p className="mt-1 text-sm text-charcoal/70">/product/{product.slug}</p>
 
       <div className="mt-8 max-w-3xl rounded-[4px] border border-brand-black/10 bg-white p-6 md:p-8">
         <ProductEditForm product={product} categories={categories} />

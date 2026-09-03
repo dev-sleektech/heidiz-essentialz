@@ -97,7 +97,7 @@ export function NavDropdown({
             <Link
               href={href}
               onClick={() => setOpen(false)}
-              className="block px-4 py-2 text-xs uppercase tracking-wide text-charcoal/50 transition-colors hover:text-burnt-orange"
+              className="block px-4 py-2 text-xs uppercase tracking-wide text-charcoal/70 transition-colors hover:text-burnt-orange"
             >
               View all {label}
             </Link>

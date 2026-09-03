@@ -13,7 +13,7 @@ export default async function AdminNewProductPage() {
     <div className="p-8 md:p-10">
       <Link
         href="/admin/products"
-        className="inline-flex items-center gap-1 text-sm text-charcoal/60 hover:text-burnt-orange"
+        className="inline-flex items-center gap-1 text-sm text-charcoal/80 hover:text-burnt-orange"
       >
         <ChevronLeft className="h-4 w-4" strokeWidth={1.5} />
         Back to Products

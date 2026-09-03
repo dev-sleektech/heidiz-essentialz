@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { ShoppingBag } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { Breadcrumbs } from "@/components/shop/breadcrumbs";
+import { CartSkeleton } from "@/components/shop/cart-skeleton";
 import { ButtonLink } from "@/components/ui/button";
 import { CartLineItem } from "@/components/shop/cart-line-item";
 import { OrderSummary } from "@/components/shop/order-summary";
@@ -36,7 +37,7 @@ function RestoreFromEmail() {
 
 export default function CartPage() {
   const { lines, totalItems, subtotal } = useCart();
-  const { getProduct } = useProductCatalog();
+  const { getProduct, loading } = useProductCatalog();
 
   const resolvedLines = lines
     .map((line) => ({ line, product: getProduct(line.slug) }))
@@ -52,11 +53,17 @@ export default function CartPage() {
       <Breadcrumbs items={[{ label: "Cart" }]} />
       <h1 className="mt-4 font-display text-3xl text-brand-black md:text-4xl">Shopping Cart</h1>
 
-      {resolvedLines.length === 0 ? (
+      {/* The empty state must outlive the loading window: `lines` comes
+          from localStorage and is trustworthy immediately, while
+          `resolvedLines` needs the catalog fetch. Showing "empty" before
+          that resolves contradicted the header's own cart count. */}
+      {loading && lines.length > 0 ? (
+        <CartSkeleton rows={Math.min(lines.length, 3)} />
+      ) : resolvedLines.length === 0 ? (
         <div className="flex flex-col items-center gap-4 py-24 text-center">
-          <ShoppingBag className="h-10 w-10 text-charcoal/30" strokeWidth={1.5} />
+          <ShoppingBag className="h-10 w-10 text-charcoal/60" strokeWidth={1.5} />
           <p className="font-display text-xl text-brand-black">Your cart is empty</p>
-          <p className="text-sm text-charcoal/60">
+          <p className="text-sm text-charcoal/80">
             Explore the collection and add something you love.
           </p>
           <ButtonLink href="/shop" variant="primary" size="md" className="mt-2">

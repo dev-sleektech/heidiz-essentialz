@@ -59,7 +59,7 @@ export default async function FragranceFinderPage(props: PageProps<"/fragrance-f
                       <input required type="radio" name="family" value={opt.value} className="accent-burnt-orange" />
                       <span className="font-medium text-brand-black">{opt.label}</span>
                     </span>
-                    <span className="pl-6 text-xs text-charcoal/50">{opt.description}</span>
+                    <span className="pl-6 text-xs text-charcoal/70">{opt.description}</span>
                   </label>
                 ))}
               </div>
@@ -117,7 +117,7 @@ export default async function FragranceFinderPage(props: PageProps<"/fragrance-f
             </div>
 
             {matches.length === 0 && (
-              <p className="text-sm text-charcoal/60">
+              <p className="text-sm text-charcoal/80">
                 We couldn&apos;t find a close match for that combination. Try widening your budget, or{" "}
                 <Link href="/category/perfumes" className="text-burnt-orange hover:underline">
                   browse the full perfume collection
@@ -135,10 +135,10 @@ export default async function FragranceFinderPage(props: PageProps<"/fragrance-f
                 >
                   <ProductVisual icon={product.icon} src={product.image} className="aspect-square w-full" />
                   <div className="flex flex-col gap-1">
-                    <span className="text-xs uppercase tracking-wide text-charcoal/50">{product.category}</span>
+                    <span className="text-xs uppercase tracking-wide text-charcoal/70">{product.category}</span>
                     <h3 className="font-display text-base text-brand-black">{product.name}</h3>
                     <span className="text-sm font-medium text-burnt-orange">{formatNaira(product.price)}</span>
-                    {reasons[0] && <p className="mt-1 text-xs text-charcoal/50">{reasons[0]}</p>}
+                    {reasons[0] && <p className="mt-1 text-xs text-charcoal/70">{reasons[0]}</p>}
                   </div>
                 </Link>
               ))}

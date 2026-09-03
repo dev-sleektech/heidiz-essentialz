@@ -75,7 +75,7 @@ export default async function CategoryPage(props: PageProps<"/category/[slug]">)
       <Container className="py-12 md:py-16">
         <ProductGrid products={products} />
         {groupedCount > 0 && (
-          <p className="mt-10 text-center text-xs text-charcoal/40">
+          <p className="mt-10 text-center text-xs text-charcoal/70">
             Browsing {category.assignable ? groupedCount + 1 : groupedCount} combined collections.
             Prefer one at a time? Use the menu above.
           </p>

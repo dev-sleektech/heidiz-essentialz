@@ -23,7 +23,7 @@ function CollectionGrid({ categories }: { categories: Category[] }) {
           />
           <div className="flex flex-col items-center text-center">
             <span className="font-display text-lg text-brand-black">{cat.name}</span>
-            <span className="text-xs text-charcoal/50">{cat.tagline}</span>
+            <span className="text-xs text-charcoal/70">{cat.tagline}</span>
           </div>
         </Link>
       ))}

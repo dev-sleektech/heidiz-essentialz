@@ -146,7 +146,7 @@ export default function AdminChatPage() {
   return (
     <div className="flex h-full flex-col p-8 md:p-10">
       <h1 className="font-display text-2xl text-brand-black">Live Chat</h1>
-      <p className="mt-1 text-sm text-charcoal/60">
+      <p className="mt-1 text-sm text-charcoal/80">
         Customer messages from the storefront chat widget. Refreshes automatically every few
         seconds. Threads waiting on a reply are listed first.
       </p>
@@ -171,7 +171,7 @@ export default function AdminChatPage() {
       <div className="mt-4 flex flex-1 overflow-hidden rounded-[4px] border border-brand-black/10 bg-white">
         <div className="w-80 shrink-0 overflow-y-auto border-r border-brand-black/10">
           {visible.length === 0 ? (
-            <p className="p-6 text-sm text-charcoal/50">
+            <p className="p-6 text-sm text-charcoal/70">
               {filter === "OPEN" ? "No open conversations." : "Nothing here."}
             </p>
           ) : (
@@ -189,7 +189,7 @@ export default function AdminChatPage() {
                     {c.customerName || c.customerEmail || "Guest"}
                   </span>
                   <span className="flex shrink-0 items-center gap-1.5">
-                    <span className="text-xs text-charcoal/40">{formatStamp(c.lastMessageAt)}</span>
+                    <span className="text-xs text-charcoal/70">{formatStamp(c.lastMessageAt)}</span>
                     {c.unreadCount > 0 && (
                       <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-burnt-orange px-1.5 text-xs font-semibold text-white">
                         {c.unreadCount}
@@ -198,15 +198,15 @@ export default function AdminChatPage() {
                   </span>
                 </div>
                 {c.customerEmail && (
-                  <span className="truncate text-xs text-charcoal/40">{c.customerEmail}</span>
+                  <span className="truncate text-xs text-charcoal/70">{c.customerEmail}</span>
                 )}
-                <span className="truncate text-xs text-charcoal/50">
+                <span className="truncate text-xs text-charcoal/70">
                   {c.lastMessage
                     ? `${c.lastMessage.sender === "STAFF" ? "You: " : ""}${c.lastMessage.body}`
                     : "No messages yet"}
                 </span>
                 {c.status === "CLOSED" && (
-                  <span className="w-fit rounded-full bg-ivory px-2 py-0.5 text-[0.65rem] uppercase tracking-wide text-charcoal/50">
+                  <span className="w-fit rounded-full bg-ivory px-2 py-0.5 text-[0.65rem] uppercase tracking-wide text-charcoal/70">
                     Ended
                   </span>
                 )}
@@ -217,7 +217,7 @@ export default function AdminChatPage() {
 
         <div className="flex flex-1 flex-col">
           {!selected ? (
-            <div className="flex flex-1 items-center justify-center text-sm text-charcoal/40">
+            <div className="flex flex-1 items-center justify-center text-sm text-charcoal/70">
               Select a conversation to view it
             </div>
           ) : (
@@ -227,7 +227,7 @@ export default function AdminChatPage() {
                   <p className="truncate text-sm font-medium text-brand-black">
                     {selected.customerName || selected.customerEmail || "Guest"}
                     {selected.status === "CLOSED" && (
-                      <span className="ml-2 rounded-full bg-ivory px-2 py-0.5 text-[0.65rem] uppercase tracking-wide text-charcoal/50">
+                      <span className="ml-2 rounded-full bg-ivory px-2 py-0.5 text-[0.65rem] uppercase tracking-wide text-charcoal/70">
                         Ended
                       </span>
                     )}
@@ -235,13 +235,13 @@ export default function AdminChatPage() {
                   {selected.customerEmail && (
                     <a
                       href={`mailto:${selected.customerEmail}`}
-                      className="inline-flex items-center gap-1 text-xs text-charcoal/50 hover:text-burnt-orange"
+                      className="inline-flex items-center gap-1 text-xs text-charcoal/70 hover:text-burnt-orange"
                     >
                       <Mail className="h-3 w-3" strokeWidth={1.5} />
                       {selected.customerEmail}
                     </a>
                   )}
-                  <p className="text-xs text-charcoal/40">
+                  <p className="text-xs text-charcoal/70">
                     Started {formatStamp(selected.createdAt)}, last message{" "}
                     {formatStamp(selected.lastMessageAt)}
                   </p>
@@ -275,7 +275,7 @@ export default function AdminChatPage() {
                       {m.body}
                       <span
                         className={`mt-1 block text-[0.65rem] ${
-                          m.sender === "STAFF" ? "text-white/60" : "text-charcoal/40"
+                          m.sender === "STAFF" ? "text-white/60" : "text-charcoal/70"
                         }`}
                       >
                         {formatStamp(m.createdAt)}
@@ -284,7 +284,7 @@ export default function AdminChatPage() {
                   </div>
                 ))}
                 {selected.status === "CLOSED" && (
-                  <p className="pt-2 text-center text-xs text-charcoal/45">
+                  <p className="pt-2 text-center text-xs text-charcoal/70">
                     This conversation has ended. Sending a reply reopens it.
                   </p>
                 )}

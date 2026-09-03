@@ -33,7 +33,7 @@ export function OrderStatusTimeline({ status }: { status: OrderStatus }) {
           </div>
           <p className="text-sm text-brand-black">
             <span className="block font-display text-base">Your rider is on the way.</span>
-            <span className="text-charcoal/60">Expect your order shortly.</span>
+            <span className="text-charcoal/80">Expect your order shortly.</span>
           </p>
         </div>
       )}
@@ -52,7 +52,7 @@ export function OrderStatusTimeline({ status }: { status: OrderStatus }) {
                     "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs",
                     done && "border-burnt-orange bg-burnt-orange text-white",
                     active && "border-burnt-orange text-burnt-orange",
-                    upcoming && "border-brand-black/15 text-charcoal/30"
+                    upcoming && "border-brand-black/15 text-charcoal/60"
                   )}
                 >
                   {done ? <Check className="h-3.5 w-3.5" strokeWidth={2} /> : i + 1}
@@ -69,7 +69,7 @@ export function OrderStatusTimeline({ status }: { status: OrderStatus }) {
               <span
                 className={cn(
                   "ml-3 py-3 text-xs sm:ml-0 sm:mt-2 sm:py-0 sm:text-center",
-                  (done || active) ? "text-brand-black" : "text-charcoal/40"
+                  (done || active) ? "text-brand-black" : "text-charcoal/70"
                 )}
               >
                 {step.label}

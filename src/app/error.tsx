@@ -47,7 +47,7 @@ export default function Error({
         </ButtonLink>
       </div>
       {error.digest && (
-        <p className="mt-8 text-xs text-charcoal/50">
+        <p className="mt-8 text-xs text-charcoal/70">
           Reference: <span className="font-mono">{error.digest}</span>
         </p>
       )}

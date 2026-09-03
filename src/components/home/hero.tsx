@@ -1,12 +1,18 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { ButtonLink } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import { AbujaHills, AbujaCity } from "@/components/home/abuja-skyline";
 
 export function Hero() {
+  // Reduced motion keeps the fade but drops the upward travel. The hero's
+  // CSS skyline drift is gated the same way in globals.css:94.
+  const reduceMotion = useReducedMotion();
+  const riseSm = reduceMotion ? 0 : 10;
+  const rise = reduceMotion ? 0 : 16;
+
   return (
     <section className="relative isolate flex min-h-[92vh] items-center overflow-hidden bg-brand-black text-white">
       {/* Placeholder cinematic backdrop; swap for hero video/photography.
@@ -34,7 +40,7 @@ export function Hero() {
 
       <Container className="relative z-10 flex flex-col items-center gap-8 text-center">
         <motion.span
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: riseSm }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="text-xs tracking-luxury uppercase text-champagne"
@@ -43,7 +49,7 @@ export function Hero() {
         </motion.span>
 
         <motion.h1
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: rise }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.1 }}
           className="max-w-4xl font-display text-5xl leading-[1.1] md:text-6xl lg:text-7xl"
@@ -52,7 +58,7 @@ export function Hero() {
         </motion.h1>
 
         <motion.p
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: rise }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.2 }}
           className="max-w-xl text-base text-white/70 md:text-lg"
@@ -63,7 +69,7 @@ export function Hero() {
         </motion.p>
 
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: rise }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.3 }}
           className="flex flex-col items-center gap-4 pt-2 sm:flex-row"

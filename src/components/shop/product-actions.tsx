@@ -81,7 +81,7 @@ export function ProductActions({
       <div className="flex items-center gap-3">
         <span className="font-display text-2xl text-burnt-orange">{formatNaira(effectivePrice)}</span>
         {compareAtPrice && (
-          <span className="text-base text-charcoal/40 line-through">{formatNaira(compareAtPrice)}</span>
+          <span className="text-base text-charcoal/70 line-through">{formatNaira(compareAtPrice)}</span>
         )}
         {badge && isPromoBadge(badge) ? (
           <PromoBadge badge={badge} discountPercent={computeDiscountPercent(effectivePrice, compareAtPrice)} />
@@ -94,18 +94,18 @@ export function ProductActions({
         )}
       </div>
       {hasSizePricing && !size && (
-        <p className="-mt-2 text-xs text-charcoal/50">Price varies by size, select one below.</p>
+        <p className="-mt-2 text-xs text-charcoal/70">Price varies by size, select one below.</p>
       )}
 
       {sizes.length > 0 && (
         <label className="flex flex-col gap-2">
-          <span className="text-xs uppercase tracking-wide text-charcoal/60">Size</span>
+          <span className="text-xs uppercase tracking-wide text-charcoal/80">Size</span>
           <select
             value={size ?? ""}
             onChange={(e) => setSize(e.target.value || undefined)}
             className={cn(
               "rounded-button border bg-white px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-burnt-orange",
-              size ? "border-brand-black/15 text-brand-black" : "border-brand-black/15 text-charcoal/50"
+              size ? "border-brand-black/15 text-brand-black" : "border-brand-black/15 text-charcoal/70"
             )}
           >
             <option value="" disabled>
@@ -122,7 +122,7 @@ export function ProductActions({
 
       {colors.length > 0 && (
         <div className="flex flex-col gap-2">
-          <span className="text-xs uppercase tracking-wide text-charcoal/60">Color</span>
+          <span className="text-xs uppercase tracking-wide text-charcoal/80">Color</span>
           <div className="flex flex-wrap gap-2">
             {colors.map((c) => (
               <button
@@ -192,7 +192,7 @@ export function ProductActions({
         Buy Now
       </Button>
 
-      <div className="flex items-center gap-6 pt-1 text-xs text-charcoal/60">
+      <div className="flex items-center gap-6 pt-1 text-xs text-charcoal/80">
         <button
           type="button"
           onClick={() => toggle(slug)}

@@ -112,12 +112,16 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
   // /public path — only the local ones need the site origin prefixed.
   const absoluteImage = image ? (image.startsWith("http") ? image : `${siteUrl}${image}`) : undefined;
 
-  // Product rich-result schema — price/availability/rating are what let
-  // Google show a star rating + price directly in search results, not the
-  // Open Graph tags above (those are for social share previews). rating
-  // and reviewCount here are the same seeded catalog numbers shown on the
-  // page itself, not verified purchase reviews — worth real customer
-  // review data eventually, but consistent with what's visibly displayed.
+  // Product rich-result schema — price and availability are what let Google
+  // show price and stock directly in search results, not the Open Graph tags
+  // above (those are for social share previews).
+  //
+  // Deliberately no aggregateRating: the `rating`/`reviewCount` columns are
+  // seeded catalog numbers, not verified purchase reviews, and there is no
+  // Review model behind them. Emitting review markup for reviews that don't
+  // exist is a structured-data violation Google can penalise manually, and
+  // the star snippet it buys is not worth the listing. Add it back with the
+  // real aggregate once reviews exist.
   const productJsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -136,15 +140,6 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
         : "https://schema.org/OutOfStock",
       itemCondition: "https://schema.org/NewCondition",
     },
-    ...(product.reviewCount > 0
-      ? {
-          aggregateRating: {
-            "@type": "AggregateRating",
-            ratingValue: product.rating,
-            reviewCount: product.reviewCount,
-          },
-        }
-      : {}),
   };
 
   const breadcrumbJsonLd = {
@@ -202,14 +197,14 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
 
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
-            <span className="text-xs uppercase tracking-wide text-charcoal/50">
+            <span className="text-xs uppercase tracking-wide text-charcoal/70">
               {product.category}
             </span>
             <h1 className="font-display text-3xl text-brand-black md:text-4xl">{product.name}</h1>
 
             <div className="flex items-center gap-2 pt-1">
               <StarRating rating={product.rating} starClassName="h-4 w-4" />
-              <span className="text-xs text-charcoal/50">
+              <span className="text-xs text-charcoal/70">
                 {product.rating.toFixed(1)} ({product.reviewCount} reviews)
               </span>
             </div>
@@ -221,7 +216,7 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
             className={
               product.inStock
                 ? "text-xs font-medium text-burnt-orange"
-                : "text-xs font-medium text-charcoal/50"
+                : "text-xs font-medium text-charcoal/70"
             }
           >
             {product.inStock ? "In stock, ready to ship from Abuja" : "Currently out of stock"}

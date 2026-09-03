@@ -76,7 +76,7 @@ export default async function OrderHistoryPage() {
       <Container className="py-12 md:py-16">
         {orders.length === 0 ? (
           <div className="flex flex-col items-center gap-4 py-16 text-center">
-            <PackageSearch className="h-10 w-10 text-charcoal/30" strokeWidth={1.5} />
+            <PackageSearch className="h-10 w-10 text-charcoal/60" strokeWidth={1.5} />
             <p className="font-display text-xl text-brand-black">No orders yet</p>
             <ButtonLink href="/shop" variant="primary" size="md">
               Shop the Collection
@@ -92,7 +92,7 @@ export default async function OrderHistoryPage() {
               >
                 <div className="flex flex-col gap-1">
                   <span className="font-display text-base text-brand-black">{order.orderNumber}</span>
-                  <span className="text-xs text-charcoal/50">
+                  <span className="text-xs text-charcoal/70">
                     {order.items.length} {order.items.length === 1 ? "item" : "items"} &middot;{" "}
                     {new Date(order.createdAt).toLocaleDateString("en-NG", {
                       day: "numeric",
@@ -104,9 +104,9 @@ export default async function OrderHistoryPage() {
                 <div className="flex items-center gap-3">
                   <div className="flex flex-col items-end gap-1">
                     <span className="text-sm font-medium text-burnt-orange">{formatNaira(order.total)}</span>
-                    <span className="text-xs text-charcoal/50">{STATUS_LABELS[order.status]}</span>
+                    <span className="text-xs text-charcoal/70">{STATUS_LABELS[order.status]}</span>
                   </div>
-                  <ChevronRight className="h-4 w-4 text-charcoal/30" strokeWidth={1.5} />
+                  <ChevronRight className="h-4 w-4 text-charcoal/60" strokeWidth={1.5} />
                 </div>
               </Link>
             ))}

@@ -276,7 +276,7 @@ export function ChatWidget() {
                 this conversation if we get disconnected.
               </p>
               <label className="flex flex-col gap-1.5">
-                <span className="text-xs uppercase tracking-wide text-charcoal/60">Your name</span>
+                <span className="text-xs uppercase tracking-wide text-charcoal/80">Your name</span>
                 <input
                   type="text"
                   name="name"
@@ -288,7 +288,7 @@ export function ChatWidget() {
                 />
               </label>
               <label className="flex flex-col gap-1.5">
-                <span className="text-xs uppercase tracking-wide text-charcoal/60">Email</span>
+                <span className="text-xs uppercase tracking-wide text-charcoal/80">Email</span>
                 <input
                   type="email"
                   name="email"
@@ -311,7 +311,7 @@ export function ChatWidget() {
             <>
               <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto bg-ivory px-4 py-4">
                 {messages.length === 0 ? (
-                  <p className="text-sm text-charcoal/60">
+                  <p className="text-sm text-charcoal/80">
                     Hi{identity ? ` ${identity.name.split(" ")[0]}` : ""}! Ask us anything about an
                     order, a product, or delivery. A real member of the HEIDIZ team will reply here.
                   </p>
@@ -335,7 +335,7 @@ export function ChatWidget() {
                 )}
 
                 {ended && (
-                  <p className="pt-2 text-center text-xs text-charcoal/50">
+                  <p className="pt-2 text-center text-xs text-charcoal/70">
                     This chat has ended. Send a message below to pick it back up, or start a new
                     one.
                   </p>

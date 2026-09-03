@@ -36,7 +36,7 @@ export function OrderSummary({
           <span>{delivery === 0 ? "Complimentary" : formatNaira(delivery)}</span>
         </div>
         {deliveryEtaLabel && (
-          <p className="text-xs text-charcoal/50">Estimated delivery: {deliveryEtaLabel}</p>
+          <p className="text-xs text-charcoal/70">Estimated delivery: {deliveryEtaLabel}</p>
         )}
         {delivery > 0 && remainingForFreeDelivery > 0 && (
           <p className="text-xs text-burnt-orange">

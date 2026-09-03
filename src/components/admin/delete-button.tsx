@@ -69,7 +69,7 @@ export function DeleteButton({
         <button
           type="button"
           onClick={() => setError(null)}
-          className="text-xs text-charcoal/50 hover:text-burnt-orange"
+          className="text-xs text-charcoal/70 hover:text-burnt-orange"
         >
           Dismiss
         </button>
@@ -94,7 +94,7 @@ export function DeleteButton({
           type="button"
           onClick={() => setArmed(false)}
           disabled={deleting}
-          className="text-xs text-charcoal/50 hover:text-charcoal"
+          className="text-xs text-charcoal/70 hover:text-charcoal"
         >
           Cancel
         </button>

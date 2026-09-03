@@ -101,7 +101,7 @@ export function ProductCard({ product }: { product: Product }) {
       </div>
 
       <Link href={`/product/${product.slug}`} className="mt-4 flex flex-col gap-1">
-        <span className="text-xs uppercase tracking-wide text-charcoal/50">
+        <span className="text-xs uppercase tracking-wide text-charcoal/70">
           {product.category}
         </span>
         <h3 className="font-display text-lg text-brand-black">{product.name}</h3>
@@ -110,7 +110,7 @@ export function ProductCard({ product }: { product: Product }) {
             {formatNaira(product.price)}
           </span>
           {product.compareAtPrice && (
-            <span className="text-xs text-charcoal/40 line-through">
+            <span className="text-xs text-charcoal/70 line-through">
               {formatNaira(product.compareAtPrice)}
             </span>
           )}

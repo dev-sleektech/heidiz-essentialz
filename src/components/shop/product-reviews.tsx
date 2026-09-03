@@ -1,41 +1,45 @@
-import { StarRating } from "@/components/ui/star-rating";
-import { productReviewPool } from "@/lib/placeholder-data";
+import { MessageCircle } from "lucide-react";
+import { STORE_WHATSAPP_NUMBER } from "@/lib/whatsapp";
 import type { Product } from "@/lib/product-types";
 
+// Honest empty state, replacing the rotating placeholder reviews that used
+// to render here (2026-09-03).
+//
+// There is no Review model in the schema, so nothing on this page could ever
+// have been a real customer review. What shipped instead was a pool of three
+// invented quotes with invented names and Nigerian cities, offset by slug
+// length — so any customer who opened two product pages saw the same person
+// praising both. That is the exact pattern shoppers are trained to read as a
+// scam, and it discredited the genuinely verifiable trust signals elsewhere
+// on the site (RC number, the Mabushi address, the WhatsApp line).
+//
+// The seeded `rating`/`reviewCount` columns are deliberately not shown here
+// either, and no longer feed the page's aggregateRating JSON-LD: emitting
+// review markup for reviews that don't exist is a structured-data violation
+// Google can act on manually.
+//
+// When real reviews exist, this is the component to replace.
 export function ProductReviews({ product }: { product: Product }) {
-  // Cycles a small generic review pool per product until real customer
-  // reviews start coming in; see productReviewPool in placeholder-data.ts.
-  const offset = product.slug.length % productReviewPool.length;
-  const reviews = [
-    ...productReviewPool.slice(offset),
-    ...productReviewPool.slice(0, offset),
-  ].slice(0, 3);
+  const askUrl = `https://wa.me/${STORE_WHATSAPP_NUMBER}?text=${encodeURIComponent(
+    `Hi HEIDIZ Essentialz, I'd like to ask about ${product.name}.`
+  )}`;
 
   return (
-    <div className="flex flex-col gap-8">
-      <div className="flex flex-wrap items-center gap-4">
-        <span className="font-display text-4xl text-brand-black">{product.rating.toFixed(1)}</span>
-        <div className="flex flex-col gap-1">
-          <StarRating rating={product.rating} />
-          <span className="text-xs text-charcoal/50">Based on {product.reviewCount} reviews</span>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        {reviews.map((review) => (
-          <div
-            key={review.name}
-            className="flex flex-col gap-3 rounded-[4px] border border-brand-black/10 bg-white p-6"
-          >
-            <StarRating rating={review.rating} starClassName="h-3.5 w-3.5" />
-            <p className="text-sm leading-relaxed text-charcoal/70">&ldquo;{review.quote}&rdquo;</p>
-            <div className="flex flex-col">
-              <span className="text-sm font-medium text-brand-black">{review.name}</span>
-              <span className="text-xs text-charcoal/50">{review.location}</span>
-            </div>
-          </div>
-        ))}
-      </div>
+    <div className="flex flex-col items-center gap-4 rounded-[4px] border border-brand-black/10 bg-white px-6 py-12 text-center">
+      <p className="font-display text-xl text-brand-black">No reviews yet</p>
+      <p className="max-w-md text-sm text-charcoal/70">
+        This piece hasn&apos;t been reviewed yet. If you&apos;ve bought it, we&apos;d love to hear
+        how you found it. If you&apos;re deciding, ask us anything about the scent before you buy.
+      </p>
+      <a
+        href={askUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-1 inline-flex items-center gap-2 rounded-button bg-[#25D366] px-6 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90"
+      >
+        <MessageCircle className="h-4 w-4" strokeWidth={1.5} />
+        Ask About This Scent
+      </a>
     </div>
   );
 }

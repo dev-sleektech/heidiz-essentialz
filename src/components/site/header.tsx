@@ -219,7 +219,7 @@ export function Header({ categories }: { categories: Category[] }) {
                       <Link
                         key={cat.slug}
                         href={`/category/${cat.slug}`}
-                        className="text-xs uppercase tracking-wide text-charcoal/60 hover:text-burnt-orange"
+                        className="text-xs uppercase tracking-wide text-charcoal/80 hover:text-burnt-orange"
                         onClick={closeMenu}
                       >
                         {cat.name}

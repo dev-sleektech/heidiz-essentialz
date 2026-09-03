@@ -46,7 +46,7 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
           name="q"
           defaultValue={q}
           placeholder="Search order number or customer name"
-          className="w-full max-w-sm rounded-button border border-brand-black/15 bg-white px-4 py-2.5 text-sm text-charcoal placeholder:text-charcoal/40 focus:outline-none focus:ring-2 focus:ring-burnt-orange"
+          className="w-full max-w-sm rounded-button border border-brand-black/15 bg-white px-4 py-2.5 text-sm text-charcoal placeholder:text-charcoal/70 focus:outline-none focus:ring-2 focus:ring-burnt-orange"
         />
         <select
           name="status"
@@ -67,7 +67,7 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
           Filter
         </button>
         {(q || status) && (
-          <a href="/admin/orders" className="text-sm text-charcoal/50 hover:text-burnt-orange">
+          <a href="/admin/orders" className="text-sm text-charcoal/70 hover:text-burnt-orange">
             Clear
           </a>
         )}
@@ -76,7 +76,7 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
       <div className="mt-6 overflow-x-auto rounded-[4px] border border-brand-black/10 bg-white">
         <table className="w-full min-w-[900px] border-collapse text-sm">
           <thead>
-            <tr className="border-b border-brand-black/10 text-left text-xs uppercase tracking-wide text-charcoal/50">
+            <tr className="border-b border-brand-black/10 text-left text-xs uppercase tracking-wide text-charcoal/70">
               <th className="px-5 py-3">Order</th>
               <th className="px-5 py-3">Date</th>
               <th className="px-5 py-3">Customer</th>
@@ -96,7 +96,7 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
                 <td className="px-5 py-3 text-charcoal/70">
                   {order.customerName}
                   <br />
-                  <span className="text-xs text-charcoal/40">{order.phone}</span>
+                  <span className="text-xs text-charcoal/70">{order.phone}</span>
                 </td>
                 <td className="px-5 py-3 text-charcoal/70">
                   {order.items
@@ -116,7 +116,7 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
           </tbody>
         </table>
         {orders.length === 0 && (
-          <p className="py-10 text-center text-sm text-charcoal/50">
+          <p className="py-10 text-center text-sm text-charcoal/70">
             {q || status ? "No orders match this search." : "No orders yet."}
           </p>
         )}

@@ -141,17 +141,17 @@ export function CategoryEditForm({
               className={inputClass}
               placeholder="luxury-perfumes"
             />
-            <span className="text-xs text-charcoal/40">
+            <span className="text-xs text-charcoal/70">
               /category/{slugify(slug) || "..."} — fixed once the category is created.
             </span>
           </label>
         ) : (
           <div className="flex flex-col gap-1.5 sm:col-span-2">
             <span className={labelClass}>Slug</span>
-            <p className="rounded-button border border-brand-black/10 bg-ivory px-4 py-2.5 text-sm text-charcoal/60">
+            <p className="rounded-button border border-brand-black/10 bg-ivory px-4 py-2.5 text-sm text-charcoal/80">
               /category/{category.slug}
             </p>
-            <span className="text-xs text-charcoal/40">
+            <span className="text-xs text-charcoal/70">
               Fixed after creation: it is the public URL and the key every product in this category
               points at.
             </span>
@@ -167,7 +167,7 @@ export function CategoryEditForm({
             className={inputClass}
             placeholder="Signature scents & oud"
           />
-          <span className="text-xs text-charcoal/40">
+          <span className="text-xs text-charcoal/70">
             One short line, shown under the name on the homepage tile.
           </span>
         </label>
@@ -181,7 +181,7 @@ export function CategoryEditForm({
             defaultValue={category?.description}
             className={inputClass}
           />
-          <span className="text-xs text-charcoal/40">
+          <span className="text-xs text-charcoal/70">
             Shown at the top of the category page, and used as its search-engine description.
           </span>
         </label>
@@ -195,7 +195,7 @@ export function CategoryEditForm({
               </option>
             ))}
           </select>
-          <span className="text-xs text-charcoal/40">
+          <span className="text-xs text-charcoal/70">
             Used as the fallback picture when no tile photo is set, and as the default icon for new
             products in this category.
           </span>
@@ -208,7 +208,7 @@ export function CategoryEditForm({
               {image ? (
                 <Image src={image} alt="" width={64} height={64} className="h-full w-full object-cover" />
               ) : (
-                <Upload className="h-5 w-5 text-charcoal/30" strokeWidth={1.5} />
+                <Upload className="h-5 w-5 text-charcoal/60" strokeWidth={1.5} />
               )}
             </div>
             <div className="flex flex-1 flex-col gap-1.5">
@@ -219,7 +219,7 @@ export function CategoryEditForm({
                   accept="image/*"
                   onChange={(e) => handleFiles(e, setImage)}
                   disabled={uploading}
-                  className="text-xs text-charcoal/60 file:mr-3 file:rounded-button file:border-0 file:bg-brand-black file:px-3 file:py-1.5 file:text-xs file:text-white file:hover:bg-burnt-orange"
+                  className="text-xs text-charcoal/80 file:mr-3 file:rounded-button file:border-0 file:bg-brand-black file:px-3 file:py-1.5 file:text-xs file:text-white file:hover:bg-burnt-orange"
                 />
                 {uploading && <Loader2 className="h-4 w-4 shrink-0 animate-spin text-burnt-orange" strokeWidth={1.5} />}
               </div>
@@ -239,7 +239,7 @@ export function CategoryEditForm({
         <span className={labelClass}>Placement</span>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <label className="flex flex-col gap-1.5">
-            <span className="text-xs text-charcoal/50">Header Menu</span>
+            <span className="text-xs text-charcoal/70">Header Menu</span>
             <select name="navGroup" defaultValue={category?.navGroup ?? ""} className={inputClass}>
               <option value="">Not on the menu</option>
               {NAV_GROUPS.map((group) => (
@@ -248,13 +248,13 @@ export function CategoryEditForm({
                 </option>
               ))}
             </select>
-            <span className="text-xs text-charcoal/40">
+            <span className="text-xs text-charcoal/70">
               Which header dropdown this appears in. Both menus are listed alphabetically, so sort
               order below does not affect them.
             </span>
           </label>
           <label className="flex flex-col gap-1.5">
-            <span className="text-xs text-charcoal/50">Sort Order</span>
+            <span className="text-xs text-charcoal/70">Sort Order</span>
             <input
               required
               type="number"
@@ -262,7 +262,7 @@ export function CategoryEditForm({
               defaultValue={category?.sortOrder ?? 120}
               className={inputClass}
             />
-            <span className="text-xs text-charcoal/40">
+            <span className="text-xs text-charcoal/70">
               Lower shows first in the homepage grid.
             </span>
           </label>
@@ -277,7 +277,7 @@ export function CategoryEditForm({
             />
             <span className="text-sm text-charcoal">
               Show on homepage
-              <span className="block text-xs text-charcoal/40">
+              <span className="block text-xs text-charcoal/70">
                 Gives it a tile in the homepage collection grid.
               </span>
             </span>
@@ -291,7 +291,7 @@ export function CategoryEditForm({
             />
             <span className="text-sm text-charcoal">
               Products can be filed here
-              <span className="block text-xs text-charcoal/40">
+              <span className="block text-xs text-charcoal/70">
                 Uncheck for a pure grouping page like Accessories.
               </span>
             </span>
@@ -301,7 +301,7 @@ export function CategoryEditForm({
 
       <section className="flex flex-col gap-3">
         <span className={labelClass}>Also Show Products From</span>
-        <p className="text-xs text-charcoal/50">
+        <p className="text-xs text-charcoal/70">
           Tick other collections to gather their products onto this category&apos;s page as well.
           This is how Accessories pulls in watches, handbags, jewelry and sunglasses. Leave every
           box clear for an ordinary category.
@@ -316,11 +316,11 @@ export function CategoryEditForm({
                 className="h-4 w-4 accent-burnt-orange"
               />
               {sib.name}
-              <span className="text-xs text-charcoal/40">/{sib.slug}</span>
+              <span className="text-xs text-charcoal/70">/{sib.slug}</span>
             </label>
           ))}
           {siblings.length === 0 && (
-            <p className="text-sm text-charcoal/40">No other categories yet.</p>
+            <p className="text-sm text-charcoal/70">No other categories yet.</p>
           )}
         </div>
       </section>
@@ -359,7 +359,7 @@ export function CategoryEditForm({
       </div>
 
       {!isCreate && (
-        <p className="text-xs text-charcoal/40">
+        <p className="text-xs text-charcoal/70">
           {productCount && productCount > 0
             ? `${productCount} product${productCount === 1 ? "" : "s"} currently sit in this category. Move or delete ${productCount === 1 ? "it" : "them"} before it can be removed.`
             : "No products are in this category, so it can be removed safely."}

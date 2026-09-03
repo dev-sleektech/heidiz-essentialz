@@ -67,7 +67,7 @@ export function OrderStatusSelect({
             </option>
           ))}
         </select>
-        {isPending && <Loader2 className="h-3.5 w-3.5 animate-spin text-charcoal/40" strokeWidth={1.5} />}
+        {isPending && <Loader2 className="h-3.5 w-3.5 animate-spin text-charcoal/70" strokeWidth={1.5} />}
       </div>
       {error && <span className="text-xs text-red-600">{error}</span>}
     </div>
