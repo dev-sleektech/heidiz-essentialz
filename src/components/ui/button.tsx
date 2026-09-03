@@ -29,7 +29,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     <button
       ref={ref}
       className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-button font-medium tracking-wide transition-[background-color,border-color,color,transform] duration-(--duration-press) ease-brand motion-safe:active:scale-[0.97] cursor-pointer disabled:cursor-not-allowed disabled:opacity-40",
+        "inline-flex items-center justify-center gap-2 rounded-button font-medium tracking-wide transition-[background-color,border-color,color,transform] duration-(--duration-press) ease-brand motion-safe:active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-burnt-orange focus-visible:ring-offset-2 focus-visible:ring-offset-ivory cursor-pointer disabled:cursor-not-allowed disabled:opacity-40",
         variantClasses[variant],
         sizeClasses[size],
         className
@@ -59,7 +59,7 @@ export function ButtonLink({
     <Link
       href={href}
       className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-button font-medium tracking-wide transition-[background-color,border-color,color,transform] duration-(--duration-press) ease-brand motion-safe:active:scale-[0.97]",
+        "inline-flex items-center justify-center gap-2 rounded-button font-medium tracking-wide transition-[background-color,border-color,color,transform] duration-(--duration-press) ease-brand motion-safe:active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-burnt-orange focus-visible:ring-offset-2 focus-visible:ring-offset-ivory",
         variantClasses[variant],
         sizeClasses[size],
         className

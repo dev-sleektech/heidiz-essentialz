@@ -64,6 +64,11 @@ export function ProductGrid({ products }: { products: Product[] }) {
         </div>
       ) : (
         <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-3 lg:grid-cols-4">
+          {/* Catalog pages ran h1 -> h3, since the page title is an h1 and
+              every card is an h3. Naming the grid restores the missing
+              level for screen readers without changing ProductCard, which
+              is correctly h3 under the homepage's h2 section headings. */}
+          <h2 className="sr-only">Products</h2>
           {sorted.map((product, i) => (
             // The grid is 4-up at its widest, so the first four are the
             // only ones reliably above the fold.
