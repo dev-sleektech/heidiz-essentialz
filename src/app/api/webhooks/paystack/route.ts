@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import { verifyPaystackReference } from "@/lib/paystack-server";
+import { computeOrderTotals, type PricedLine } from "@/lib/order-pricing";
 
 // Redundant, more reliable confirmation path alongside the client-triggered
 // verify in src/app/api/paystack/verify/route.ts (which only fires if the
@@ -60,15 +61,104 @@ export async function POST(request: Request) {
 
     // orderNumber IS the payment reference for both gateways (see
     // makeOrderNumber() in checkout/page.tsx) — no separate lookup needed.
-    // Only advance orders still sitting at PLACED, so this never regresses
-    // an order staff has already moved further along the timeline.
-    await prisma.order.updateMany({
-      where: { orderNumber: event.data.reference, status: "PLACED" },
-      data: { status: "PAYMENT_CONFIRMED" },
+    //
+    // Test existence rather than counting an update: a card order is
+    // written as PAYMENT_CONFIRMED already, so an "advance only PLACED
+    // rows" update matches nothing on the happy path. Treating that as
+    // "missing" would send every healthy payment down the recovery branch.
+    const existing = await prisma.order.findUnique({
+      where: { orderNumber: event.data.reference },
+      select: { status: true },
     });
+
+    if (!existing) {
+      // Paid, but no order. The browser is meant to record it on a
+      // fire-and-forget fetch, so a closed tab, a dropped connection or a
+      // failure between the charge and our own write loses it entirely —
+      // exactly what happened for eight days from 2026-08-26, when a bug
+      // rejected every card payment after the customer had been charged
+      // (fixed in dab48c6). Paystack tells us independently of the
+      // customer's browser, which makes this the only place that can
+      // catch it. So it creates the order rather than shrugging.
+      await createOrderFromWebhook(event.data.reference, result.metadata);
+    } else if (existing.status === "PLACED") {
+      // Recorded but not yet confirmed — advance it. Anything further
+      // along is left alone so this never regresses an order staff have
+      // already moved down the timeline.
+      await prisma.order.update({
+        where: { orderNumber: event.data.reference },
+        data: { status: "PAYMENT_CONFIRMED" },
+      });
+    }
   } catch (err) {
     console.error("[paystack webhook] error", err);
   }
 
   return NextResponse.json({ received: true });
+}
+
+type RecoveryOrder = {
+  customerName?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  notes?: string;
+  lines?: PricedLine[];
+};
+
+// Rebuilds an order Paystack accepted but we never recorded, from the
+// delivery details attached as metadata when checkout opened.
+//
+// Prices are never taken from the metadata — it reaches Paystack through
+// the customer's browser, so it is exactly as editable as the cart is.
+// computeOrderTotals re-prices every line from the Product table, the same
+// authority the verify and create routes use.
+async function createOrderFromWebhook(reference: string, metadata: unknown) {
+  const order = (metadata as { order?: RecoveryOrder } | null)?.order;
+  if (!order?.lines?.length || !order.state) {
+    console.error("[paystack webhook] paid with no order and no recovery metadata", { reference });
+    return;
+  }
+
+  const computed = await computeOrderTotals(order.lines, order.state);
+  if (!computed) {
+    console.error("[paystack webhook] paid but could not price the order", { reference });
+    return;
+  }
+
+  try {
+    await prisma.order.create({
+      data: {
+        orderNumber: reference,
+        // No Clerk session on a webhook — it is a server-to-server call, so
+        // a recovered order is always guest-shaped even if the customer was
+        // signed in. It still shows up in /order-tracking by number+phone.
+        userId: null,
+        customerName: order.customerName || "Recovered from payment",
+        email: order.email ?? null,
+        phone: order.phone ?? "",
+        address: order.address ?? "",
+        city: order.city ?? "",
+        state: order.state,
+        notes: [order.notes, "Order recovered from the Paystack webhook — the checkout never recorded it."]
+          .filter(Boolean)
+          .join(" | "),
+        paymentMethodLabel: "Pay with Card (Paystack)",
+        paymentReference: reference,
+        subtotal: computed.subtotal,
+        delivery: computed.delivery,
+        total: computed.total,
+        status: "PAYMENT_CONFIRMED",
+        items: { create: computed.items },
+      },
+    });
+    console.warn("[paystack webhook] recovered an order the checkout lost", { reference });
+  } catch (err) {
+    // Most likely a duplicate: the browser won the race and created it
+    // between our updateMany and here. orderNumber is unique, so the
+    // database is the arbiter and losing here is the correct outcome.
+    console.error("[paystack webhook] could not create recovered order", { reference, err });
+  }
 }
