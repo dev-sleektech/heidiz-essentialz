@@ -26,6 +26,9 @@ export async function verifyPaystackReference(reference: string): Promise<{
    *  see at a glance whether fee-bearing explains the gap. */
   fees?: number;
   currency?: string;
+  /** Whatever we attached when opening the checkout. The webhook rebuilds
+   *  a missing order from this — see api/webhooks/paystack. */
+  metadata?: unknown;
 }> {
   const secretKey = process.env.PAYSTACK_SECRET_KEY;
   if (!secretKey || secretKey.includes("replace_me")) {
@@ -49,5 +52,6 @@ export async function verifyPaystackReference(reference: string): Promise<{
     requestedAmount: data.data?.requested_amount,
     fees: data.data?.fees,
     currency: data.data?.currency,
+    metadata: data.data?.metadata,
   };
 }

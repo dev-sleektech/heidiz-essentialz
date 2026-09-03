@@ -359,6 +359,66 @@ export async function sendOutOfStockAlertEmail(product: { name: string; slug: st
   }
 }
 
+// Alerts staff when Paystack has taken money we have no order for.
+//
+// This exists because of the 2026-08-26 to 2026-09-03 outage: a bug
+// rejected every card payment after the customer had already been charged,
+// so no order was ever written. Eight days passed before anyone noticed,
+// and only because a customer complained. The bug is fixed; the blind spot
+// it exposed is what this closes.
+export async function sendPaymentMismatchAlertEmail(params: {
+  orphanCount: number;
+  totalNaira: number;
+  references: string[];
+  sinceLabel: string;
+}): Promise<{ sent: boolean; message: string }> {
+  const to = (process.env.ADMIN_EMAILS ?? "").split(",")[0]?.trim();
+  if (!to) {
+    return { sent: false, message: "No ADMIN_EMAILS configured to alert." };
+  }
+  if (!isResendConfigured()) {
+    return { sent: false, message: "Email is not configured yet." };
+  }
+
+  const from = process.env.RESEND_FROM_EMAIL || "HEIDIZ Essentialz <onboarding@resend.dev>";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3300";
+  const list = params.references
+    .slice(0, 25)
+    .map((r) => `<li style="margin-bottom:4px;"><code>${escapeHtml(r)}</code></li>`)
+    .join("");
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from,
+        to,
+        subject: `Action needed: ${params.orphanCount} payment(s) with no order`,
+        html: `<div style="font-family:Arial,sans-serif;font-size:14px;color:${CHARCOAL};padding:24px;">
+          <p><strong>${params.orphanCount} successful payment(s) since ${escapeHtml(params.sinceLabel)} have no matching order.</strong></p>
+          <p>Customers have been charged a total of <strong>NGN ${params.totalNaira.toLocaleString()}</strong> for orders that were never recorded. They are waiting on goods nobody has been told to send.</p>
+          <p>References:</p>
+          <ul style="padding-left:18px;">${list}</ul>
+          <p style="margin-top:16px;">Run <code>node scripts/reconcile-paystack.mjs</code> for the full breakdown, including anyone charged more than once.</p>
+          <p><a href="${siteUrl}/admin/orders" style="color:${BRAND_ORANGE};">Open the admin</a></p>
+        </div>`,
+      }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      return { sent: false, message: data?.message ?? `Resend responded with ${res.status}.` };
+    }
+    return { sent: true, message: "Payment mismatch alert sent." };
+  } catch {
+    return { sent: false, message: "Could not reach Resend to send the alert." };
+  }
+}
+
 // Daily AI-generated sales digest (see src/lib/ai-summary.ts), sent to
 // ADMIN_EMAILS by the sales-summary cron job. `summaryText` is Claude's
 // generated paragraph; the stat cards below it are computed directly from

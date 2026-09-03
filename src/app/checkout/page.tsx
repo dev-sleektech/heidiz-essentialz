@@ -262,6 +262,27 @@ export default function CheckoutPage() {
     const paymentRef = makeOrderNumber();
     attemptedPayments.current.push({ ref: paymentRef, provider: cardProvider });
 
+    // Everything the webhook needs to rebuild this order if the browser
+    // never gets to record it — a closed tab, a dead connection, a failure
+    // between the charge and our own bookkeeping. Paystack hands it back
+    // verbatim on charge.success. Delivery details only: prices are always
+    // recomputed server-side from the Product table, so nothing here is
+    // trusted for money (see computeOrderTotals).
+    const formData = new FormData(form);
+    const recoveryMetadata = {
+      itemCount: totalItems,
+      order: {
+        customerName: String(formData.get("fullName") ?? ""),
+        email,
+        phone: String(formData.get("phone") ?? ""),
+        address: String(formData.get("address") ?? ""),
+        city: String(formData.get("city") ?? ""),
+        state,
+        notes: String(formData.get("notes") ?? "") || undefined,
+        lines: verifyLines,
+      },
+    };
+
     setStatus("processing");
     try {
       if (cardProvider === "paystack") {
@@ -270,7 +291,7 @@ export default function CheckoutPage() {
           amount: Math.round(total * 100), // kobo
           currency: "NGN",
           ref: paymentRef,
-          metadata: { itemCount: totalItems },
+          metadata: recoveryMetadata,
           callback: (response) => onProviderSuccess(response.reference, verifyPaystackTransaction),
           onClose: onProviderClose,
         });
