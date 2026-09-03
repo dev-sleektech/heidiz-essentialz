@@ -34,9 +34,9 @@ const ABUJA_STATE = "FCT - Abuja";
 const MAJOR_STATES = new Set(["Lagos", "Rivers", "Kano", "Oyo", "Kaduna", "Enugu", "Delta", "Ogun", "Anambra"]);
 
 const ZONE_CONFIG: Record<DeliveryZone, { fee: number; etaLabel: string }> = {
-  abuja: { fee: 2500, etaLabel: "Same day – 1 business day" },
-  major: { fee: 4000, etaLabel: "2–4 business days" },
-  other: { fee: 6000, etaLabel: "4–7 business days" },
+  abuja: { fee: 2500, etaLabel: "Same day to 1 business day" },
+  major: { fee: 4000, etaLabel: "2 to 4 business days" },
+  other: { fee: 6000, etaLabel: "4 to 7 business days" },
 };
 
 function resolveZone(state: string): DeliveryZone {

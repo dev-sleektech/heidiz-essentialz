@@ -1,26 +1,35 @@
 "use client";
 
-import { useState } from "react";
+
 import Link from "next/link";
 import { Heart, Check } from "lucide-react";
 import { ProductVisual } from "@/components/ui/product-visual";
 import { useCart } from "@/lib/cart-context";
+import { useTransientFlag } from "@/lib/use-transient-flag";
 import { useWishlist } from "@/lib/wishlist-context";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/lib/product-types";
 import { formatNaira } from "@/lib/format";
 import { PromoBadge, computeDiscountPercent, isPromoBadge } from "@/components/ui/promo-badge";
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({
+  product,
+  priority = false,
+}: {
+  product: Product;
+  /** Set on the first row of a grid: on the catalog routes these cards are
+   *  the first visible content, so lazy-loading them delayed the largest
+   *  paint on exactly the pages built to sell. */
+  priority?: boolean;
+}) {
   const { addItem } = useCart();
   const { toggle, has } = useWishlist();
-  const [justAdded, setJustAdded] = useState(false);
+  const [justAdded, markAdded] = useTransientFlag();
   const wishlisted = has(product.slug);
 
   function handleAddToCart() {
     addItem(product.slug);
-    setJustAdded(true);
-    setTimeout(() => setJustAdded(false), 1500);
+    markAdded();
   }
 
   return (
@@ -36,6 +45,7 @@ export function ProductCard({ product }: { product: Product }) {
         />
 
         <ProductVisual
+          priority={priority}
           icon={product.icon}
           src={product.image}
           className="aspect-[4/5] w-full"

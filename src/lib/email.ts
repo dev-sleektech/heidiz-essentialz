@@ -300,7 +300,7 @@ export async function sendOrderStatusEmail(params: {
       body: JSON.stringify({
         from,
         to: params.email,
-        subject: `Your HEIDIZ order ${params.orderNumber} — ${label}`,
+        subject: `Your HEIDIZ order ${params.orderNumber}: ${label}`,
         html: buildStatusUpdateEmailHtml(params.orderNumber, params.customerName, params.status, trackingUrl),
       }),
     });
@@ -429,7 +429,7 @@ export async function sendSalesSummaryEmail(summaryText: string, stats: DailySta
       body: JSON.stringify({
         from,
         to,
-        subject: `HEIDIZ sales summary — ${stats.dateLabel}`,
+        subject: `HEIDIZ sales summary: ${stats.dateLabel}`,
         html,
       }),
     });
@@ -464,7 +464,7 @@ export async function sendOrderReceiptEmail(order: OrderDetails): Promise<{ sent
       body: JSON.stringify({
         from,
         to: order.email,
-        subject: `Your HEIDIZ Essentialz Order Confirmation — ${order.orderNumber}`,
+        subject: `Your HEIDIZ Essentialz Order Confirmation: ${order.orderNumber}`,
         html: buildReceiptEmailHtml(order),
       }),
     });

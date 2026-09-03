@@ -64,8 +64,10 @@ export function ProductGrid({ products }: { products: Product[] }) {
         </div>
       ) : (
         <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-3 lg:grid-cols-4">
-          {sorted.map((product) => (
-            <ProductCard key={product.slug} product={product} />
+          {sorted.map((product, i) => (
+            // The grid is 4-up at its widest, so the first four are the
+            // only ones reliably above the fold.
+            <ProductCard key={product.slug} product={product} priority={i < 4} />
           ))}
         </div>
       )}

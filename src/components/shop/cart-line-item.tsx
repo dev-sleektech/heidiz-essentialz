@@ -26,7 +26,7 @@ export function CartLineItem({
   return (
     <div className="flex gap-4 border-b border-brand-black/10 py-6 first:pt-0">
       <Link href={`/product/${product.slug}`} className="shrink-0">
-        <ProductVisual icon={product.icon} src={product.image} className="h-24 w-20 sm:h-28 sm:w-24" />
+        <ProductVisual icon={product.icon} src={product.image} alt={product.name} sizes="96px" className="h-24 w-20 sm:h-28 sm:w-24" />
       </Link>
 
       <div className="flex flex-1 flex-col gap-1">

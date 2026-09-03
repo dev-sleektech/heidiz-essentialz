@@ -19,6 +19,12 @@ export function OrderSummary({
   deliveryEtaLabel?: string;
 }) {
   const delivery = deliveryFeeOverride ?? getDeliveryFee(subtotal);
+  // Without an address we're showing the flat fee, and the zone fee at
+  // checkout can be higher (up to 6,000 for the far zones against a 3,500
+  // flat estimate). Saying "estimated" here means the total going up after
+  // five form fields isn't a surprise — a total that rises late is the most
+  // reliable abandonment trigger there is.
+  const isEstimate = deliveryFeeOverride === undefined && delivery > 0;
   const total = subtotal + delivery;
   const remainingForFreeDelivery = FREE_DELIVERY_THRESHOLD - subtotal;
 
@@ -32,9 +38,14 @@ export function OrderSummary({
           <span>{formatNaira(subtotal)}</span>
         </div>
         <div className="flex justify-between">
-          <span>Delivery</span>
+          <span>{isEstimate ? "Delivery (estimated)" : "Delivery"}</span>
           <span>{delivery === 0 ? "Complimentary" : formatNaira(delivery)}</span>
         </div>
+        {isEstimate && (
+          <p className="text-xs text-charcoal/70">
+            Final fee is calculated at checkout from your state.
+          </p>
+        )}
         {deliveryEtaLabel && (
           <p className="text-xs text-charcoal/70">Estimated delivery: {deliveryEtaLabel}</p>
         )}

@@ -224,6 +224,7 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
 
           <ProductActions
             slug={product.slug}
+            name={product.name}
             price={product.price}
             compareAtPrice={product.compareAtPrice}
             badge={product.badge}
