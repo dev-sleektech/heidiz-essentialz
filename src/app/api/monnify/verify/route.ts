@@ -58,7 +58,12 @@ export async function POST(request: Request) {
     // treated as paid in full (see src/lib/order-pricing.ts). A ₦1
     // tolerance absorbs float rounding, not a meaningful underpayment.
     const computed = await computeOrderTotals(items, state);
-    if (!computed || result.amount === undefined || Math.abs(result.amount - computed.total) > 1) {
+    // Same reasoning as the Paystack route: the attack is underpayment, so
+    // require the amount paid to cover the total rather than match it
+    // exactly. An exact match breaks the moment Monnify is configured to
+    // add its fee on top of what we asked for. The 1-unit slack absorbs
+    // Monnify returning naira as a float.
+    if (!computed || result.amount === undefined || result.amount < computed.total - 1) {
       console.error("[monnify verify] amount mismatch", { reference, expected: computed?.total, actual: result.amount });
       return NextResponse.json({
         status: false,

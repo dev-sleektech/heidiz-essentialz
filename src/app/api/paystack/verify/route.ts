@@ -52,15 +52,36 @@ export async function POST(request: Request) {
     }
 
     // Paystack confirming *a* charge succeeded isn't enough on its own —
-    // confirm it was for the real, server-computed order total (in kobo).
+    // confirm it covered the real, server-computed order total (in kobo).
     // The cart is client-side localStorage, so its unitPrice/subtotal is
     // editable before this request is even sent; without this check a
     // tampered cart could pay a fraction of the real cost and still be
     // treated as paid in full (see src/lib/order-pricing.ts).
+    //
+    // Compare against `requested_amount`, not `amount`. When the Paystack
+    // account is set to pass the transaction fee to the customer — which
+    // this one is — `amount` is the total PLUS Paystack's fee, so it can
+    // never equal the order total. The fee caps at NGN 2,000, so every
+    // order over about NGN 125,000 failed verification by exactly that,
+    // after the customer had already been charged. `requested_amount` is
+    // what we asked to collect for the order itself and is fee-independent.
+    //
+    // And compare with >=, not ===: the attack this guards against is
+    // paying LESS than the order is worth. Paying more (a fee borne by the
+    // customer, a rounding difference) costs the business nothing, so
+    // rejecting it only ever strands a real payment.
     const computed = await computeOrderTotals(items, state);
     const expectedKobo = computed ? Math.round(computed.total * 100) : null;
-    if (expectedKobo === null || result.amount !== expectedKobo) {
-      console.error("[paystack verify] amount mismatch", { reference, expectedKobo, actual: result.amount });
+    const paidTowardOrder = result.requestedAmount ?? result.amount;
+
+    if (expectedKobo === null || paidTowardOrder === undefined || paidTowardOrder < expectedKobo) {
+      console.error("[paystack verify] amount mismatch", {
+        reference,
+        expectedKobo,
+        requestedAmount: result.requestedAmount,
+        chargedAmount: result.amount,
+        fees: result.fees,
+      });
       return NextResponse.json({
         status: false,
         message: "The amount paid didn't match the order total. Please contact us with your reference number.",
