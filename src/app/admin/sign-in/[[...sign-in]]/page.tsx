@@ -31,6 +31,11 @@ export default function AdminSignInPage() {
             colorPrimary: "#B5531E",
             colorBackground: "#141414",
             colorInput: "#1F1F1F",
+            // Input *text*, which is a separate token from colorForeground.
+            // Without it Clerk keeps its default near-black input text, so
+            // on this dark card staff were typing invisibly into the email
+            // and one-time-code fields.
+            colorInputForeground: "#FFFFFF",
             colorForeground: "#FFFFFF",
             colorMutedForeground: "#A3A3A3",
             colorPrimaryForeground: "#FFFFFF",
@@ -43,6 +48,11 @@ export default function AdminSignInPage() {
             socialButtonsBlockButtonText: { color: "#FFFFFF" },
             dividerText: { color: "rgba(255,255,255,0.5)" },
             footerActionText: { color: "rgba(255,255,255,0.5)" },
+            // Belt and braces over colorInputForeground above: the OTP
+            // boxes are the field staff hit on every sign-in, and an
+            // invisible one locks them out of the admin entirely.
+            formFieldInput: { color: "#FFFFFF" },
+            otpCodeFieldInput: { color: "#FFFFFF", borderColor: "rgba(255,255,255,0.2)" },
           },
         }}
       />
