@@ -20,6 +20,9 @@ Run order, if a database ever has to be rebuilt from an old snapshot:
 4. `move-luxury-perfumes-to-arabian.mjs` — emptied the legacy Luxury
    Perfumes collection into Arabian Perfumes, once the client decided where
    the 31 unfiled perfumes belonged.
+5. `rename-designer-to-luxury-perfumes.mjs` — renamed Designer Perfumes to
+   Luxury Perfumes in place (slug kept, so its URL still resolves) and took
+   it off the nav, the homepage grid and both umbrella pages.
 
 Each is safe to re-run: they use `on conflict do nothing` for inserts and
 guard every update on the change not already being in place.

@@ -65,18 +65,24 @@ const CATEGORIES = [
     showOnHome: true,
   },
   {
+    // Renamed from "Designer Perfumes" on 2026-09-03 and taken off every
+    // browsing surface (see scripts/migrations/
+    // rename-designer-to-luxury-perfumes.mjs). The slug is deliberately
+    // still `designer-perfumes`: renaming in place keeps
+    // /category/designer-perfumes resolving for existing links and search
+    // results. Its products stay reachable through /shop and search.
     slug: "designer-perfumes",
-    name: "Designer Perfumes",
+    name: "Luxury Perfumes",
     tagline: "House signatures & niche imports",
     description:
       "Fragrances from the international design houses and niche perfumers, from everyday signatures to collector bottles.",
     icon: "perfume",
     image: null,
     groupSlugs: [],
-    navGroup: "collections",
+    navGroup: null,
     sortOrder: 20,
     assignable: true,
-    showOnHome: true,
+    showOnHome: false,
   },
   {
     slug: "gift-sets",
@@ -277,7 +283,7 @@ const CATEGORIES = [
       "Every HEIDIZ collection in one place: niche and designer houses, Arabian oud, oil perfumes, body mists, incense, miniatures, gift sets and home fragrance.",
     icon: "perfume",
     image: null,
-    groupSlugs: ["arabian-perfumes", "body-mist", "designer-perfumes", "gift-sets", "home-fragrance", "incense", "miniatures", "oil-perfumes", "the-niche-collections", "perfumes"],
+    groupSlugs: ["arabian-perfumes", "body-mist", "gift-sets", "home-fragrance", "incense", "miniatures", "oil-perfumes", "the-niche-collections", "perfumes"],
     navGroup: null,
     sortOrder: 0,
     assignable: false,
