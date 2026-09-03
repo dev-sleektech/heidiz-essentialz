@@ -21,8 +21,9 @@ Run order, if a database ever has to be rebuilt from an old snapshot:
    Perfumes collection into Arabian Perfumes, once the client decided where
    the 31 unfiled perfumes belonged.
 5. `rename-designer-to-luxury-perfumes.mjs` — renamed Designer Perfumes to
-   Luxury Perfumes in place (slug kept, so its URL still resolves) and took
-   it off the nav, the homepage grid and both umbrella pages.
+   Luxury Perfumes in place (slug kept, so its URL still resolves). It
+   briefly also unlisted the collection; that was a misread and was
+   reverted the same day, so the script now only renames.
 
 Each is safe to re-run: they use `on conflict do nothing` for inserts and
 guard every update on the change not already being in place.
