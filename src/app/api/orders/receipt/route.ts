@@ -30,5 +30,24 @@ export async function POST(request: Request) {
   }
 
   const result = await sendOrderReceiptEmail(order);
-  return NextResponse.json(result, { status: result.sent ? 200 : 200 });
+
+  // Log the failure. A receipt that never arrives used to be invisible from
+  // every angle: Resend rejects it, this route answers 200 with
+  // {sent:false}, and the checkout fires the request without ever reading
+  // the response. On 2026-09-03 a customer was charged, Paystack emailed
+  // them, and the HEIDIZ receipt silently never sent - nothing anywhere
+  // recorded why.
+  //
+  // Still a 200 and still non-blocking: the order is already paid and
+  // recorded by this point, and failing the request would only make a
+  // missing receipt look like a failed order. This is about being able to
+  // find out, not about changing the outcome.
+  if (!result.sent) {
+    console.error("[order receipt] not sent", {
+      orderNumber: order.orderNumber,
+      reason: result.message,
+    });
+  }
+
+  return NextResponse.json(result);
 }
