@@ -6,6 +6,7 @@ import { CollectionHeader } from "@/components/shop/collection-header";
 export const metadata: Metadata = {
   title: "Shipping & Returns",
   description: "Delivery timelines, fees, and our return policy at HEIDIZ Essentialz.",
+  alternates: { canonical: "/shipping-returns" },
 };
 
 export default function ShippingReturnsPage() {

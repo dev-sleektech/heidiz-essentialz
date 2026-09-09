@@ -5,6 +5,9 @@ import { Breadcrumbs } from "@/components/shop/breadcrumbs";
 import { ProductVisual } from "@/components/ui/product-visual";
 import { ButtonLink } from "@/components/ui/button";
 import { blogPosts, getBlogPost } from "@/lib/blog-data";
+import { jsonLdScript } from "@/lib/json-ld";
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://heidiz-essentialz.vercel.app";
 
 export function generateStaticParams() {
   return blogPosts.map((p) => ({ slug: p.slug }));
@@ -16,7 +19,23 @@ export async function generateMetadata(
   const { slug } = await props.params;
   const post = getBlogPost(slug);
   if (!post) return {};
-  return { title: post.title, description: post.excerpt };
+  return {
+    title: post.title,
+    description: post.excerpt,
+    alternates: { canonical: `/blog/${post.slug}` },
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      url: `/blog/${post.slug}`,
+      type: "article",
+      publishedTime: post.publishedAt,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.excerpt,
+    },
+  };
 }
 
 export default async function BlogPostPage(props: PageProps<"/blog/[slug]">) {
@@ -25,8 +44,45 @@ export default async function BlogPostPage(props: PageProps<"/blog/[slug]">) {
 
   if (!post) notFound();
 
+  const postUrl = `${siteUrl}/blog/${post.slug}`;
+
+  // BlogPosting rich-result eligibility. Deliberately no `image`: these
+  // posts illustrate with the same stock IconKey artwork used for
+  // products without real photography (see ProductVisual below), not an
+  // actual photo, and claiming one here would be the same kind of
+  // structured-data overstatement the product page's Offer schema already
+  // avoids for reviews. dateModified is omitted too, for the same reason
+  // the sitemap doesn't fake it: publishedAt is the one true timestamp
+  // this content has until it's actually revised.
+  const blogPostingJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.excerpt,
+    datePublished: post.publishedAt,
+    author: { "@type": "Organization", name: "HEIDIZ Essentialz" },
+    publisher: {
+      "@type": "Organization",
+      name: "HEIDIZ Essentialz",
+      logo: { "@type": "ImageObject", url: `${siteUrl}/brand/logo-mark.png` },
+    },
+    mainEntityOfPage: { "@type": "WebPage", "@id": postUrl },
+  };
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: siteUrl },
+      { "@type": "ListItem", position: 2, name: "Beauty Journal", item: `${siteUrl}/blog` },
+      { "@type": "ListItem", position: 3, name: post.title, item: postUrl },
+    ],
+  };
+
   return (
     <Container className="py-10 md:py-14">
+      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLdScript(blogPostingJsonLd)} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLdScript(breadcrumbJsonLd)} />
       <Breadcrumbs items={[{ label: "Beauty Journal", href: "/blog" }, { label: post.title }]} />
 
       <div className="mx-auto mt-6 max-w-2xl">

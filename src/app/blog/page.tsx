@@ -8,6 +8,7 @@ import { blogPosts } from "@/lib/blog-data";
 export const metadata: Metadata = {
   title: "Beauty Journal",
   description: "Perfume guides, skincare tips, and beauty advice from HEIDIZ Essentialz.",
+  alternates: { canonical: "/blog" },
 };
 
 export default function BlogPage() {

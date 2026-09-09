@@ -94,6 +94,28 @@ export const metadata: Metadata = {
   },
 };
 
+// WebSite schema with a SearchAction, the standard way to make Google
+// eligible to show a search box directly under the site's result (a
+// sitelinks search box) instead of just a plain link. Points at the real
+// search page (src/app/search), which reads the query from ?q=. Google
+// resolves {search_term_string} by substituting the user's own query into
+// that same URL template, so this can't drift out of sync with how search
+// actually works.
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "HEIDIZ Essentialz",
+  url: siteUrl,
+  potentialAction: {
+    "@type": "SearchAction",
+    target: {
+      "@type": "EntryPoint",
+      urlTemplate: `${siteUrl}/search?q={search_term_string}`,
+    },
+    "query-input": "required name=search_term_string",
+  },
+};
+
 // Organization schema — helps Google understand the business identity
 // (name, logo, contact, social profiles) independent of any one page,
 // e.g. for a knowledge panel. Real contact info matches the footer.
@@ -131,7 +153,10 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col bg-ivory text-charcoal font-sans">
         <script
           type="application/ld+json"
-           
+          dangerouslySetInnerHTML={jsonLdScript(websiteJsonLd)}
+        />
+        <script
+          type="application/ld+json"
           dangerouslySetInnerHTML={jsonLdScript(organizationJsonLd)}
         />
         <ClerkProvider appearance={clerkAppearance}>

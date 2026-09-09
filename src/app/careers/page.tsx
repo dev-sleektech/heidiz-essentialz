@@ -6,6 +6,7 @@ import { CollectionHeader } from "@/components/shop/collection-header";
 export const metadata: Metadata = {
   title: "Careers",
   description: "Join the HEIDIZ Essentialz team in FCT-Abuja.",
+  alternates: { canonical: "/careers" },
 };
 
 export default function CareersPage() {

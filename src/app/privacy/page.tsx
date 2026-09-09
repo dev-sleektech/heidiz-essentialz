@@ -8,6 +8,7 @@ import { CollectionHeader } from "@/components/shop/collection-header";
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description: "How HEIDIZ Essentialz collects, uses, and protects your information.",
+  alternates: { canonical: "/privacy" },
 };
 
 export default function PrivacyPage() {

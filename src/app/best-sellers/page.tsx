@@ -7,6 +7,7 @@ import { getBestSellers } from "@/lib/products";
 export const metadata: Metadata = {
   title: "Best Sellers",
   description: "The signature pieces our clients return for again and again.",
+  alternates: { canonical: "/best-sellers" },
 };
 
 // Prices/badges are admin-editable now — revalidate periodically so a

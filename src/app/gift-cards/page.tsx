@@ -7,6 +7,7 @@ import { ButtonLink } from "@/components/ui/button";
 export const metadata: Metadata = {
   title: "Gift Cards",
   description: "HEIDIZ Essentialz gift cards are coming soon.",
+  alternates: { canonical: "/gift-cards" },
 };
 
 export default function GiftCardsPage() {

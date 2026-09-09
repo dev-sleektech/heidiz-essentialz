@@ -6,6 +6,7 @@ import { CollectionHeader } from "@/components/shop/collection-header";
 export const metadata: Metadata = {
   title: "Sustainability",
   description: "How HEIDIZ Essentialz sources responsibly and supports the FCT-Abuja community.",
+  alternates: { canonical: "/sustainability" },
 };
 
 const COMMITMENTS = [

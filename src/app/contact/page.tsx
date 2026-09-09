@@ -8,6 +8,7 @@ import { inputClass, labelClass } from "@/lib/form-styles";
 export const metadata: Metadata = {
   title: "Contact Us",
   description: "Get in touch with HEIDIZ Essentialz. Visit our Abuja store, call, WhatsApp, or email us.",
+  alternates: { canonical: "/contact" },
 };
 
 

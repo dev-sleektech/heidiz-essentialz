@@ -7,6 +7,7 @@ import { getNewArrivals } from "@/lib/products";
 export const metadata: Metadata = {
   title: "New Arrivals",
   description: "Fresh from the atelier: the latest additions to the HEIDIZ Essentialz collection.",
+  alternates: { canonical: "/new-arrivals" },
 };
 
 export const revalidate = 60;
