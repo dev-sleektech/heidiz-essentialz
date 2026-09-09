@@ -8,6 +8,12 @@ export type BlogPost = {
   readTime: string;
   icon: IconKey;
   paragraphs: string[];
+  // The real editorial publish date, used for the sitemap's lastModified
+  // and the BlogPosting schema's datePublished. There's no CMS behind this
+  // file to derive it from, so it has to be kept honest by hand: set it
+  // when a post first goes live, and bump it again only if the post is
+  // actually rewritten later, not on every unrelated deploy.
+  publishedAt: string;
 };
 
 export const blogPosts: BlogPost[] = [
@@ -19,6 +25,7 @@ export const blogPosts: BlogPost[] = [
     category: "Perfume Guide",
     readTime: "4 min read",
     icon: "perfume",
+    publishedAt: "2026-08-12",
     paragraphs: [
       "Layering fragrance means applying two or more scented products, a perfume, a body cream, an oil, in a way that builds depth rather than competing noise. Done well, it makes a fragrance feel more personal and lasts longer on skin. Done carelessly, it turns into a headache in a bottle.",
       "Start with the base. An unscented or matching-scented body cream applied right after a shower gives perfume something to hold onto, which is part of why fragrance seems to fade faster on dry skin. If you're wearing one of our oud-forward scents, a plain shea-based body cream underneath will extend wear without changing the scent.",
@@ -35,6 +42,7 @@ export const blogPosts: BlogPost[] = [
     category: "Skincare Tips",
     readTime: "5 min read",
     icon: "skincare",
+    publishedAt: "2026-08-19",
     paragraphs: [
       "Most skincare advice for \"dry climates\" is written for temperate winters, not for the dust-laden, low-humidity air of harmattan season in Abuja. The two aren't the same problem, and they don't have the same solution.",
       "Dust is the first issue nobody mentions. Harmattan air carries fine particulate that settles on skin all day, mixing with oil and sweat to clog pores. A gentle cleanser used morning and night matters more during harmattan than in wetter months, even though your instinct might be to cleanse less because skin feels dry.",
@@ -51,6 +59,7 @@ export const blogPosts: BlogPost[] = [
     category: "Perfume Guide",
     readTime: "4 min read",
     icon: "perfume",
+    publishedAt: "2026-08-26",
     paragraphs: [
       "A signature scent works because it becomes associated with you specifically, not because it's the most popular bottle on the shelf. Choosing one starts with paying attention to how fragrance actually behaves on your skin over time, not how it smells in the first thirty seconds.",
       "Test on skin, not paper. Paper shows you the fragrance's structure, but skin chemistry, oil levels, temperature, even diet, changes how a scent develops. A fragrance that smells sharp on a card can soften into something completely different an hour into wearing it.",

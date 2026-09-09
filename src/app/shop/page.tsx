@@ -7,6 +7,7 @@ import { getAllProducts } from "@/lib/products";
 export const metadata: Metadata = {
   title: "Shop All",
   description: "The full HEIDIZ Essentialz collection: perfumes, beauty, hair care, and fine accessories.",
+  alternates: { canonical: "/shop" },
 };
 
 export const revalidate = 60;

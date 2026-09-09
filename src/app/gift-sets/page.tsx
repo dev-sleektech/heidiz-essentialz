@@ -7,6 +7,7 @@ import { getGiftSets } from "@/lib/products";
 export const metadata: Metadata = {
   title: "Gift Sets",
   description: "Curated gift sets from HEIDIZ Essentialz, ready to give.",
+  alternates: { canonical: "/gift-sets" },
 };
 
 export const revalidate = 60;

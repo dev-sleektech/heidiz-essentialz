@@ -8,6 +8,7 @@ import { CollectionHeader } from "@/components/shop/collection-header";
 export const metadata: Metadata = {
   title: "Terms of Service",
   description: "The terms that govern your use of the HEIDIZ Essentialz website and purchases.",
+  alternates: { canonical: "/terms" },
 };
 
 export default function TermsPage() {

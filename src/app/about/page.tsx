@@ -8,6 +8,7 @@ import { ButtonLink } from "@/components/ui/button";
 export const metadata: Metadata = {
   title: "Our Story",
   description: "How HEIDIZ Essentialz became FCT-Abuja's destination for luxury perfumes, beauty, and accessories.",
+  alternates: { canonical: "/about" },
 };
 
 const VALUES = [

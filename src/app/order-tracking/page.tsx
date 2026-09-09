@@ -10,6 +10,7 @@ import { inputClass, labelClass } from "@/lib/form-styles";
 export const metadata: Metadata = {
   title: "Order Tracking",
   description: "Track the status of your HEIDIZ Essentialz order using your order number and phone number.",
+  alternates: { canonical: "/order-tracking" },
 };
 
 
