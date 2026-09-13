@@ -119,13 +119,24 @@ export async function generateDailySummary(): Promise<{ text: string; stats: Dai
     return null;
   }
 
-  const client = new Anthropic();
-  const response = await client.messages.create({
-    model: "claude-haiku-4-5",
-    max_tokens: 400,
-    messages: [{ role: "user", content: buildDigestPrompt(stats) }],
-  });
+  // A real Anthropic error (no billing/credits, rate limit, bad key) used
+  // to propagate straight out of this function, which turned the cron
+  // route's response into an uncaught 500. That went unnoticed for weeks
+  // because ANTHROPIC_API_KEY was a placeholder the whole time, so this
+  // never actually ran. Caught and logged here instead, the same
+  // "degrade to nothing, never crash the route" contract as an unset key.
+  try {
+    const client = new Anthropic();
+    const response = await client.messages.create({
+      model: "claude-haiku-4-5",
+      max_tokens: 400,
+      messages: [{ role: "user", content: buildDigestPrompt(stats) }],
+    });
 
-  const textBlock = response.content.find((block) => block.type === "text");
-  return { text: textBlock?.text ?? "", stats };
+    const textBlock = response.content.find((block) => block.type === "text");
+    return { text: textBlock?.text ?? "", stats };
+  } catch (err) {
+    console.error("[ai-summary] Claude call failed", err instanceof Error ? err.message : err);
+    return null;
+  }
 }

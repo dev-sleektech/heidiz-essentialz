@@ -19,7 +19,9 @@ export async function GET(request: Request) {
 
   const result = await generateWeeklyFinanceDigest();
   if (!result) {
-    return NextResponse.json({ sent: false, message: "Anthropic API key not configured yet." });
+    // Configured but still failed (billing/credits, rate limit, bad key) -
+    // generateWeeklyFinanceDigest already logged the real reason server-side.
+    return NextResponse.json({ sent: false, message: "Claude call failed. Check server logs for the reason." });
   }
 
   const emailResult = await sendFinanceDigestEmail(result.text, result.stats);
