@@ -221,3 +221,33 @@ model AbandonedCheckout {
   @@index([email])
   @@index([reminded, converted])
 }
+
+enum ContentDraftType {
+  SOCIAL_POST
+  PROMO_EMAIL
+  BLOG_IDEA
+}
+
+enum ContentDraftStatus {
+  DRAFT
+  APPROVED
+  DISMISSED
+}
+
+// AI-drafted marketing copy (see src/lib/ai-agents.ts), generated weekly
+// from the real catalog (best sellers, new arrivals) and reviewed by staff
+// in /admin/content before anything goes out. Nothing here is ever posted
+// or sent automatically. There's no Instagram/Facebook/Resend-campaign
+// integration behind this, on purpose. This is a drafting desk, not a
+// publisher: approving a draft marks it reviewed so staff know it's ready
+// to copy out by hand, it doesn't trigger any outbound action.
+model ContentDraft {
+  id        String             @id @default(cuid())
+  type      ContentDraftType
+  title     String
+  body      String
+  status    ContentDraftStatus @default(DRAFT)
+  createdAt DateTime           @default(now())
+
+  @@index([status])
+}

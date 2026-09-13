@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { currentUser } from "@clerk/nextjs/server";
 import { SignOutButton } from "@clerk/nextjs";
-import { LayoutDashboard, Package, ShoppingBag, Tags, Wallet, MessageCircle, LogOut } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingBag, Tags, Wallet, MessageCircle, LogOut, Sparkles } from "lucide-react";
 import { Logo } from "@/components/site/logo";
 import { isStaffEmail } from "@/lib/staff-auth";
 import { unreadCountForStaff } from "@/lib/chat";
@@ -20,6 +20,7 @@ const NAV_ITEMS = [
   { href: "/admin/categories", label: "Categories", icon: Tags },
   { href: "/admin/transactions", label: "Transactions", icon: Wallet },
   { href: "/admin/chat", label: "Live Chat", icon: MessageCircle },
+  { href: "/admin/content", label: "Content", icon: Sparkles },
 ];
 
 // Single gate for the whole /admin tree (this route group — /admin/sign-in

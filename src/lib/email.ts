@@ -1,6 +1,7 @@
 import { formatNaira } from "@/lib/format";
 import type { OrderDetails } from "@/lib/order";
 import type { DailyStats } from "@/lib/ai-summary";
+import type { OpsDigestData, WeeklyFinanceStats } from "@/lib/ai-agents";
 
 // Order confirmation email via Resend (https://resend.com). Same pattern as
 // Paystack: gracefully report "not configured" instead of throwing, and this
@@ -536,5 +537,206 @@ export async function sendOrderReceiptEmail(order: OrderDetails): Promise<{ sent
     return { sent: true, message: "Receipt email sent." };
   } catch {
     return { sent: false, message: "Could not reach Resend to send the receipt." };
+  }
+}
+
+// Daily AI ops digest (see src/lib/ai-agents.ts): stale orders and
+// out-of-stock bestsellers, same plain-alert style as
+// sendPaymentMismatchAlertEmail/sendOutOfStockAlertEmail above rather than
+// the card layout below, since this is a "check these" note, not a report.
+export async function sendOpsDigestEmail(
+  summaryText: string,
+  data: OpsDigestData
+): Promise<{ sent: boolean; message: string }> {
+  const to = (process.env.ADMIN_EMAILS ?? "").split(",")[0]?.trim();
+  if (!to) {
+    return { sent: false, message: "No ADMIN_EMAILS configured to send the digest to." };
+  }
+  if (!isResendConfigured()) {
+    return { sent: false, message: "Email is not configured yet." };
+  }
+
+  const from = process.env.RESEND_FROM_EMAIL || "HEIDIZ Essentialz <onboarding@resend.dev>";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3300";
+
+  const staleList = data.staleOrders.length
+    ? `<ul style="padding-left:18px;">${data.staleOrders
+        .map(
+          (o) =>
+            `<li style="margin-bottom:4px;"><code>${escapeHtml(o.orderNumber)}</code> - ${escapeHtml(o.customerName)}, ${escapeHtml(o.status)}, ${o.ageHours}h old</li>`
+        )
+        .join("")}</ul>`
+    : "<p>None.</p>";
+  const stockList = data.flaggedOutOfStock.length
+    ? `<ul style="padding-left:18px;">${data.flaggedOutOfStock
+        .map((p) => `<li style="margin-bottom:4px;">${escapeHtml(p.name)} (${escapeHtml(p.badge)})</li>`)
+        .join("")}</ul>`
+    : "<p>None.</p>";
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from,
+        to,
+        subject: `HEIDIZ ops digest: ${data.staleOrders.length} stale order(s), ${data.flaggedOutOfStock.length} out of stock`,
+        html: `<div style="font-family:Arial,sans-serif;font-size:14px;color:${CHARCOAL};padding:24px;max-width:560px;">
+          <p style="font-size:11px;letter-spacing:2px;color:${BRAND_ORANGE};text-transform:uppercase;margin:0 0 8px;">Daily Ops Digest</p>
+          <p>${escapeHtml(summaryText)}</p>
+          <p style="margin-top:20px;"><strong>Orders needing attention (${data.staleOrders.length})</strong></p>
+          ${staleList}
+          <p style="margin-top:16px;"><strong>Out-of-stock bestsellers/new arrivals (${data.flaggedOutOfStock.length})</strong></p>
+          ${stockList}
+          <p style="margin-top:20px;"><a href="${siteUrl}/admin/orders" style="color:${BRAND_ORANGE};">Open the admin</a></p>
+        </div>`,
+      }),
+    });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      return { sent: false, message: errData?.message ?? `Resend responded with ${res.status}.` };
+    }
+    return { sent: true, message: "Ops digest email sent." };
+  } catch {
+    return { sent: false, message: "Could not reach Resend to send the digest." };
+  }
+}
+
+// Weekly AI finance digest (see src/lib/ai-agents.ts): same stat-card
+// layout as sendSalesSummaryEmail, since this is the same kind of report,
+// just over a week instead of a day, with a week-over-week comparison.
+export async function sendFinanceDigestEmail(
+  summaryText: string,
+  stats: WeeklyFinanceStats
+): Promise<{ sent: boolean; message: string }> {
+  const to = (process.env.ADMIN_EMAILS ?? "").split(",")[0]?.trim();
+  if (!to) {
+    return { sent: false, message: "No ADMIN_EMAILS configured to send the digest to." };
+  }
+  if (!isResendConfigured()) {
+    return { sent: false, message: "Email is not configured yet." };
+  }
+
+  const from = process.env.RESEND_FROM_EMAIL || "HEIDIZ Essentialz <onboarding@resend.dev>";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3300";
+
+  const statCard = (label: string, value: string) => `
+    <td style="padding:16px;background:${IVORY};border-radius:4px;" width="50%">
+      <p style="font-family:Arial,sans-serif;font-size:11px;letter-spacing:1px;color:#999;text-transform:uppercase;margin:0 0 4px;">${escapeHtml(label)}</p>
+      <p style="font-family:Georgia,serif;font-size:20px;color:${BRAND_BLACK};margin:0;">${escapeHtml(value)}</p>
+    </td>`;
+
+  const deltaLabel =
+    stats.revenueDeltaPct === null
+      ? "n/a"
+      : `${stats.revenueDeltaPct >= 0 ? "+" : ""}${stats.revenueDeltaPct}% vs prior week`;
+
+  const html = `
+  <div style="background:${IVORY};padding:32px 16px;font-family:Arial,sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:4px;overflow:hidden;">
+      <tr>
+        <td style="background:${BRAND_BLACK};padding:28px 32px;text-align:center;">
+          <div style="font-family:Georgia,serif;color:#ffffff;font-size:22px;letter-spacing:2px;">HEIDIZ</div>
+          <div style="color:${BRAND_ORANGE};font-size:11px;letter-spacing:4px;margin-top:2px;">ESSENTIALZ</div>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:32px;">
+          <p style="font-family:Arial,sans-serif;font-size:11px;letter-spacing:2px;color:${BRAND_ORANGE};text-transform:uppercase;margin:0 0 8px;">Weekly Finance Digest</p>
+          <p style="font-family:Georgia,serif;font-size:20px;color:${BRAND_BLACK};margin:0 0 20px;">${escapeHtml(stats.weekLabel)}</p>
+
+          <p style="font-size:14px;line-height:1.6;color:${CHARCOAL};margin:0 0 24px;">${escapeHtml(summaryText)}</p>
+
+          <table width="100%" cellpadding="0" cellspacing="8">
+            <tr>
+              ${statCard("Revenue This Week", formatNaira(stats.thisWeek.revenue))}
+              ${statCard("Revenue Change", deltaLabel)}
+            </tr>
+            <tr>
+              ${statCard("Orders This Week", String(stats.thisWeek.orderCount))}
+              ${statCard("Cancelled This Week", String(stats.thisWeek.cancelledCount))}
+            </tr>
+          </table>
+
+          <div style="margin-top:24px;text-align:center;">
+            <a href="${siteUrl}/admin" style="display:inline-block;background:${BRAND_ORANGE};color:#ffffff;font-family:Arial,sans-serif;font-size:14px;font-weight:bold;padding:12px 28px;border-radius:4px;text-decoration:none;">
+              Open Admin Dashboard
+            </a>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </div>`;
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from,
+        to,
+        subject: `HEIDIZ weekly finance digest: ${stats.weekLabel}`,
+        html,
+      }),
+    });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      return { sent: false, message: errData?.message ?? `Resend responded with ${res.status}.` };
+    }
+    return { sent: true, message: "Finance digest email sent." };
+  } catch {
+    return { sent: false, message: "Could not reach Resend to send the digest." };
+  }
+}
+
+// Just a heads-up that new drafts exist. The drafts themselves are only
+// ever reviewed in /admin/content, never emailed out, since they are not
+// approved for anything yet.
+export async function sendContentDraftsReadyEmail(count: number): Promise<{ sent: boolean; message: string }> {
+  const to = (process.env.ADMIN_EMAILS ?? "").split(",")[0]?.trim();
+  if (!to) {
+    return { sent: false, message: "No ADMIN_EMAILS configured to alert." };
+  }
+  if (!isResendConfigured()) {
+    return { sent: false, message: "Email is not configured yet." };
+  }
+
+  const from = process.env.RESEND_FROM_EMAIL || "HEIDIZ Essentialz <onboarding@resend.dev>";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3300";
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from,
+        to,
+        subject: `${count} new content draft(s) ready for review`,
+        html: `<div style="font-family:Arial,sans-serif;font-size:14px;color:${CHARCOAL};padding:24px;">
+          <p>${count} new marketing draft(s), social posts, promo copy, or blog ideas, are ready for review.</p>
+          <p>Nothing has been posted or sent; these are drafts only, grounded in this week's real catalog data.</p>
+          <p><a href="${siteUrl}/admin/content" style="color:${BRAND_ORANGE};">Review drafts in the admin</a></p>
+        </div>`,
+      }),
+    });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      return { sent: false, message: errData?.message ?? `Resend responded with ${res.status}.` };
+    }
+    return { sent: true, message: "Content drafts notification sent." };
+  } catch {
+    return { sent: false, message: "Could not reach Resend to send the notification." };
   }
 }
