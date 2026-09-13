@@ -36,15 +36,27 @@ function watDaysAgo(daysAgo: number): Date {
   return new Date(Date.UTC(y, m, d, 0, 0, 0) - WAT_OFFSET_MS);
 }
 
-async function callClaudeText(model: string, maxTokens: number, prompt: string): Promise<string> {
-  const client = new Anthropic();
-  const response = await client.messages.create({
-    model,
-    max_tokens: maxTokens,
-    messages: [{ role: "user", content: prompt }],
-  });
-  const textBlock = response.content.find((block) => block.type === "text");
-  return textBlock?.text ?? "";
+// Returns null on a real API error (no billing/credits, rate limit, bad
+// key) rather than letting it propagate: a cron route that crashes with an
+// uncaught 500 is worse than one that reports a clean failure, since
+// Vercel doesn't retry or alert on a bad cron run by itself. This is
+// distinct from isAnthropicConfigured() (no key at all) but ends up
+// meaning the same thing to a caller, "nothing to send", so it's worth a
+// server log to actually notice and fix.
+async function callClaudeText(model: string, maxTokens: number, prompt: string): Promise<string | null> {
+  try {
+    const client = new Anthropic();
+    const response = await client.messages.create({
+      model,
+      max_tokens: maxTokens,
+      messages: [{ role: "user", content: prompt }],
+    });
+    const textBlock = response.content.find((block) => block.type === "text");
+    return textBlock?.text ?? "";
+  } catch (err) {
+    console.error("[ai-agents] Claude call failed", err instanceof Error ? err.message : err);
+    return null;
+  }
 }
 
 // --- Ops digest: what needs a human's attention today ------------------
@@ -124,6 +136,7 @@ export async function generateOpsDigest(): Promise<{ text: string; data: OpsDige
   // (turn structured rows into a short prioritized paragraph), so it gets
   // the same user-approved choice, see src/lib/ai-summary.ts.
   const text = await callClaudeText("claude-haiku-4-5", 400, buildOpsDigestPrompt(data));
+  if (text === null) return null;
   return { text, data };
 }
 
@@ -192,6 +205,7 @@ export async function generateWeeklyFinanceDigest(): Promise<{ text: string; sta
   if (!isAnthropicConfigured()) return null;
 
   const text = await callClaudeText("claude-haiku-4-5", 500, buildFinanceDigestPrompt(stats));
+  if (text === null) return null;
   return { text, stats };
 }
 
@@ -248,12 +262,20 @@ export async function generateContentDrafts(): Promise<GeneratedContentDraft[] |
   if (!isAnthropicConfigured()) return null;
 
   const snapshot = await computeCatalogSnapshot();
-  const client = new Anthropic();
-  const response = await client.messages.parse({
-    model: "claude-opus-5",
-    max_tokens: 4000,
-    messages: [{ role: "user", content: buildContentDraftsPrompt(snapshot) }],
-    output_config: { format: zodOutputFormat(ContentDraftsSchema) },
-  });
-  return response.parsed_output?.drafts ?? null;
+
+  // Same "log and return null, never throw" contract as callClaudeText
+  // above, used directly here since messages.parse isn't a plain-text call.
+  try {
+    const client = new Anthropic();
+    const response = await client.messages.parse({
+      model: "claude-opus-5",
+      max_tokens: 4000,
+      messages: [{ role: "user", content: buildContentDraftsPrompt(snapshot) }],
+      output_config: { format: zodOutputFormat(ContentDraftsSchema) },
+    });
+    return response.parsed_output?.drafts ?? null;
+  } catch (err) {
+    console.error("[ai-agents] Claude call failed", err instanceof Error ? err.message : err);
+    return null;
+  }
 }

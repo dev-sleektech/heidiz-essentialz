@@ -21,6 +21,8 @@ export async function GET(request: Request) {
 
   const drafts = await generateContentDrafts();
   if (!drafts || drafts.length === 0) {
+    // Either nothing came back (see generateContentDrafts for a logged
+    // API-error reason) or the model genuinely returned zero drafts.
     return NextResponse.json({ created: 0, message: "No drafts were generated this run." });
   }
 
