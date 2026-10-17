@@ -32,6 +32,9 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
+    // Bypass Vercel's metered optimizer; see src/lib/image-loader.ts.
+    loader: "custom",
+    loaderFile: "./src/lib/image-loader.ts",
     // Unsplash-hosted stock photography standing in for real product
     // photography (see src/lib/placeholder-data.ts). Remove once the
     // catalog moves to the client's own images/CDN.
