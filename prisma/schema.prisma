@@ -1,6 +1,9 @@
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
+  // Cloudflare Workers forbid compiling WebAssembly at runtime; the workerd
+  // target loads the query compiler as a pre-compiled .wasm module instead.
+  runtime  = "workerd"
 }
 
 datasource db {

@@ -1,14 +1,36 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "heidiz-essentialz",
-  "main": ".open-next/worker.js",
+  "main": "cloudflare/worker.ts",
   "compatibility_date": "2026-11-01",
-  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "compatibility_flags": ["nodejs_compat", "nodejs_compat_populate_process_env", "global_fetch_strictly_public"],
+  "account_id": "a4f5fefadebcb562e3e6936c45418384",
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": { "enabled": true },
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
   "services": [
+    // Self-reference used by OpenNext for cache revalidation; must match "name".
     { "binding": "WORKER_SELF_REFERENCE", "service": "heidiz-essentialz" }
-  ]
+  ],
+  // Rendered ISR pages. Create once: npx wrangler r2 bucket create heidiz-essentialz-opennext-cache
+  "r2_buckets": [
+    { "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "heidiz-essentialz-opennext-cache" }
+  ],
+  "durable_objects": {
+    "bindings": [
+      // Background re-render queue for stale ISR pages.
+      { "name": "NEXT_CACHE_DO_QUEUE", "class_name": "DOQueueHandler" },
+      // Revalidation timestamps for revalidatePath/revalidateTag.
+      { "name": "NEXT_TAG_CACHE_DO_SHARDED", "class_name": "DOShardedTagCache" }
+    ]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["DOQueueHandler", "DOShardedTagCache"] }],
+  // Replaces the "crons" block in vercel.json (UTC). Keep in sync with cloudflare/worker.ts.
+  "triggers": {
+    "crons": ["0 7 * * *", "0 8 * * *", "0 9 * * *", "0 10 * * *", "30 10 * * 1", "0 11 * * 3"]
+  }
 }
