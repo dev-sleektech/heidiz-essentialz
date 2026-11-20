@@ -52,7 +52,7 @@ const inter = Inter({
 // Falls back to the live production URL if the env var is somehow unset —
 // metadataBase must always resolve to a real absolute URL (Next throws
 // without one whenever a page's metadata uses a relative image/OG path).
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://heidiz-essentialz.vercel.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://heidizstores.com";
 
 const siteDescription =
   "HEIDIZ Essentialz is a global luxury destination for perfumes, beauty, skincare, cosmetics, hair care, and fashion accessories, curated in FCT-Abuja, Nigeria. Shop luxury and niche perfumes, oil perfumes, skincare, makeup, shoes, and home fragrance with nationwide delivery.";

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendAbandonedCartEmail } from "@/lib/email";
 
-// Triggered hourly by Vercel Cron (see vercel.json). Vercel automatically
+// Triggered by a Cloudflare Cron Trigger (see wrangler.jsonc + cloudflare/worker.ts), which
 // sends `Authorization: Bearer ${CRON_SECRET}` on cron-triggered requests
 // once that env var is set on the project — verified below so this can't
 // be hit by anyone else to spam customers.

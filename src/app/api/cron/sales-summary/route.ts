@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { generateDailySummary, isAnthropicConfigured } from "@/lib/ai-summary";
 import { sendSalesSummaryEmail } from "@/lib/email";
 
-// Triggered daily by Vercel Cron (see vercel.json), same auth pattern as
-// the abandoned-cart cron: Vercel sends `Authorization: Bearer ${CRON_SECRET}`
+// Triggered daily by a Cloudflare Cron Trigger (cloudflare/worker.ts), same auth pattern as
+// the abandoned-cart cron: the trigger sends `Authorization: Bearer ${CRON_SECRET}`
 // automatically on cron-triggered requests, verified below.
 export async function GET(request: Request) {
   const cronSecret = process.env.CRON_SECRET;

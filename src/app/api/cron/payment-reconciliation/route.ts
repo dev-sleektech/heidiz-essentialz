@@ -15,7 +15,7 @@ import { sendPaymentMismatchAlertEmail } from "@/lib/email";
 // A bug in the verify or create routes cannot hide from it, because it
 // shares no logic with them.
 //
-// Triggered by Vercel Cron (see vercel.json), which sends
+// Triggered by a Cloudflare Cron Trigger (cloudflare/worker.ts), which sends
 // `Authorization: Bearer ${CRON_SECRET}` once that env var is set.
 export async function GET(request: Request) {
   const cronSecret = process.env.CRON_SECRET;

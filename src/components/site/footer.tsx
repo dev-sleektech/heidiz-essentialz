@@ -151,7 +151,7 @@ export function Footer({ categories }: { categories: Category[] }) {
         <span className="flex flex-col items-center gap-1 text-center md:items-start md:text-left">
           <span>© {new Date().getFullYear()} HEIDIZ Essentialz. All rights reserved. RC: 9039036</span>
           <a
-            href="https://dev-sleektech-website.vercel.app"
+            href="https://www.dev-sleektech.com"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-white"
