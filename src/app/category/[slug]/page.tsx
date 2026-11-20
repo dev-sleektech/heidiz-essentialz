@@ -7,7 +7,7 @@ import { getAllCategories, getCategory } from "@/lib/categories";
 import { getProductsByCategory } from "@/lib/products";
 import { jsonLdScript } from "@/lib/json-ld";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://heidiz-essentialz.vercel.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://heidizstores.com";
 
 export const revalidate = 60;
 

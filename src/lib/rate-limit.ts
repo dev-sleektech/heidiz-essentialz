@@ -45,10 +45,15 @@ export function checkRateLimit(
   return { allowed: true, retryAfterSeconds: 0 };
 }
 
-// Vercel's Node runtime doesn't populate NextRequest.ip — the documented
-// way to get the caller's address is the x-forwarded-for header Vercel's
-// edge network sets on every request.
+// The site runs behind Cloudflare, which puts the caller's real address in
+// `cf-connecting-ip` and strips any value a client sends for it. Do NOT key
+// on the first x-forwarded-for entry: behind Cloudflare that entry is
+// whatever the client sent, so a spoofed value per request would bypass
+// every IP rate limit. x-forwarded-for/x-real-ip remain only as a fallback
+// for local dev, where there is no Cloudflare in front.
 export function clientIp(request: Request): string {
+  const cf = request.headers.get("cf-connecting-ip");
+  if (cf) return cf.trim();
   const forwarded = request.headers.get("x-forwarded-for");
   if (forwarded) return forwarded.split(",")[0].trim();
   return request.headers.get("x-real-ip") ?? "unknown";

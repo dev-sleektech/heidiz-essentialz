@@ -24,12 +24,31 @@ const nextConfig: NextConfig = {
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           // Nothing here needs camera/mic/geolocation — deny by default.
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
-          // Vercel already redirects http->https, but this tells the
+          // The host already redirects http->https, but this tells the
           // browser itself to never even try http again for this host.
           { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
         ],
       },
     ];
+  },
+  // Build/dev-only tooling that must never be traced into the server bundle.
+  // On Cloudflare every traced .wasm file ends up in the Worker upload, and
+  // the Prisma CLI alone carries a dozen engines plus an embedded Postgres.
+  outputFileTracingExcludes: {
+    "*": [
+      "node_modules/prisma/**",
+      "node_modules/@prisma/dev/**",
+      "node_modules/@prisma/studio-core/**",
+      "node_modules/@electric-sql/**",
+      "node_modules/wrangler/**",
+      "node_modules/miniflare/**",
+      "node_modules/workerd/**",
+      "node_modules/@cloudflare/workerd-*/**",
+      "node_modules/esbuild/**",
+      "node_modules/@esbuild/**",
+      "node_modules/typescript/**",
+      "node_modules/eslint/**",
+    ],
   },
   images: {
     // Bypass Vercel's metered optimizer; see src/lib/image-loader.ts.

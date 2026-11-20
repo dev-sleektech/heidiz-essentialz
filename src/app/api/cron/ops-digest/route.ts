@@ -4,7 +4,7 @@ import { sendOpsDigestEmail } from "@/lib/email";
 
 // Daily AI operations digest (see src/lib/ai-agents.ts): stale orders and
 // out-of-stock bestsellers, emailed to staff. Same auth pattern as every
-// other cron here: Vercel sends `Authorization: Bearer ${CRON_SECRET}`
+// other cron here: the Cloudflare trigger sends `Authorization: Bearer ${CRON_SECRET}`
 // automatically on cron-triggered requests, verified below.
 export async function GET(request: Request) {
   const cronSecret = process.env.CRON_SECRET;

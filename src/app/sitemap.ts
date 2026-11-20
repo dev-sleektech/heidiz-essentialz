@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 import { blogPosts } from "@/lib/blog-data";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://heidiz-essentialz.vercel.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://heidizstores.com";
 
 // Dynamic — regenerated per request (product catalog and blog posts can
 // change), listing every real, publicly-indexable page. Private/functional

@@ -7,7 +7,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { blogPosts, getBlogPost } from "@/lib/blog-data";
 import { jsonLdScript } from "@/lib/json-ld";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://heidiz-essentialz.vercel.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://heidizstores.com";
 
 export function generateStaticParams() {
   return blogPosts.map((p) => ({ slug: p.slug }));
