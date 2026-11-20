@@ -25,7 +25,16 @@ const CRON_ROUTES: Record<string, string> = {
 type Env = { CRON_SECRET?: string; NEXT_PUBLIC_SITE_URL?: string } & Record<string, unknown>;
 
 export default {
-  fetch: handler.fetch,
+  async fetch(request: Request, env: Env, ctx: ExecutionContext) {
+    // One canonical host: www.heidizstores.com -> heidizstores.com (the
+    // address Clerk's production instance, the sitemap and canonical tags use).
+    const url = new URL(request.url);
+    if (url.hostname === "www.heidizstores.com") {
+      url.hostname = "heidizstores.com";
+      return Response.redirect(url.toString(), 301);
+    }
+    return handler.fetch(request, env, ctx);
+  },
 
   async scheduled(controller: ScheduledController, env: Env, ctx: ExecutionContext) {
     const path = CRON_ROUTES[controller.cron];
