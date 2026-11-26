@@ -20,7 +20,7 @@ import { checkRateLimit, clientIp, rateLimitResponse } from "@/lib/rate-limit";
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 export async function POST(request: NextRequest) {
-  const { allowed, retryAfterSeconds } = checkRateLimit(`chat-create:${clientIp(request)}`, {
+  const { allowed, retryAfterSeconds } = await checkRateLimit(`chat-create:${clientIp(request)}`, {
     limit: 10,
     windowMs: 60 * 60 * 1000,
   });

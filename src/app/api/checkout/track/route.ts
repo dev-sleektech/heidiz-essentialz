@@ -18,7 +18,7 @@ type TrackBody = {
 // duplicate rows — matches/updates any not-yet-converted snapshot from the
 // last 24h for the same email instead of piling up new ones.
 export async function POST(request: Request) {
-  const { allowed, retryAfterSeconds } = checkRateLimit(`checkout-track:${clientIp(request)}`, {
+  const { allowed, retryAfterSeconds } = await checkRateLimit(`checkout-track:${clientIp(request)}`, {
     limit: 20,
     windowMs: 10 * 60 * 1000,
   });

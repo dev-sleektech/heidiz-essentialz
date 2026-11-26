@@ -25,7 +25,7 @@ function isCardPayment(label: string) {
 // after completeOrder() builds the order object, same moment the WhatsApp
 // link and (for Paystack) the email receipt fire.
 export async function POST(request: Request) {
-  const { allowed, retryAfterSeconds } = checkRateLimit(`orders-create:${clientIp(request)}`, {
+  const { allowed, retryAfterSeconds } = await checkRateLimit(`orders-create:${clientIp(request)}`, {
     limit: 10,
     windowMs: 10 * 60 * 1000,
   });

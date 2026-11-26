@@ -12,7 +12,7 @@ import { checkRateLimit, clientIp, rateLimitResponse } from "@/lib/rate-limit";
 // Rate limited per IP — each call round-trips to Monnify's API, so an
 // unbounded loop here isn't just noise, it's a real remote call every time.
 export async function POST(request: Request) {
-  const { allowed, retryAfterSeconds } = checkRateLimit(`monnify-verify:${clientIp(request)}`, {
+  const { allowed, retryAfterSeconds } = await checkRateLimit(`monnify-verify:${clientIp(request)}`, {
     limit: 20,
     windowMs: 10 * 60 * 1000,
   });

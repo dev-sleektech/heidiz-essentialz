@@ -12,7 +12,7 @@ import { checkRateLimit, clientIp, rateLimitResponse } from "@/lib/rate-limit";
 // email is in the request body — rate limited per IP so this can't be
 // turned into a free spam relay against our Resend account/reputation.
 export async function POST(request: Request) {
-  const { allowed, retryAfterSeconds } = checkRateLimit(`orders-receipt:${clientIp(request)}`, {
+  const { allowed, retryAfterSeconds } = await checkRateLimit(`orders-receipt:${clientIp(request)}`, {
     limit: 5,
     windowMs: 10 * 60 * 1000,
   });

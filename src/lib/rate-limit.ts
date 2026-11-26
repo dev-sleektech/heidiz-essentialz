@@ -25,10 +25,7 @@ function sweep(now: number) {
   }
 }
 
-export function checkRateLimit(
-  key: string,
-  { limit, windowMs }: { limit: number; windowMs: number }
-): { allowed: boolean; retryAfterSeconds: number } {
+function checkMemory(key: string, limit: number, windowMs: number): { allowed: boolean; retryAfterSeconds: number } {
   const now = Date.now();
   sweep(now);
 
@@ -43,6 +40,38 @@ export function checkRateLimit(
     return { allowed: false, retryAfterSeconds: Math.ceil((bucket.resetAt - now) / 1000) };
   }
   return { allowed: true, retryAfterSeconds: 0 };
+}
+
+// Shared layer: Cloudflare's Workers rate limiting (wrangler.jsonc "ratelimits").
+// The in-memory buckets above are per Worker isolate, and on Cloudflare traffic is
+// spread over many short-lived isolates, so on their own they are weak. These
+// bindings count across every isolate in a Cloudflare location. Chat polling
+// (every few seconds while a chat is open) gets the relaxed limit; everything
+// else (orders, payment checks, receipts, uploads, new chats) the strict one.
+type RateLimitBinding = { limit(opts: { key: string }): Promise<{ success: boolean }> };
+const CLOUDFLARE_CONTEXT = Symbol.for("__cloudflare-context__");
+const RELAXED_PREFIXES = ["chat-messages-get:", "chat-unread:", "chat-messages-post:", "chat-close:"];
+
+async function checkEdge(key: string): Promise<boolean> {
+  const env = (globalThis as Record<symbol, { env?: Record<string, unknown> } | undefined>)[CLOUDFLARE_CONTEXT]?.env;
+  const relaxed = RELAXED_PREFIXES.some((p) => key.startsWith(p));
+  const binding = env?.[relaxed ? "RL_RELAXED" : "RL_STRICT"] as RateLimitBinding | undefined;
+  if (!binding) return true; // local dev / build: no Cloudflare binding, memory layer only
+  try {
+    return (await binding.limit({ key })).success;
+  } catch {
+    return true; // never block real customers because the limiter itself failed
+  }
+}
+
+export async function checkRateLimit(
+  key: string,
+  { limit, windowMs }: { limit: number; windowMs: number }
+): Promise<{ allowed: boolean; retryAfterSeconds: number }> {
+  const memory = checkMemory(key, limit, windowMs);
+  if (!memory.allowed) return memory;
+  if (!(await checkEdge(key))) return { allowed: false, retryAfterSeconds: 60 };
+  return memory;
 }
 
 // The site runs behind Cloudflare, which puts the caller's real address in

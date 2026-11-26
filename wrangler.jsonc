@@ -12,6 +12,11 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
+  // Shared rate limits (src/lib/rate-limit.ts), per Cloudflare location, keyed by route + visitor IP.
+  "ratelimits": [
+    { "name": "RL_STRICT", "namespace_id": "1001", "simple": { "limit": 10, "period": 60 } },
+    { "name": "RL_RELAXED", "namespace_id": "1002", "simple": { "limit": 120, "period": 60 } }
+  ],
   "services": [
     // Self-reference used by OpenNext for cache revalidation; must match "name".
     { "binding": "WORKER_SELF_REFERENCE", "service": "heidiz-essentialz" }
