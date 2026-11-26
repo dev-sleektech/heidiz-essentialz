@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import { verifyPaystackReference } from "@/lib/paystack-server";
+import { coversTotal, shortPaymentNote } from "@/lib/payment-confirmation";
 import { computeOrderTotals, type PricedLine } from "@/lib/order-pricing";
 
 // Redundant, more reliable confirmation path alongside the client-triggered
@@ -68,7 +69,7 @@ export async function POST(request: Request) {
     // "missing" would send every healthy payment down the recovery branch.
     const existing = await prisma.order.findUnique({
       where: { orderNumber: event.data.reference },
-      select: { status: true },
+      select: { status: true, total: true, notes: true },
     });
 
     if (!existing) {
@@ -80,15 +81,35 @@ export async function POST(request: Request) {
       // (fixed in dab48c6). Paystack tells us independently of the
       // customer's browser, which makes this the only place that can
       // catch it. So it creates the order rather than shrugging.
-      await createOrderFromWebhook(event.data.reference, result.metadata);
+      await createOrderFromWebhook(event.data.reference, result.metadata, result.requestedAmount ?? result.amount);
     } else if (existing.status === "PLACED") {
-      // Recorded but not yet confirmed — advance it. Anything further
-      // along is left alone so this never regresses an order staff have
-      // already moved down the timeline.
-      await prisma.order.update({
-        where: { orderNumber: event.data.reference },
-        data: { status: "PAYMENT_CONFIRMED" },
-      });
+      // Recorded but not yet confirmed — advance it, but only if the charge
+      // covered the order's total (see lib/payment-confirmation.ts): a
+      // successful N100 charge against a bigger order's reference must not
+      // confirm it. Anything further along is left alone so this never
+      // regresses an order staff have already moved down the timeline.
+      const paidKobo = result.requestedAmount ?? result.amount;
+      if (result.currency && result.currency !== "NGN") {
+        console.error("[paystack webhook] non-NGN charge, not confirming", { reference: event.data.reference });
+      } else if (coversTotal(paidKobo, existing.total)) {
+        await prisma.order.update({
+          where: { orderNumber: event.data.reference },
+          data: { status: "PAYMENT_CONFIRMED" },
+        });
+      } else {
+        const note = shortPaymentNote(event.data.reference, paidKobo ?? 0, Math.round(existing.total * 100));
+        console.error("[paystack webhook] charge does not cover order total, not confirming", {
+          reference: event.data.reference,
+          paidKobo,
+          total: existing.total,
+        });
+        if (!existing.notes?.includes(note)) {
+          await prisma.order.update({
+            where: { orderNumber: event.data.reference },
+            data: { notes: [existing.notes, note].filter(Boolean).join(" | ") },
+          });
+        }
+      }
     }
   } catch (err) {
     console.error("[paystack webhook] error", err);
@@ -115,7 +136,7 @@ type RecoveryOrder = {
 // the customer's browser, so it is exactly as editable as the cart is.
 // computeOrderTotals re-prices every line from the Product table, the same
 // authority the verify and create routes use.
-async function createOrderFromWebhook(reference: string, metadata: unknown) {
+async function createOrderFromWebhook(reference: string, metadata: unknown, paidKobo: number | undefined) {
   const order = (metadata as { order?: RecoveryOrder } | null)?.order;
   if (!order?.lines?.length || !order.state) {
     console.error("[paystack webhook] paid with no order and no recovery metadata", { reference });
@@ -127,6 +148,12 @@ async function createOrderFromWebhook(reference: string, metadata: unknown) {
     console.error("[paystack webhook] paid but could not price the order", { reference });
     return;
   }
+
+  // A recovered order is confirmed only if the charge covered the re-priced
+  // total; otherwise it is still recorded (never lost) but left PLACED with a
+  // note for staff, because the metadata came through the customer's browser.
+  const covered = coversTotal(paidKobo, computed.total);
+  const shortNote = covered ? null : shortPaymentNote(reference, paidKobo ?? 0, Math.round(computed.total * 100));
 
   try {
     await prisma.order.create({
@@ -142,7 +169,7 @@ async function createOrderFromWebhook(reference: string, metadata: unknown) {
         address: order.address ?? "",
         city: order.city ?? "",
         state: order.state,
-        notes: [order.notes, "Order recovered from the Paystack webhook — the checkout never recorded it."]
+        notes: [order.notes, "Order recovered from the Paystack webhook — the checkout never recorded it.", shortNote]
           .filter(Boolean)
           .join(" | "),
         paymentMethodLabel: "Pay with Card (Paystack)",
@@ -150,7 +177,7 @@ async function createOrderFromWebhook(reference: string, metadata: unknown) {
         subtotal: computed.subtotal,
         delivery: computed.delivery,
         total: computed.total,
-        status: "PAYMENT_CONFIRMED",
+        status: covered ? "PAYMENT_CONFIRMED" : "PLACED",
         items: { create: computed.items },
       },
     });

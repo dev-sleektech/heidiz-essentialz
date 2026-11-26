@@ -4,12 +4,17 @@ import { prisma } from "@/lib/prisma";
 import type { OrderDetails } from "@/lib/order";
 import { computeOrderTotals } from "@/lib/order-pricing";
 import { checkRateLimit, clientIp, rateLimitResponse } from "@/lib/rate-limit";
+import { checkPaystackPayment, shortPaymentNote } from "@/lib/payment-confirmation";
 
-// An order paid via either card gateway arrives here already verified
-// (see completeOrder()'s sendEmailReceipt=true branch in checkout/page.tsx,
-// which only fires after Paystack/Monnify confirm the charge) — so both
-// should land as PAYMENT_CONFIRMED, not just Paystack. Bank transfer / pay
-// on delivery start at PLACED, confirmed manually by staff later.
+// Card orders arrive here right after the browser saw the charge succeed, but
+// the browser's word is not proof: this endpoint is public, so a direct
+// request could otherwise record a "paid" order without paying anything. A
+// Paystack order is confirmed only when Paystack itself reports a charge
+// covering the server-computed total (lib/payment-confirmation.ts). Anything
+// else is saved as PLACED, never rejected: the order is not lost, and the
+// Paystack webhook confirms it the moment the payment checks out. Monnify is
+// not in use; its orders stay PLACED for staff or its webhook to confirm.
+// Bank transfer / pay on delivery start at PLACED, confirmed by staff.
 function isCardPayment(label: string) {
   return label.includes("Paystack") || label.includes("Monnify");
 }
@@ -54,6 +59,23 @@ export async function POST(request: Request) {
     );
   }
 
+  const card = isCardPayment(order.paymentMethodLabel ?? "");
+  let status: "PAYMENT_CONFIRMED" | "PLACED" = "PLACED";
+  let paymentNote: string | null = null;
+  if (card && order.paymentMethodLabel.includes("Paystack")) {
+    const check = await checkPaystackPayment(order.orderNumber, computed.total);
+    if (check.outcome === "paid") status = "PAYMENT_CONFIRMED";
+    else if (check.outcome === "short") {
+      paymentNote = shortPaymentNote(order.orderNumber, check.paidKobo, check.expectedKobo);
+      console.error("[orders/create] card payment does not cover total", { orderNumber: order.orderNumber, ...check });
+    } else if (check.outcome === "error") {
+      console.error("[orders/create] could not verify card payment; saved as PLACED for the webhook", {
+        orderNumber: order.orderNumber,
+        message: check.message,
+      });
+    }
+  }
+
   try {
     const created = await prisma.order.create({
       data: {
@@ -65,13 +87,13 @@ export async function POST(request: Request) {
         address: order.address,
         city: order.city,
         state: order.state,
-        notes: order.notes,
+        notes: [order.notes, paymentNote].filter(Boolean).join(" | ") || null,
         paymentMethodLabel: order.paymentMethodLabel,
-        paymentReference: isCardPayment(order.paymentMethodLabel) ? order.orderNumber : null,
+        paymentReference: card ? order.orderNumber : null,
         subtotal: computed.subtotal,
         delivery: computed.delivery,
         total: computed.total,
-        status: isCardPayment(order.paymentMethodLabel) ? "PAYMENT_CONFIRMED" : "PLACED",
+        status,
         items: { create: computed.items },
       },
     });
