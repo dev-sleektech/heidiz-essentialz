@@ -51,7 +51,7 @@ export async function POST(request: Request) {
   // Keyed by staff user (not IP) since this is already authenticated —
   // bounds Cloudinary quota usage from a compromised session or runaway
   // script, not normal admin usage.
-  const { allowed, retryAfterSeconds } = checkRateLimit(`admin-upload:${user!.id}`, {
+  const { allowed, retryAfterSeconds } = await checkRateLimit(`admin-upload:${user!.id}`, {
     limit: 30,
     windowMs: 10 * 60 * 1000,
   });

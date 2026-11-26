@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Don't advertise the framework in every response (x-powered-by: Next.js).
+  poweredByHeader: false,
   // Baseline security headers on every response. Deliberately no
   // Content-Security-Policy here: this page loads Clerk, Paystack inline JS,
   // the Monnify SDK script, Cloudinary/Unsplash images, and Google Fonts —

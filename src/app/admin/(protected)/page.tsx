@@ -4,6 +4,7 @@ import type { OrderStatus } from "@/components/shop/order-status-timeline";
 import { formatNaira } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
 
+import { requireStaffPage } from "@/lib/require-staff-page";
 const STATUS_LABELS: Record<string, string> = {
   PLACED: "Order Placed",
   PAYMENT_CONFIRMED: "Payment Confirmed",
@@ -39,6 +40,7 @@ function StatCard({
 }
 
 export default async function AdminDashboardPage() {
+  await requireStaffPage(); // must be first: the layout's check can be skipped (see lib/require-staff-page.ts)
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 

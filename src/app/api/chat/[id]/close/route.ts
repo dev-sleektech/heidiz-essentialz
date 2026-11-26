@@ -12,7 +12,7 @@ import { checkRateLimit, clientIp, rateLimitResponse } from "@/lib/rate-limit";
 // are: the cuid conversation id is the capability. The worst a leaked id
 // buys is ending a conversation that any new message reopens.
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { allowed, retryAfterSeconds } = checkRateLimit(`chat-close:${clientIp(req)}`, {
+  const { allowed, retryAfterSeconds } = await checkRateLimit(`chat-close:${clientIp(req)}`, {
     limit: 30,
     windowMs: 60 * 60 * 1000,
   });

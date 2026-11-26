@@ -6,6 +6,7 @@ import { getProduct } from "@/lib/products";
 import { getAssignableCategories } from "@/lib/categories";
 import { ProductEditForm } from "@/components/admin/product-edit-form";
 
+import { requireStaffPage } from "@/lib/require-staff-page";
 export async function generateMetadata(
   props: PageProps<"/admin/products/[slug]">
 ): Promise<Metadata> {
@@ -15,6 +16,7 @@ export async function generateMetadata(
 }
 
 export default async function AdminProductEditPage(props: PageProps<"/admin/products/[slug]">) {
+  await requireStaffPage(); // must be first: the layout's check can be skipped (see lib/require-staff-page.ts)
   const { slug } = await props.params;
   const [product, categories] = await Promise.all([getProduct(slug), getAssignableCategories()]);
 

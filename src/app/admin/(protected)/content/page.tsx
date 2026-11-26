@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { ContentDraftActions } from "@/components/admin/content-draft-actions";
 
+import { requireStaffPage } from "@/lib/require-staff-page";
 export const metadata: Metadata = { title: "Content | HEIDIZ Admin" };
 
 const TYPE_LABELS: Record<string, string> = {
@@ -17,6 +18,7 @@ const TYPE_LABELS: Record<string, string> = {
 // either "mark reviewed" or "copy the text out". See the ContentDraft
 // comment in prisma/schema.prisma for why.
 export default async function AdminContentPage() {
+  await requireStaffPage(); // must be first: the layout's check can be skipped (see lib/require-staff-page.ts)
   const drafts = await prisma.contentDraft.findMany({ orderBy: { createdAt: "desc" }, take: 60 });
   const needsReview = drafts.filter((d) => d.status === "DRAFT").length;
 

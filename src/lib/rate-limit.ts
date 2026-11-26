@@ -25,10 +25,7 @@ function sweep(now: number) {
   }
 }
 
-export function checkRateLimit(
-  key: string,
-  { limit, windowMs }: { limit: number; windowMs: number }
-): { allowed: boolean; retryAfterSeconds: number } {
+function checkMemory(key: string, limit: number, windowMs: number): { allowed: boolean; retryAfterSeconds: number } {
   const now = Date.now();
   sweep(now);
 
@@ -43,6 +40,46 @@ export function checkRateLimit(
     return { allowed: false, retryAfterSeconds: Math.ceil((bucket.resetAt - now) / 1000) };
   }
   return { allowed: true, retryAfterSeconds: 0 };
+}
+
+// Shared layer: a Durable Object counter per key (RateLimiterDO in cloudflare/worker.ts).
+// The in-memory buckets above are per Worker isolate, and on Cloudflare traffic is
+// spread over many short-lived isolates and machines, so on their own they are weak.
+// One Durable Object instance per (route + IP) key sees every request for that key,
+// so each route's own limit/window is enforced exactly, site-wide.
+type DurableObjectNamespaceLike = {
+  idFromName(name: string): unknown;
+  get(id: unknown): { fetch(input: string, init?: RequestInit): Promise<Response> };
+};
+const CLOUDFLARE_CONTEXT = Symbol.for("__cloudflare-context__");
+
+async function checkShared(
+  key: string,
+  limit: number,
+  windowMs: number
+): Promise<{ allowed: boolean; retryAfterSeconds: number } | null> {
+  const env = (globalThis as Record<symbol, { env?: Record<string, unknown> } | undefined>)[CLOUDFLARE_CONTEXT]?.env;
+  const ns = env?.RATE_LIMITER as DurableObjectNamespaceLike | undefined;
+  if (!ns) return null; // local dev / build: no Cloudflare binding, memory layer only
+  try {
+    const res = await ns.get(ns.idFromName(key)).fetch("https://rate-limiter/check", {
+      method: "POST",
+      body: JSON.stringify({ limit, windowMs }),
+    });
+    return (await res.json()) as { allowed: boolean; retryAfterSeconds: number };
+  } catch {
+    return null; // never block real customers because the limiter itself failed
+  }
+}
+
+export async function checkRateLimit(
+  key: string,
+  { limit, windowMs }: { limit: number; windowMs: number }
+): Promise<{ allowed: boolean; retryAfterSeconds: number }> {
+  const memory = checkMemory(key, limit, windowMs);
+  if (!memory.allowed) return memory;
+  const shared = await checkShared(key, limit, windowMs);
+  return shared ?? memory;
 }
 
 // The site runs behind Cloudflare, which puts the caller's real address in

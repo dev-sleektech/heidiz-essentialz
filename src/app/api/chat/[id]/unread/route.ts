@@ -15,7 +15,7 @@ import { checkRateLimit, clientIp, rateLimitResponse } from "@/lib/rate-limit";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { allowed, retryAfterSeconds } = checkRateLimit(`chat-unread:${clientIp(req)}`, {
+  const { allowed, retryAfterSeconds } = await checkRateLimit(`chat-unread:${clientIp(req)}`, {
     limit: 300,
     windowMs: 5 * 60 * 1000,
   });

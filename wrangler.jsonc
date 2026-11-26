@@ -25,10 +25,15 @@
       // Background re-render queue for stale ISR pages.
       { "name": "NEXT_CACHE_DO_QUEUE", "class_name": "DOQueueHandler" },
       // Revalidation timestamps for revalidatePath/revalidateTag.
-      { "name": "NEXT_TAG_CACHE_DO_SHARDED", "class_name": "DOShardedTagCache" }
+      { "name": "NEXT_TAG_CACHE_DO_SHARDED", "class_name": "DOShardedTagCache" },
+      // Exact shared rate-limit counters (src/lib/rate-limit.ts, cloudflare/worker.ts).
+      { "name": "RATE_LIMITER", "class_name": "RateLimiterDO" }
     ]
   },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["DOQueueHandler", "DOShardedTagCache"] }],
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["DOQueueHandler", "DOShardedTagCache"] },
+    { "tag": "v2", "new_sqlite_classes": ["RateLimiterDO"] }
+  ],
   // Replaces the "crons" block in vercel.json (UTC). Keep in sync with cloudflare/worker.ts.
   "triggers": {
     "crons": ["0 7 * * *", "0 8 * * *", "0 9 * * *", "0 10 * * *", "30 10 * * 1", "0 11 * * 3"]

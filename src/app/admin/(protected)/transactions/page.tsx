@@ -3,6 +3,7 @@ import { Wallet, Banknote, CreditCard } from "lucide-react";
 import { formatNaira } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
 
+import { requireStaffPage } from "@/lib/require-staff-page";
 export const metadata: Metadata = { title: "Transactions | HEIDIZ Admin" };
 
 // Real transaction/sales history + income cash book, entirely derived from
@@ -28,6 +29,7 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 export default async function AdminTransactionsPage(props: PageProps<"/admin/transactions">) {
+  await requireStaffPage(); // must be first: the layout's check can be skipped (see lib/require-staff-page.ts)
   const searchParams = await props.searchParams;
   const fromParam = typeof searchParams.from === "string" ? searchParams.from : "";
   const toParam = typeof searchParams.to === "string" ? searchParams.to : "";

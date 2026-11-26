@@ -7,9 +7,11 @@ import { getAllProducts } from "@/lib/products";
 import { formatNaira } from "@/lib/format";
 import { DeleteButton } from "@/components/admin/delete-button";
 
+import { requireStaffPage } from "@/lib/require-staff-page";
 export const metadata: Metadata = { title: "Products | HEIDIZ Admin" };
 
 export default async function AdminProductsPage(props: PageProps<"/admin/products">) {
+  await requireStaffPage(); // must be first: the layout's check can be skipped (see lib/require-staff-page.ts)
   const searchParams = await props.searchParams;
   const q = typeof searchParams.q === "string" ? searchParams.q.trim().toLowerCase() : "";
   const categorySlug = typeof searchParams.category === "string" ? searchParams.category : "";

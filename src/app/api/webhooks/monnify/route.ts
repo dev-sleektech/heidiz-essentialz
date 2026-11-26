@@ -64,6 +64,22 @@ export async function POST(request: Request) {
     // paymentReference IS our orderNumber (see makeOrderNumber() in
     // checkout/page.tsx) — no separate lookup needed. Only advance orders
     // still at PLACED, so this never regresses one staff already moved on.
+    //
+    // And only when the amount Monnify collected (in naira) covers the order's
+    // server-computed total: a successful small charge against a bigger
+    // order's reference must not confirm it (see lib/payment-confirmation.ts).
+    const order = await prisma.order.findUnique({
+      where: { orderNumber: event.eventData.paymentReference },
+      select: { total: true },
+    });
+    if (!order || result.amount === undefined || result.amount < order.total) {
+      console.error("[monnify webhook] charge does not cover order total, not confirming", {
+        reference: event.eventData.paymentReference,
+        amount: result.amount,
+        total: order?.total,
+      });
+      return NextResponse.json({ received: true });
+    }
     await prisma.order.updateMany({
       where: { orderNumber: event.eventData.paymentReference, status: "PLACED" },
       data: { status: "PAYMENT_CONFIRMED" },
