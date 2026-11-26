@@ -5,6 +5,7 @@ import type { OrderDetails } from "@/lib/order";
 import { computeOrderTotals } from "@/lib/order-pricing";
 import { checkRateLimit, clientIp, rateLimitResponse } from "@/lib/rate-limit";
 import { checkPaystackPayment, shortPaymentNote } from "@/lib/payment-confirmation";
+import { EMAIL, LIMITS, invalidText } from "@/lib/input-limits";
 
 // Card orders arrive here right after the browser saw the charge succeed, but
 // the browser's word is not proof: this endpoint is public, so a direct
@@ -42,6 +43,40 @@ export async function POST(request: Request) {
 
   if (!order?.orderNumber || !Array.isArray(order.lines) || order.lines.length === 0) {
     return NextResponse.json({ saved: false, message: "Missing order details." }, { status: 400 });
+  }
+
+  // Server-side checks: this endpoint is public, so the checkout form's own
+  // validation proves nothing. Wrong types or oversized fields are rejected.
+  const invalid =
+    invalidText({
+      "Order number": { value: order.orderNumber, max: 64 },
+      Name: { value: order.customerName, max: LIMITS.name },
+      Email: { value: order.email, max: LIMITS.email, optional: true },
+      Phone: { value: order.phone, max: LIMITS.phone },
+      Address: { value: order.address, max: LIMITS.address },
+      City: { value: order.city, max: LIMITS.shortText },
+      State: { value: order.state, max: LIMITS.shortText },
+      Notes: { value: order.notes, max: LIMITS.notes, optional: true },
+      "Payment method": { value: order.paymentMethodLabel, max: LIMITS.shortText },
+    }) ??
+    (!/^[A-Za-z0-9-]+$/.test(order.orderNumber) ? "Order number is invalid." : null) ??
+    (order.email && !EMAIL.test(order.email) ? "Email is invalid." : null) ??
+    (order.lines.length > 50 ? "Too many items in one order." : null) ??
+    (order.lines.some(
+      (l) =>
+        !l ||
+        typeof l.product?.slug !== "string" ||
+        l.product.slug.length > LIMITS.shortText ||
+        !Number.isInteger(l.quantity) ||
+        l.quantity < 1 ||
+        l.quantity > 99 ||
+        (l.size != null && (typeof l.size !== "string" || l.size.length > LIMITS.shortText)) ||
+        (l.color != null && (typeof l.color !== "string" || l.color.length > LIMITS.shortText))
+    )
+      ? "One or more items are invalid."
+      : null);
+  if (invalid) {
+    return NextResponse.json({ saved: false, message: invalid }, { status: 400 });
   }
 
   // Never trust order.subtotal/delivery/total/lines[].unitPrice from the
