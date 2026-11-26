@@ -9,6 +9,7 @@ import {
 } from "@/lib/categories";
 import { CategoryEditForm } from "@/components/admin/category-edit-form";
 
+import { requireStaffPage } from "@/lib/require-staff-page";
 export async function generateMetadata(
   props: PageProps<"/admin/categories/[slug]">
 ): Promise<Metadata> {
@@ -22,6 +23,7 @@ export async function generateMetadata(
 export default async function AdminCategoryEditPage(
   props: PageProps<"/admin/categories/[slug]">
 ) {
+  await requireStaffPage(); // must be first: the layout's check can be skipped (see lib/require-staff-page.ts)
   const { slug } = await props.params;
   const [category, all, productCount] = await Promise.all([
     getCategoryFresh(slug),

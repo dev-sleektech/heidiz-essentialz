@@ -4,9 +4,11 @@ import { ChevronLeft } from "lucide-react";
 import { ProductEditForm } from "@/components/admin/product-edit-form";
 import { getAssignableCategories } from "@/lib/categories";
 
+import { requireStaffPage } from "@/lib/require-staff-page";
 export const metadata: Metadata = { title: "New Product | HEIDIZ Admin" };
 
 export default async function AdminNewProductPage() {
+  await requireStaffPage(); // must be first: the layout's check can be skipped (see lib/require-staff-page.ts)
   const categories = await getAssignableCategories();
 
   return (

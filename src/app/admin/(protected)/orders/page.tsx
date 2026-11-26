@@ -5,6 +5,7 @@ import type { OrderStatus } from "@/components/shop/order-status-timeline";
 import { formatNaira } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
 
+import { requireStaffPage } from "@/lib/require-staff-page";
 export const metadata: Metadata = { title: "Orders | HEIDIZ Admin" };
 
 const STATUS_OPTIONS: { value: OrderStatus; label: string }[] = [
@@ -17,6 +18,7 @@ const STATUS_OPTIONS: { value: OrderStatus; label: string }[] = [
 ];
 
 export default async function AdminOrdersPage(props: PageProps<"/admin/orders">) {
+  await requireStaffPage(); // must be first: the layout's check can be skipped (see lib/require-staff-page.ts)
   const searchParams = await props.searchParams;
   const q = typeof searchParams.q === "string" ? searchParams.q.trim() : "";
   const status = typeof searchParams.status === "string" ? searchParams.status : "";

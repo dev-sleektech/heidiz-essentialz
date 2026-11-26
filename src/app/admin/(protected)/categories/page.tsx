@@ -6,9 +6,11 @@ import { getAllCategoriesFresh, getProductCountsByCategory } from "@/lib/categor
 import { NAV_GROUP_LABELS } from "@/lib/category-types";
 import { DeleteButton } from "@/components/admin/delete-button";
 
+import { requireStaffPage } from "@/lib/require-staff-page";
 export const metadata: Metadata = { title: "Categories | HEIDIZ Admin" };
 
 export default async function AdminCategoriesPage() {
+  await requireStaffPage(); // must be first: the layout's check can be skipped (see lib/require-staff-page.ts)
   const [categories, counts] = await Promise.all([
     getAllCategoriesFresh(),
     getProductCountsByCategory(),

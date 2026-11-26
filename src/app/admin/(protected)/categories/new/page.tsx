@@ -4,9 +4,11 @@ import { ChevronLeft } from "lucide-react";
 import { getAllCategoriesFresh } from "@/lib/categories";
 import { CategoryEditForm } from "@/components/admin/category-edit-form";
 
+import { requireStaffPage } from "@/lib/require-staff-page";
 export const metadata: Metadata = { title: "New Category | HEIDIZ Admin" };
 
 export default async function AdminNewCategoryPage() {
+  await requireStaffPage(); // must be first: the layout's check can be skipped (see lib/require-staff-page.ts)
   const siblings = await getAllCategoriesFresh();
 
   return (
